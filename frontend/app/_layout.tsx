@@ -18,21 +18,21 @@ export default function RootLayout() {
     async function loadFonts() {
       try {
         // Per a web, carregar fonts via link CSS
-        if (Platform.OS === 'web') {
+        if (Platform.OS === 'web' && typeof document !== 'undefined') {
           // Afegir Google Fonts per Material Icons
           const link = document.createElement('link');
-          link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+          link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round';
           link.rel = 'stylesheet';
           document.head.appendChild(link);
           
-          // També afegir Ionicons i FontAwesome
+          // També afegir Ionicons
           const link2 = document.createElement('link');
-          link2.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-          link2.rel = 'stylesheet';
+          link2.href = 'https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js';
+          link2.type = 'module';
           document.head.appendChild(link2);
           
-          // Donar temps per carregar
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Donar temps per carregar les fonts
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
         // Carregar les fonts d'icones per native
