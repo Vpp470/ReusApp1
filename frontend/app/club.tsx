@@ -321,12 +321,12 @@ const styles = StyleSheet.create({
   contentTitle: {
     fontSize: FontSizes.lg,
     fontWeight: '600',
-    color: Colors.text,
+    color: Colors.textDark,
     marginBottom: Spacing.sm,
   },
   contentDescription: {
     fontSize: FontSizes.md,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: Colors.textSecondary,
     lineHeight: 22,
     marginBottom: Spacing.sm,
   },
