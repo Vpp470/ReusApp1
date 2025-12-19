@@ -7,6 +7,7 @@ import { MaterialIcons, Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../src/i18n';
+import InstallPWAPrompt from '../src/components/InstallPWAPrompt';
 
 // Prevenir que la pantalla de splash s'amagui automàticament
 SplashScreen.preventAutoHideAsync().catch(() => {});
