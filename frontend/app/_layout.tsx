@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import * as Font from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 import { MaterialIcons, Ionicons, FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../src/i18n';
+
+// Prevenir que la pantalla de splash s'amagui automàticament
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -13,17 +17,37 @@ export default function RootLayout() {
   useEffect(() => {
     async function loadFonts() {
       try {
-        // Carregar les fonts d'icones
+        // Per a web, carregar fonts via link CSS
+        if (Platform.OS === 'web') {
+          // Afegir Google Fonts per Material Icons
+          const link = document.createElement('link');
+          link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+          link.rel = 'stylesheet';
+          document.head.appendChild(link);
+          
+          // També afegir Ionicons i FontAwesome
+          const link2 = document.createElement('link');
+          link2.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+          link2.rel = 'stylesheet';
+          document.head.appendChild(link2);
+          
+          // Donar temps per carregar
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+        // Carregar les fonts d'icones per native
         await Font.loadAsync({
           ...MaterialIcons.font,
           ...Ionicons.font,
           ...FontAwesome.font,
         });
+        
         setFontsLoaded(true);
+        await SplashScreen.hideAsync();
       } catch (error) {
         console.error('Error loading fonts:', error);
-        // Continuar encara que fallin les fonts
         setFontsLoaded(true);
+        await SplashScreen.hideAsync();
       }
     }
     loadFonts();
