@@ -94,12 +94,6 @@ En acceptar aquesta política, vostè consent expressament:
 # Create the main app
 app = FastAPI(title="El Tomb de Reus API")
 
-# Pàgina principal
-@app.get("/")
-async def root():
-    from fastapi.responses import HTMLResponse
-    return HTMLResponse("""<!DOCTYPE html><html><head><title>El Tomb de Reus</title><style>body{font-family:Arial;text-align:center;padding:50px;background:#2d5016;color:white}a{color:#ffd700}</style></head><body><h1>El Tomb de Reus</h1><p>API funcionant correctament</p><p><a href="/api/health">API Health</a> | <a href="/api/establishments">Establiments</a></p></body></html>""")
-
 # Health check endpoints (for Railway and general use)
 @app.get("/health")
 async def health_check_root():
