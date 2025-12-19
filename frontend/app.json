@@ -33,7 +33,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo-color.jpg",
+      "favicon": "./assets/images/logo-tomb-nou.png",
       "name": "El Tomb de Reus",
       "shortName": "ReusApp",
       "lang": "ca",
