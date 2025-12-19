@@ -2862,12 +2862,35 @@ async def serve_noticies_page():
 dist_path = Path(__file__).parent / "dist"
 if dist_path.exists():
     logger.info(f"Mounting Expo web app from {dist_path}")
-    app.mount("/assets", StaticFiles(directory=str(dist_path / "assets")), name="app-assets")
+    
+    # Servir assets
+    if (dist_path / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=str(dist_path / "assets")), name="app-assets")
     
     if (dist_path / "_expo").exists():
         app.mount("/_expo", StaticFiles(directory=str(dist_path / "_expo")), name="expo-assets")
+    
+    # Ruta principal - servir index.html
+    @app.get("/")
+    async def serve_frontend():
+        return FileResponse(dist_path / "index.html")
+    
+    # Catch-all per SPA routing
+    @app.get("/{path:path}")
+    async def serve_spa(path: str):
+        # Si és un fitxer que existeix, servir-lo
+        file_path = dist_path / path
+        if file_path.exists() and file_path.is_file():
+            return FileResponse(file_path)
+        # Sinó, servir index.html per SPA routing
+        return FileResponse(dist_path / "index.html")
 else:
     logger.warning(f"dist directory not found at {dist_path}")
+    
+    @app.get("/")
+    async def root_fallback():
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse("""<!DOCTYPE html><html><head><title>El Tomb de Reus</title></head><body><h1>El Tomb de Reus - API</h1><p><a href="/api/health">API Health</a></p></body></html>""")
 
 # Configure logging
 logging.basicConfig(
