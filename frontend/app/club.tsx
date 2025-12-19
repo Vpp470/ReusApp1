@@ -93,10 +93,13 @@ export default function ClubScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />
         }
       >
-        {/* Banner del Club */}
+        {/* Banner del Club amb Logo */}
         <View style={styles.banner}>
-          <MaterialIcons name="stars" size={48} color={Colors.white} />
-          <Text style={styles.bannerTitle}>Club REUS COMERÇ i FUTUR</Text>
+          <Image 
+            source={require('../assets/images/logo-rcf.png')} 
+            style={styles.bannerLogo}
+            resizeMode="contain"
+          />
           <Text style={styles.bannerSubtitle}>
             Gaudeix d'avantatges exclusius al comerç local
           </Text>
