@@ -83,7 +83,7 @@ export default function InfoScreen() {
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <Image 
-            source={{ uri: 'https://eltombdereus.com/wp-content/uploads/2024/07/logo-tomb.png' }}
+            source={{ uri: '/assets/logo-rcf.png' }}
             style={styles.logoImage}
             resizeMode="contain"
           />

@@ -85,7 +85,7 @@ export default function HomeScreen() {
     >
       <View style={styles.header}>
         <Image 
-          source={require('../../assets/logo-reus-comerc-futur.png')} 
+          source={require('../../assets/logo-rcf.png')} 
           style={styles.logo}
           resizeMode="contain"
         />

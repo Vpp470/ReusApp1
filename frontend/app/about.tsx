@@ -24,7 +24,7 @@ export default function AboutScreen() {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <View style={styles.logoContainer}>
           <Image
-            source={require('../assets/images/logo-tomb.png')}
+            source={require('../assets/images/logo-rcf.png')}
             style={styles.logo}
             resizeMode="contain"
           />
