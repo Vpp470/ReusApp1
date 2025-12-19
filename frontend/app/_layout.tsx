@@ -77,6 +77,8 @@ export default function RootLayout() {
         <Stack.Screen name="admin" options={{ headerShown: false }} />
         <Stack.Screen name="consell" options={{ headerShown: false }} />
       </Stack>
+      {/* Prompt per instal·lar PWA */}
+      <InstallPWAPrompt />
     </SafeAreaProvider>
   );
 }
