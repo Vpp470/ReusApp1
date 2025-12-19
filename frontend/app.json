@@ -4,12 +4,12 @@
     "slug": "reusapp",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/logo-color.jpg",
+    "icon": "./assets/images/logo-rcf.png",
     "scheme": "reusapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/logo-color.jpg",
+      "image": "./assets/images/logo-rcf.png",
       "resizeMode": "contain",
       "backgroundColor": "#e87308"
     },
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo-color.jpg",
+        "foregroundImage": "./assets/images/logo-rcf.png",
         "backgroundColor": "#e87308"
       },
       "edgeToEdgeEnabled": true,
@@ -33,7 +33,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo-tomb-nou.png",
+      "favicon": "./assets/images/logo-rcf.png",
       "name": "El Tomb de Reus",
       "shortName": "ReusApp",
       "lang": "ca",
