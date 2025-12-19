@@ -1,0 +1,353 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Pressable,
+  RefreshControl,
+  ActivityIndicator,
+  Image,
+  Modal,
+  Linking,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { offersService } from '../../src/services/api';
+import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
+import type { Offer } from '../../src/types';
+
+export default function OffersScreen() {
+  const router = useRouter();
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const loadOffers = async () => {
+    try {
+      const data = await offersService.getAll();
+      setOffers(data);
+    } catch (error) {
+      console.error('Error loading offers:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadOffers();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadOffers();
+  };
+
+  const renderOffer = ({ item }: { item: Offer }) => {
+    const validFrom = new Date(item.valid_from);
+    const validUntil = new Date(item.valid_until);
+    const isActive = new Date() >= validFrom && new Date() <= validUntil;
+
+    return (
+      <Pressable
+        style={styles.offerCard}
+        onPress={() => router.push(`/offers/${item.id}`)}
+      >
+        {item.image_url ? (
+          <View style={styles.offerHeader}>
+            <Image source={{ uri: item.image_url }} style={styles.offerImage} />
+            <Pressable
+              style={styles.magnifyButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                setSelectedImage(item.image_url || '');
+                setShowImageModal(true);
+              }}
+            >
+              <MaterialIcons name="search" size={24} color={Colors.white} />
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.offerHeader}>
+            <View style={styles.offerImagePlaceholder}>
+              <MaterialIcons name="local-offer" size={40} color={Colors.primary} />
+            </View>
+          </View>
+        )}
+
+        <View style={styles.offerContent}>
+          <View style={styles.offerTitleRow}>
+            <Text style={styles.offerTitle} numberOfLines={2}>
+              {item.title}
+            </Text>
+            {isActive && (
+              <View style={styles.activeBadge}>
+                <Text style={styles.activeBadgeText}>Activa</Text>
+              </View>
+            )}
+          </View>
+
+          <Text style={styles.offerDescription} numberOfLines={3}>
+            {item.description}
+          </Text>
+
+          {item.discount && (
+            <View style={styles.discountContainer}>
+              <MaterialIcons name="sell" size={18} color={Colors.primary} />
+              <Text style={styles.discountText}>{item.discount}</Text>
+            </View>
+          )}
+
+          {item.web_link && (
+            <Pressable
+              style={styles.linkRow}
+              onPress={(e) => {
+                e.stopPropagation();
+                Linking.openURL(item.web_link!);
+              }}
+            >
+              <MaterialIcons name="language" size={20} color={Colors.primary} />
+              <Text style={styles.linkText} numberOfLines={1}>
+                {item.web_link}
+              </Text>
+            </Pressable>
+          )}
+
+          {item.phone && (
+            <Pressable
+              style={styles.linkRow}
+              onPress={(e) => {
+                e.stopPropagation();
+                Linking.openURL(`tel:${item.phone}`);
+              }}
+            >
+              <MaterialIcons name="phone" size={20} color={Colors.primary} />
+              <Text style={styles.linkText}>{item.phone}</Text>
+            </Pressable>
+          )}
+
+          <View style={styles.offerFooter}>
+            <View style={styles.dateContainer}>
+              <MaterialIcons name="calendar-today" size={14} color={Colors.textSecondary} />
+              <Text style={styles.dateText}>
+                {validFrom.toLocaleDateString('es-ES')} - {validUntil.toLocaleDateString('es-ES')}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Pressable>
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={offers}
+        renderItem={renderOffer}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <MaterialIcons name="local-offer" size={80} color={Colors.lightGray} />
+            <Text style={styles.emptyText}>No hay ofertas disponibles</Text>
+          </View>
+        }
+      />
+
+      {/* Modal per veure imatge a pantalla completa */}
+      <Modal
+        visible={showImageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowImageModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <Pressable
+            style={styles.modalCloseButton}
+            onPress={() => setShowImageModal(false)}
+          >
+            <MaterialIcons name="close" size={32} color={Colors.white} />
+          </Pressable>
+          {selectedImage && (
+            <Image
+              source={{ uri: selectedImage }}
+              style={styles.fullImage}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+  },
+  listContainer: {
+    padding: Spacing.md,
+    paddingBottom: 100, // Espai per al menú inferior
+  },
+  offerCard: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
+    overflow: 'hidden',
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  offerHeader: {
+    width: '100%',
+    height: 150,
+    backgroundColor: Colors.background,
+    position: 'relative',
+  },
+  offerImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  magnifyButton: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 20,
+    padding: Spacing.sm,
+  },
+  offerImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.lightGray,
+  },
+  offerContent: {
+    padding: Spacing.md,
+  },
+  offerTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.sm,
+  },
+  offerTitle: {
+    flex: 1,
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc
+    marginRight: Spacing.sm,
+  },
+  activeBadge: {
+    backgroundColor: Colors.success,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+  },
+  activeBadgeText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.xs,
+    fontWeight: 'bold',
+  },
+  offerDescription: {
+    fontSize: FontSizes.sm,
+    color: Colors.darkGray, // Text gris per fons blanc
+    marginBottom: Spacing.md,
+    lineHeight: 20,
+  },
+  discountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary + '15',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.md,
+  },
+  discountText: {
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    marginLeft: Spacing.sm,
+  },
+  offerFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateText: {
+    fontSize: FontSizes.xs,
+    color: Colors.darkGray, // Text gris per fons blanc
+    marginLeft: Spacing.xs,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl * 2,
+  },
+  emptyText: {
+    fontSize: FontSizes.lg,
+    color: Colors.darkGray, // Text gris per fons blanc
+    marginTop: Spacing.md,
+  },
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+    paddingVertical: Spacing.xs,
+  },
+  linkText: {
+    fontSize: FontSizes.sm,
+    color: Colors.primary,
+    marginLeft: Spacing.sm,
+    textDecorationLine: 'underline',
+    flex: 1,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    padding: Spacing.sm,
+  },
+  fullImage: {
+    width: '100%',
+    height: '100%',
+  },
+});

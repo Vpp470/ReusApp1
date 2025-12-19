@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Tomb de Reus - Descobreix el Comerç Local</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0d1f1a 0%, #1a3a2e 50%, #0d1f1a 100%);
+            min-height: 100vh;
+            position: relative;
+            
+        }
+        
+        /* Gradient de fons elegant amb verd metàl·lic */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(61, 122, 95, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(45, 90, 69, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        /* Logo superior */
+        .logo-container {
+            position: fixed;
+            top: 30px;
+            left: 40px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(26, 58, 46, 0.8) 0%, rgba(19, 43, 35, 0.6) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(61, 122, 95, 0.3);
+            border-radius: 16px;
+            padding: 12px 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .logo-container:hover {
+            transform: translateY(-2px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.2);
+        }
+        
+        .logo-container img {
+            width: 140px;
+            height: auto;
+            display: block;
+        }
+        
+        .logo-container img {
+            width: 140px;
+            height: auto;
+            display: block;
+        }
+        
+        .logo-container img:hover {
+            transform: scale(1.05);
+        }
+        
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 120px 40px 60px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Hero Section */
+        .hero { 
+            text-align: center; 
+            margin-bottom: 80px;
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        .hero-subtitle {
+            font-size: 0.95rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #D4AF37;
+            font-weight: 600;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out 0.3s forwards;
+        }
+        
+        .hero h1 { 
+            font-family: 'Playfair Display', serif;
+            font-size: 4.5rem; 
+            margin-bottom: 30px; 
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            letter-spacing: -2px;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out 0.5s forwards;
+        }
+        
+        .hero-description { 
+            font-size: 1.25rem; 
+            color: #b0b0b0;
+            line-height: 1.8;
+            max-width: 700px;
+            margin: 0 auto 50px;
+            font-weight: 400;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out 0.7s forwards;
+        }
+        
+        .divider {
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+            margin: 0 auto 60px;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out 0.9s forwards;
+        }
+        
+        /* Grid de Navegació */
+        .nav-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+        
+        .nav-card { 
+            background: linear-gradient(135deg, rgba(26, 58, 46, 0.7) 0%, rgba(19, 43, 35, 0.5) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(61, 122, 95, 0.2);
+            padding: 50px 40px; 
+            border-radius: 20px; 
+            text-decoration: none; 
+            color: #ffffff;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .nav-card:nth-child(1) { animation-delay: 0.2s; }
+        .nav-card:nth-child(2) { animation-delay: 0.3s; }
+        .nav-card:nth-child(3) { animation-delay: 0.4s; }
+        .nav-card:nth-child(4) { animation-delay: 0.5s; }
+        .nav-card:nth-child(5) { animation-delay: 0.6s; }
+        .nav-card:nth-child(6) { animation-delay: 0.7s; }
+        
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(61, 122, 95, 0.15) 0%, rgba(212, 175, 55, 0.08) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .nav-card:hover::before {
+            opacity: 1;
+        }
+        
+        .nav-card:hover { 
+            transform: translateY(-8px);
+            border-color: rgba(212, 175, 55, 0.4);
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.2);
+        }
+        
+        .nav-icon { 
+            width: 48px;
+            height: 48px;
+            stroke: #D4AF37;
+            stroke-width: 1.5;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-card:hover .nav-icon {
+            transform: scale(1.15);
+            stroke: #ffffff;
+        }
+        
+        .nav-card h3 { 
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .nav-card p { 
+            font-size: 1rem; 
+            color: #a0a0a0;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+        
+        .nav-arrow {
+            margin-top: auto;
+            color: #D4AF37;
+            font-size: 1.5rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-card:hover .nav-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* Footer elegant */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .footer-accent {
+            color: #D4AF37;
+            font-weight: 600;
+        }
+        
+        /* Animacions */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive */
+        
+            .logo-container {
+            position: fixed;
+            top: 30px;
+            left: 40px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(26, 58, 46, 0.8) 0%, rgba(19, 43, 35, 0.6) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(61, 122, 95, 0.3);
+            border-radius: 16px;
+            padding: 12px 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .logo-container:hover {
+            transform: translateY(-2px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.2);
+        }
+        
+        .logo-container img {
+            width: 140px;
+            height: auto;
+            display: block;
+        }
+            .logo-container img {
+            width: 140px;
+            height: auto;
+            display: block;
+        }
+            .hero h1 { font-size: 2.5rem; letter-spacing: -1px; }
+            .hero-description { font-size: 1.1rem; }
+            .nav-grid { 
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .nav-card { padding: 35px 30px; }
+        }
+    
+        
+    
+        @media (max-width: 768px) { 
+            /* FORÇAR SCROLL NATIU */
+            html {
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                height: 100% !important;
+            }
+            
+            body {
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                -webkit-overflow-scrolling: touch !important;
+                overscroll-behavior-y: none !important;
+            }
+            html, body { 
+                will-change: auto !important; 
+                -webkit-overflow-scrolling: touch !important; 
+            }
+            
+            /* ELIMINAR TOTS els efectes pesats */
+            * { 
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                transform: none !important;
+                transition: none !important;
+                animation: none !important;
+                box-shadow: none !important;
+                filter: none !important;
+            }
+            
+            /* Fons 100% sòlid sense cap efecte */
+            body { 
+                background: #0d1f1a !important; 
+                position: relative !important;
+            }
+            
+            body::before { 
+                display: none !important; 
+            }
+            
+            /* Cards super simples */
+            .establishment-card, .offer-card, .event-card, .news-card, .nav-card, .about-section, .value-card {
+                background: rgba(26, 58, 46, 1) !important;
+                border: 1px solid rgba(61, 122, 95, 0.5) !important;
+                border-radius: 12px !important;
+                padding: 12px !important;
+            }
+            
+            /* Logo simple */
+            .logo-container {
+                background: rgba(26, 58, 46, 1) !important;
+                border: 1px solid rgba(61, 122, 95, 0.5) !important;
+                box-shadow: none !important;
+                top: 15px !important;
+                left: 15px !important;
+                padding: 8px 12px !important;
+            }
+            
+            .logo-container img { 
+                width: 90px !important;
+            }
+            
+            /* Text i layout */
+            .container { 
+                padding: 90px 15px 30px !important; 
+            }
+            
+            .page-title { 
+                font-size: 2.2rem !important; 
+            }
+            
+            .page-header { 
+                margin-bottom: 25px !important; 
+            }
+            
+            /* Grids simples */
+            .establishments-grid, .offers-grid, .events-grid { 
+                grid-template-columns: 1fr !important; 
+                gap: 12px !important;
+            }
+            
+            .news-grid { 
+                grid-template-columns: 1fr !important; 
+                gap: 10px !important;
+            }
+            
+            .nav-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            
+            .values-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            
+            /* Imatges simples */
+            .establishment-image, .offer-image, .event-image { 
+                height: 160px !important;
+                object-fit: contain !important;
+                background: rgba(10, 10, 10, 0.5) !important;
+            }
+            
+            /* Text compacte però llegible */
+            .establishment-name, .offer-title, .event-title, .news-title {
+                font-size: 1.1rem !important;
+                line-height: 1.3 !important;
+            }
+            
+            .establishment-description, .offer-description, .event-description {
+                font-size: 0.9rem !important;
+                line-height: 1.4 !important;
+            }
+            
+            /* Botó simple */
+            .load-more-btn {
+                background: #D4AF37 !important;
+                box-shadow: none !important;
+                padding: 12px 30px !important;
+            }
+            
+            /* Icones simples */
+            .nav-icon, .value-icon {
+                width: 40px !important;
+                height: 40px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="https://eltombdereus.com/" target="_parent" class="logo-container">
+        <img src="https://tomb-redesign-1.preview.emergentagent.com/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" />
+    </a>
+    
+    <div class="container">
+        <div class="hero">
+            <div class="hero-subtitle">Benvingut a</div>
+            <h1>El Tomb de Reus</h1>
+            <p class="hero-description">Descobreix l'essència del comerç local. Una selecció curada de botigues especialitzades, restaurants d'alta qualitat i serveis excepcionals al cor de Reus.</p>
+            <div class="divider"></div>
+        </div>
+        
+        <div class="nav-grid">
+            <a href="https://eltombdereus.com/mapa/" class="nav-card" target="_parent">
+                <i data-feather="map-pin" class="nav-icon"></i>
+                <div>
+                    <h3>Mapa Interactiu</h3>
+                    <p>Navega pel mapa de Reus i descobreix tots els establiments geolocalitzats</p>
+                </div>
+                <div class="nav-arrow">→</div>
+            </a>
+            
+            <a href="https://eltombdereus.com/establiments/" class="nav-card" target="_parent">
+                <i data-feather="shopping-bag" class="nav-icon"></i>
+                <div>
+                    <h3>Establiments</h3>
+                    <p>Explora el nostre directori complet d'associats i comerços locals</p>
+                </div>
+                <div class="nav-arrow">→</div>
+            </a>
+            
+            <a href="https://eltombdereus.com/ofertes/" class="nav-card" target="_parent">
+                <i data-feather="tag" class="nav-icon"></i>
+                <div>
+                    <h3>Promocions Exclusives</h3>
+                    <p>Accedeix a les millors ofertes i descomptes dels nostres associats</p>
+                </div>
+                <div class="nav-arrow">→</div>
+            </a>
+            
+            <a href="https://eltombdereus.com/esdeveniments/" class="nav-card" target="_parent">
+                <i data-feather="calendar" class="nav-icon"></i>
+                <div>
+                    <h3>Esdeveniments</h3>
+                    <p>Participa en campanyes especials i activitats del comerç de Reus</p>
+                </div>
+                <div class="nav-arrow">→</div>
+            </a>
+            
+            <a href="https://eltombdereus.com/noticies/" class="nav-card" target="_parent">
+                <i data-feather="file-text" class="nav-icon"></i>
+                <div>
+                    <h3>Notícies</h3>
+                    <p>Mantingues-te informat sobre l'actualitat del comerç local</p>
+                </div>
+                <div class="nav-arrow">→</div>
+            </a>
+            
+            <a href="https://eltombdereus.com/que-es-el-tomb/" class="nav-card" target="_parent">
+                <i data-feather="info" class="nav-icon"></i>
+                <div>
+                    <h3>Sobre El Tomb</h3>
+                    <p>Coneix la nostra associació i la nostra missió per al comerç de Reus</p>
+                </div>
+                <div class="nav-arrow">→</div>
+            </a>
+        </div>
+        
+        <div class="footer">
+            <p><span class="footer-accent">El Tomb de Reus</span> — Impulsant el comerç local des de 1995</p>
+        </div>
+    </div>
+    
+    <script>
+        // Inicialitzar icones Feather
+        feather.replace();
+    </script>
+</body>
+</html>

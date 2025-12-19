@@ -1,0 +1,468 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
+import { useAuthStore } from '../../src/store/authStore';
+import { promotionsService } from '../../src/services/api';
+
+export default function CreatePromotionScreen() {
+  const router = useRouter();
+  const { token, user } = useAuthStore();
+  
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [tag, setTag] = useState('');
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [validFrom, setValidFrom] = useState(new Date());
+  const [validUntil, setValidUntil] = useState(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); // +30 dies
+  const [showFromPicker, setShowFromPicker] = useState(false);
+  const [showUntilPicker, setShowUntilPicker] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permís necessari', 'Necessitem permís per accedir a les teves fotos');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [3, 4], // Format vertical 3x4
+      quality: 0.7, // Optimització de qualitat
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
+  const convertImageToBase64 = async (uri: string): Promise<string> => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64data = reader.result as string;
+          resolve(base64data);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error converting image to base64:', error);
+      throw error;
+    }
+  };
+
+  const handleSubmit = async () => {
+    // Validacions
+    if (!title.trim()) {
+      Alert.alert('Error', 'El títol és obligatori');
+      return;
+    }
+    if (!description.trim()) {
+      Alert.alert('Error', 'La descripció és obligatòria');
+      return;
+    }
+    if (!imageUri) {
+      Alert.alert('Error', 'Has de seleccionar una imatge');
+      return;
+    }
+    if (validFrom >= validUntil) {
+      Alert.alert('Error', 'La data de finalització ha de ser posterior a la d\'inici');
+      return;
+    }
+    if (!token) {
+      Alert.alert('Error', 'No estàs autenticat');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Convertir imatge a base64
+      const base64Image = await convertImageToBase64(imageUri);
+
+      // Preparar dades
+      const promotionData = {
+        title: title.trim(),
+        description: description.trim(),
+        image_url: base64Image,
+        link_url: linkUrl.trim() || undefined,
+        tag: tag.trim() || undefined,
+        valid_from: validFrom.toISOString(),
+        valid_until: validUntil.toISOString(),
+      };
+
+      // Crear promoció
+      await promotionsService.create(token, promotionData);
+
+      // Missatge segons el rol
+      if (user?.role === 'admin') {
+        Alert.alert(
+          'Èxit',
+          'Promoció creada i aprovada correctament',
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+      } else {
+        Alert.alert(
+          'Èxit',
+          'Promoció enviada per a revisió. Un administrador la revisarà aviat.',
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+      }
+    } catch (error: any) {
+      console.error('Error creating promotion:', error);
+      Alert.alert(
+        'Error',
+        error.response?.data?.detail || 'No s\'ha pogut crear la promoció'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Nova Promoció</Text>
+          <View style={{ width: 24 }} />
+        </View>
+
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          {/* Imatge */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Imatge *</Text>
+            <Text style={styles.hint}>Format recomanat: 3x4 vertical</Text>
+            
+            <TouchableOpacity style={styles.imagePickerContainer} onPress={pickImage}>
+              {imageUri ? (
+                <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="cover" />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <MaterialIcons name="add-photo-alternate" size={60} color={Colors.lightGray} />
+                  <Text style={styles.imagePlaceholderText}>Toca per seleccionar una imatge</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Títol */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Títol *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Títol de la promoció"
+              placeholderTextColor={Colors.lightGray}
+              value={title}
+              onChangeText={setTitle}
+              maxLength={100}
+            />
+          </View>
+
+          {/* Descripció */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Descripció *</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Descriu la promoció..."
+              placeholderTextColor={Colors.lightGray}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              maxLength={500}
+            />
+          </View>
+
+          {/* Enllaç */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Enllaç (opcional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="https://exemple.com"
+              placeholderTextColor={Colors.lightGray}
+              value={linkUrl}
+              onChangeText={setLinkUrl}
+              keyboardType="url"
+              autoCapitalize="none"
+            />
+          </View>
+
+          {/* Marcador */}
+          <View style={styles.section}>
+            <Text style={styles.label}>🏷️ Marcador (opcional)</Text>
+            <Text style={styles.hint}>
+              Exemple: "Nadal2025", "Rebaixes", "EstiuFest". Serveix per filtrar usuaris participants.
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: Nadal2025"
+              placeholderTextColor={Colors.lightGray}
+              value={tag}
+              onChangeText={setTag}
+              maxLength={50}
+              autoCapitalize="none"
+            />
+          </View>
+
+          {/* Data d'inici */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Vàlida des de *</Text>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowFromPicker(true)}
+            >
+              <MaterialIcons name="calendar-today" size={20} color={Colors.primary} />
+              <Text style={styles.dateText}>
+                {validFrom.toLocaleDateString('ca-ES', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </Text>
+            </TouchableOpacity>
+            {showFromPicker && (
+              <DateTimePicker
+                value={validFrom}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowFromPicker(false);
+                  if (selectedDate) {
+                    setValidFrom(selectedDate);
+                  }
+                }}
+                minimumDate={new Date()}
+              />
+            )}
+          </View>
+
+          {/* Data de finalització */}
+          <View style={styles.section}>
+            <Text style={styles.label}>Vàlida fins a *</Text>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowUntilPicker(true)}
+            >
+              <MaterialIcons name="calendar-today" size={20} color={Colors.primary} />
+              <Text style={styles.dateText}>
+                {validUntil.toLocaleDateString('ca-ES', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </Text>
+            </TouchableOpacity>
+            {showUntilPicker && (
+              <DateTimePicker
+                value={validUntil}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowUntilPicker(false);
+                  if (selectedDate) {
+                    setValidUntil(selectedDate);
+                  }
+                }}
+                minimumDate={validFrom}
+              />
+            )}
+          </View>
+
+          {/* Info per usuaris associats */}
+          {user?.role !== 'admin' && (
+            <View style={styles.infoBox}>
+              <MaterialIcons name="info" size={20} color={Colors.accent} />
+              <Text style={styles.infoText}>
+                La teva promoció serà revisada per un administrador abans de ser publicada.
+              </Text>
+            </View>
+          )}
+
+          {/* Botó de crear */}
+          <TouchableOpacity
+            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={Colors.white} />
+            ) : (
+              <>
+                <MaterialIcons name="check" size={24} color={Colors.white} />
+                <Text style={styles.submitButtonText}>Crear Promoció</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  header: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+  },
+  backButton: {
+    padding: Spacing.xs,
+  },
+  headerTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    color: Colors.white,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: Spacing.lg,
+    paddingBottom: 100,
+  },
+  section: {
+    marginBottom: Spacing.lg,
+  },
+  label: {
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: Spacing.xs,
+  },
+  hint: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.sm,
+  },
+  imagePickerContainer: {
+    width: '100%',
+    aspectRatio: 3 / 4,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.lightGray,
+    borderStyle: 'dashed',
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  imagePlaceholderText: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: Spacing.md,
+  },
+  input: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    fontSize: FontSizes.md,
+    color: Colors.text,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+  },
+  textArea: {
+    height: 120,
+    textAlignVertical: 'top',
+  },
+  dateButton: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+  },
+  dateText: {
+    fontSize: FontSizes.md,
+    color: Colors.text,
+    marginLeft: Spacing.sm,
+  },
+  infoBox: {
+    backgroundColor: Colors.accent + '20',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  infoText: {
+    fontSize: FontSizes.sm,
+    color: Colors.text,
+    marginLeft: Spacing.sm,
+    flex: 1,
+  },
+  submitButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  submitButtonText: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.white,
+    marginLeft: Spacing.sm,
+  },
+});

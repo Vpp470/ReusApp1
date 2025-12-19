@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ofertes - El Tomb de Reus</title>
+    <link rel="icon" type="image/png" href="https://eltombdereus.com/wp-content/uploads/2024/07/cropped-logo-tomb.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        .floating-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .menu-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-logo img { height: 50px; }
+        
+        .menu-nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+        
+        .menu-nav a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        
+        .menu-nav a:hover { color: var(--primary-color); }
+        
+        .menu-nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+        }
+        
+        .page-content {
+            margin-top: 90px;
+            padding: 3rem 2rem;
+        }
+        
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .offers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .offer-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .offer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .offer-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 1;
+        }
+        
+        .offer-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #E63946 0%, #457B9D 100%);
+        }
+        
+        .offer-info {
+            padding: 2rem;
+        }
+        
+        .offer-establishment {
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .offer-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        
+        .offer-description {
+            font-size: 1rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .offer-validity {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-style: italic;
+        }
+        
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--text-light);
+            padding: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-nav { display: none; }
+            .page-title { font-size: 2rem; }
+            .offers-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="floating-menu">
+        <div class="menu-content">
+            <div class="menu-logo">
+                <a href="home.html">
+                    <img src="https://eltombdereus.com/wp-content/uploads/2024/07/logo-tomb.png" alt="El Tomb de Reus">
+                </a>
+            </div>
+            <div class="menu-nav">
+                <a href="home.html">Inici</a>
+                <a href="mapa.html">Mapa</a>
+                <a href="sobre.html">Què és El Tomb?</a>
+                <a href="establiments.html">Establiments</a>
+                <a href="ofertes.html" class="active">Ofertes</a>
+                <a href="noticies.html">Notícies</a>
+                <a href="esdeveniments.html">Esdeveniments</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <h1 class="page-title">Ofertes i Promocions</h1>
+        <p class="page-subtitle">Aprofita les millors ofertes dels nostres comerços</p>
+        
+        <div id="offers-grid" class="offers-grid">
+            <div class="loading">Carregant ofertes...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://reusapp-backend-production.up.railway.app/api';
+
+        document.addEventListener('DOMContentLoaded', loadOffers);
+
+        async function loadOffers() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/offers`);
+                let offers = await response.json();
+                
+                // Filter active offers
+                const now = new Date();
+                offers = offers.filter(offer => {
+                    const validFrom = new Date(offer.valid_from);
+                    const validUntil = new Date(offer.valid_until);
+                    return now >= validFrom && now <= validUntil;
+                });
+                
+                renderOffers(offers);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('offers-grid').innerHTML = 
+                    '<div class="loading">Error carregant ofertes</div>';
+            }
+        }
+
+        function renderOffers(offers) {
+            const grid = document.getElementById('offers-grid');
+            
+            if (offers.length === 0) {
+                grid.innerHTML = '<div class="loading">No hi ha ofertes actives actualment</div>';
+                return;
+            }
+            
+            grid.innerHTML = offers.map(offer => {
+                const validUntil = new Date(offer.valid_until);
+                const formattedDate = validUntil.toLocaleDateString('ca-ES', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                
+                return `
+                    <div class="offer-card">
+                        ${offer.discount_percentage ? `<div class="offer-badge">-${offer.discount_percentage}%</div>` : ''}
+                        ${offer.image_url ? `<img src="${offer.image_url}" class="offer-image" alt="${offer.title}" />` : '<div class="offer-image"></div>'}
+                        <div class="offer-info">
+                            ${offer.establishment_name ? `<div class="offer-establishment">${offer.establishment_name}</div>` : ''}
+                            <div class="offer-title">${offer.title}</div>
+                            <div class="offer-description">${offer.description || ''}</div>
+                            <div class="offer-validity">Vàlid fins el ${formattedDate}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

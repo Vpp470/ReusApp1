@@ -1,0 +1,758 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Pressable,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  Modal,
+  Image,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
+import { useAuthStore } from '../../src/store/authStore';
+import { promotionsService } from '../../src/services/api';
+import type { Promotion } from '../../src/types';
+
+export default function AdminPromotions() {
+  const router = useRouter();
+  const { token, user } = useAuthStore();
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<Promotion | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  
+  // Modal rebuig
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
+  const [rejectingPromo, setRejectingPromo] = useState<Promotion | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  
+  // Date pickers
+  const [showFromPicker, setShowFromPicker] = useState(false);
+  const [showUntilPicker, setShowUntilPicker] = useState(false);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    image_url: '',
+    link_url: '',
+    valid_from: new Date(),
+    valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  });
+
+  useEffect(() => {
+    loadPromotions();
+  }, []);
+
+  const loadPromotions = async () => {
+    try {
+      setLoading(true);
+      const data = await promotionsService.getAll(token!);
+      setPromotions(data);
+    } catch (error) {
+      Alert.alert('Error', 'No s\'han pogut carregar les promocions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = () => {
+    setEditingItem(null);
+    setFormData({
+      title: '',
+      description: '',
+      image_url: '',
+      link_url: '',
+      valid_from: new Date(),
+      valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+    setModalVisible(true);
+  };
+
+  const handleEdit = (item: Promotion) => {
+    setEditingItem(item);
+    setFormData({
+      title: item.title,
+      description: item.description,
+      image_url: item.image_url,
+      link_url: item.link_url || '',
+      valid_from: new Date(item.valid_from),
+      valid_until: new Date(item.valid_until),
+    });
+    setModalVisible(true);
+  };
+
+  const handlePickImage = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (permissionResult.granted === false) {
+        Alert.alert('Permís requerit', 'Necessites donar permís per accedir a les imatges');
+        return;
+      }
+
+      // Obrir selector - SIN aspect ni edició per no retallar res
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false, // NO editar = imatge completa
+        quality: 0.6, // Qualitat mitjana per equilibrar mida/qualitat
+        base64: true,
+        exif: false, // No dades EXIF per reduir mida
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        setUploadingImage(true);
+        const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+        setFormData({ ...formData, image_url: base64Image });
+        
+        // Log de la mida per debug
+        const sizeKB = (result.assets[0].base64.length * 0.75) / 1024;
+        console.log(`Imatge promoció carregada: ${sizeKB.toFixed(0)}KB`);
+        
+        setUploadingImage(false);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'No s\'ha pogut seleccionar la imatge');
+      setUploadingImage(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formData.title || !formData.description || !formData.image_url) {
+      Alert.alert('Error', 'Títol, descripció i imatge són obligatoris');
+      return;
+    }
+
+    try {
+      const data = {
+        title: formData.title,
+        description: formData.description,
+        image_url: formData.image_url,
+        link_url: formData.link_url,
+        valid_from: formData.valid_from.toISOString(),
+        valid_until: formData.valid_until.toISOString(),
+      };
+
+      if (editingItem) {
+        await promotionsService.update(token!, editingItem._id, data);
+        Alert.alert('Èxit', 'Promoció actualitzada correctament');
+      } else {
+        await promotionsService.create(token!, data);
+        Alert.alert('Èxit', 'Promoció creada correctament');
+      }
+      
+      setModalVisible(false);
+      loadPromotions();
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'No s\'ha pogut guardar la promoció');
+    }
+  };
+
+  const handleDelete = async (item: Promotion) => {
+    try {
+      console.log('Deleting promotion:', item._id);
+      await promotionsService.delete(token!, item._id);
+      console.log('Promotion deleted successfully');
+      loadPromotions();
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      console.error('Error response:', error.response?.data);
+    }
+  };
+
+  const handleApprove = async (item: Promotion) => {
+    try {
+      await promotionsService.approve(token!, item._id);
+      Alert.alert('Èxit', 'Promoció aprovada correctament');
+      loadPromotions();
+    } catch (error) {
+      Alert.alert('Error', 'No s\'ha pogut aprovar la promoció');
+    }
+  };
+
+  const handleRejectStart = (item: Promotion) => {
+    setRejectingPromo(item);
+    setRejectionReason('');
+    setRejectModalVisible(true);
+  };
+
+  const handleRejectConfirm = async () => {
+    if (!rejectionReason.trim()) {
+      Alert.alert('Error', 'Has d\'especificar un motiu de rebuig');
+      return;
+    }
+
+    try {
+      await promotionsService.reject(token!, rejectingPromo!._id, rejectionReason);
+      Alert.alert('Èxit', 'Promoció rebutjada correctament');
+      setRejectModalVisible(false);
+      loadPromotions();
+    } catch (error) {
+      Alert.alert('Error', 'No s\'ha pogut rebutjar la promoció');
+    }
+  };
+
+  const filteredPromotions = promotions.filter(p => 
+    filter === 'all' || p.status === filter
+  );
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved': return Colors.success;
+      case 'pending': return Colors.accent;
+      case 'rejected': return Colors.error;
+      default: return Colors.gray;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'approved': return 'Aprovada';
+      case 'pending': return 'Pendent';
+      case 'rejected': return 'Rebutjada';
+      default: return status;
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={[styles.container, styles.centered]}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Gestió de Promocions</Text>
+        <TouchableOpacity onPress={handleCreate} style={styles.addButton}>
+          <MaterialIcons name="add" size={24} color={Colors.white} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Filtres */}
+      <View style={styles.filterContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {[
+            { key: 'all', label: 'Totes', count: promotions.length },
+            { key: 'pending', label: 'Pendents', count: promotions.filter(p => p.status === 'pending').length },
+            { key: 'approved', label: 'Aprovades', count: promotions.filter(p => p.status === 'approved').length },
+            { key: 'rejected', label: 'Rebutjades', count: promotions.filter(p => p.status === 'rejected').length },
+          ].map(f => (
+            <TouchableOpacity
+              key={f.key}
+              style={[styles.filterChip, filter === f.key && styles.filterChipActive]}
+              onPress={() => setFilter(f.key as any)}
+            >
+              <Text style={[styles.filterText, filter === f.key && styles.filterTextActive]}>
+                {f.label} ({f.count})
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 100 }}>
+        {filteredPromotions.length === 0 ? (
+          <View style={styles.emptyState}>
+            <MaterialIcons name="inbox" size={80} color={Colors.lightGray} />
+            <Text style={styles.emptyText}>No hi ha promocions</Text>
+          </View>
+        ) : (
+          filteredPromotions.map((item) => (
+            <View key={item._id} style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Image source={{ uri: item.image_url }} style={styles.thumbnail} />
+                <View style={styles.cardInfo}>
+                  <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
+                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
+                    <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+                      {getStatusText(item.status)}
+                    </Text>
+                  </View>
+                  <Text style={styles.dateText}>
+                    {new Date(item.valid_from).toLocaleDateString('ca-ES')} - {new Date(item.valid_until).toLocaleDateString('ca-ES')}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.cardActions}>
+                {item.status === 'pending' && user?.role === 'admin' && (
+                  <>
+                    <TouchableOpacity style={styles.approveButton} onPress={() => handleApprove(item)}>
+                      <MaterialIcons name="check-circle" size={20} color={Colors.success} />
+                      <Text style={styles.approveText}>Aprovar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.rejectButton} onPress={() => handleRejectStart(item)}>
+                      <MaterialIcons name="cancel" size={20} color={Colors.error} />
+                      <Text style={styles.rejectText}>Rebutjar</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+                <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(item)}>
+                  <MaterialIcons name="edit" size={20} color={Colors.primary} />
+                </TouchableOpacity>
+                <Pressable 
+                  style={({ pressed }) => [
+                    styles.deleteButton,
+                    pressed && { opacity: 0.7 }
+                  ]} 
+                  onPress={() => {
+                    console.log('Delete button pressed for:', item.title);
+                    handleDelete(item);
+                  }}
+                >
+                  <MaterialIcons name="delete" size={20} color={Colors.error} />
+                </Pressable>
+              </View>
+            </View>
+          ))
+        )}
+      </ScrollView>
+
+      {/* Modal Crear/Editar */}
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {editingItem ? 'Editar Promoció' : 'Nova Promoció'}
+              </Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <MaterialIcons name="close" size={24} color={Colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.label}>Títol *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.title}
+                onChangeText={(text) => setFormData({ ...formData, title: text })}
+                placeholder="Títol de la promoció"
+              />
+
+              <Text style={styles.label}>Imatge (3x4) *</Text>
+              {formData.image_url ? (
+                <View style={styles.imagePreviewContainer}>
+                  <Image source={{ uri: formData.image_url }} style={styles.imagePreview} resizeMode="cover" />
+                  <TouchableOpacity style={styles.changeImageButton} onPress={handlePickImage}>
+                    <Text style={styles.changeImageText}>Canviar Imatge</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.uploadButton} onPress={handlePickImage} disabled={uploadingImage}>
+                  {uploadingImage ? (
+                    <ActivityIndicator color={Colors.primary} />
+                  ) : (
+                    <>
+                      <MaterialIcons name="add-photo-alternate" size={48} color={Colors.gray} />
+                      <Text style={styles.uploadText}>Seleccionar Imatge</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              )}
+
+              <Text style={styles.label}>Descripció *</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={formData.description}
+                onChangeText={(text) => setFormData({ ...formData, description: text })}
+                placeholder="Descripció de la promoció"
+                multiline
+                numberOfLines={4}
+              />
+
+              <Text style={styles.label}>Enllaç (opcional)</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.link_url}
+                onChangeText={(text) => setFormData({ ...formData, link_url: text })}
+                placeholder="https://..."
+                keyboardType="url"
+                autoCapitalize="none"
+              />
+
+              <Text style={styles.label}>Vàlid des de</Text>
+              <TouchableOpacity style={styles.dateInput} onPress={() => setShowFromPicker(true)}>
+                <Text>{formData.valid_from.toLocaleDateString('ca-ES')}</Text>
+                <MaterialIcons name="calendar-today" size={20} color={Colors.gray} />
+              </TouchableOpacity>
+              {showFromPicker && (
+                <DateTimePicker
+                  value={formData.valid_from}
+                  mode="date"
+                  onChange={(e, date) => {
+                    setShowFromPicker(false);
+                    if (date) setFormData({ ...formData, valid_from: date });
+                  }}
+                />
+              )}
+
+              <Text style={styles.label}>Vàlid fins</Text>
+              <TouchableOpacity style={styles.dateInput} onPress={() => setShowUntilPicker(true)}>
+                <Text>{formData.valid_until.toLocaleDateString('ca-ES')}</Text>
+                <MaterialIcons name="calendar-today" size={20} color={Colors.gray} />
+              </TouchableOpacity>
+              {showUntilPicker && (
+                <DateTimePicker
+                  value={formData.valid_until}
+                  mode="date"
+                  minimumDate={formData.valid_from}
+                  onChange={(e, date) => {
+                    setShowUntilPicker(false);
+                    if (date) setFormData({ ...formData, valid_until: date });
+                  }}
+                />
+              )}
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel·lar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Text style={styles.saveButtonText}>Guardar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Rebuig */}
+      <Modal visible={rejectModalVisible} animationType="fade" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={[styles.modalContent, styles.smallModal]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Motiu del Rebuig</Text>
+              <TouchableOpacity onPress={() => setRejectModalVisible(false)}>
+                <MaterialIcons name="close" size={24} color={Colors.text} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.modalBody}>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={rejectionReason}
+                onChangeText={setRejectionReason}
+                placeholder="Explica per què es rebutja aquesta promoció..."
+                multiline
+                numberOfLines={4}
+              />
+            </View>
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setRejectModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel·lar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.saveButton, styles.rejectButtonModal]} onPress={handleRejectConfirm}>
+                <Text style={styles.saveButtonText}>Rebutjar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+  },
+  backButton: {
+    padding: Spacing.sm,
+  },
+  headerTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    color: Colors.white,
+  },
+  addButton: {
+    padding: Spacing.sm,
+  },
+  filterContainer: {
+    backgroundColor: Colors.white,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+  },
+  filterChip: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.background,
+    marginRight: Spacing.sm,
+  },
+  filterChipActive: {
+    backgroundColor: Colors.primary,
+  },
+  filterText: {
+    fontSize: FontSizes.sm,
+    color: Colors.text,
+  },
+  filterTextActive: {
+    color: Colors.white,
+    fontWeight: 'bold',
+  },
+  content: {
+    flex: 1,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl * 2,
+  },
+  emptyText: {
+    fontSize: FontSizes.lg,
+    color: Colors.textSecondary,
+    marginTop: Spacing.lg,
+  },
+  card: {
+    backgroundColor: Colors.white,
+    margin: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    marginBottom: Spacing.md,
+  },
+  thumbnail: {
+    width: 80,
+    height: 106,
+    borderRadius: BorderRadius.md,
+    marginRight: Spacing.md,
+  },
+  cardInfo: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: Spacing.xs,
+  },
+  statusBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.xs,
+  },
+  statusText: {
+    fontSize: FontSizes.xs,
+    fontWeight: 'bold',
+  },
+  dateText: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  approveButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.success + '20',
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  approveText: {
+    color: Colors.success,
+    fontWeight: '600',
+    marginLeft: Spacing.xs,
+  },
+  rejectButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.error + '20',
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  rejectText: {
+    color: Colors.error,
+    fontWeight: '600',
+    marginLeft: Spacing.xs,
+  },
+  editButton: {
+    backgroundColor: Colors.primary + '20',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  deleteButton: {
+    backgroundColor: Colors.error + '20',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    maxHeight: '90%',
+  },
+  smallModal: {
+    maxHeight: '50%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+  },
+  modalTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  modalBody: {
+    padding: Spacing.lg,
+  },
+  label: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.text,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.xs,
+  },
+  input: {
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    fontSize: FontSizes.md,
+    color: Colors.text,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  dateInput: {
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  uploadButton: {
+    backgroundColor: Colors.background,
+    borderWidth: 2,
+    borderColor: Colors.lightGray,
+    borderStyle: 'dashed',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.xl,
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  uploadText: {
+    fontSize: FontSizes.md,
+    color: Colors.text,
+    marginTop: Spacing.sm,
+  },
+  imagePreviewContainer: {
+    marginBottom: Spacing.md,
+  },
+  imagePreview: {
+    width: '100%',
+    aspectRatio: 3 / 4,
+    borderRadius: BorderRadius.md,
+  },
+  changeImageButton: {
+    backgroundColor: Colors.primary,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+  },
+  changeImageText: {
+    color: Colors.white,
+    fontWeight: '600',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    padding: Spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Colors.lightGray,
+    gap: Spacing.md,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+  },
+  cancelButtonText: {
+    color: Colors.text,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  saveButton: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    backgroundColor: Colors.primary,
+  },
+  rejectButtonModal: {
+    backgroundColor: Colors.error,
+  },
+  saveButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+  },
+});

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Notícies - El Tomb de Reus</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding-bottom: 2rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 8rem 2rem 2rem; }
+        .page-title { font-size: 3rem; font-weight: 800; text-align: center; margin-bottom: 1rem; color: white; }
+        .page-subtitle { font-size: 1.3rem; color: rgba(255,255,255,0.9); text-align: center; margin-bottom: 3rem; }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; }
+        .news-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s; cursor: pointer; }
+        .news-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+        .news-info { padding: 1.5rem; }
+        .news-title { font-size: 1.2rem; font-weight: 700; color: #1D3557; margin-bottom: 0.5rem; }
+        .news-source { font-size: 0.85rem; color: #E63946; font-weight: 600; margin-bottom: 0.75rem; }
+        .news-date { font-size: 0.8rem; color: #999; }
+        .loading { text-align: center; font-size: 1.2rem; color: white; padding: 3rem; }
+        @media (max-width: 768px) { 
+            html, body { 
+                will-change: auto !important; 
+                -webkit-overflow-scrolling: touch !important; 
+            }
+            .page-title { font-size: 2rem; } .news-grid { grid-template-columns: 1fr; } .container { padding: 6rem 1rem 2rem; } }
+    </style>
+</head>
+<body>
+    <a href="https://eltombdereus.com/" target="_parent" style="position: fixed; top: 20px; left: 20px; z-index: 1001;">
+        <img src="https://reus-commerce-1.emergent.host/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" style="width: 120px; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer;" />
+    </a>
+    <div class="container">
+        <h1 class="page-title">Notícies</h1>
+        <p class="page-subtitle">Mantíngue-te informat sobre el comerç local de Reus</p>
+        <div id="news-grid" class="news-grid"><div class="loading">Carregant notícies...</div></div>
+    </div>
+    <script>
+        const API_BASE_URL = 'https://reus-commerce-1.emergent.host/api';
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ca-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        
+        function loadNews() {
+            fetch(API_BASE_URL + '/news?limit=50')
+                .then(r => r.json())
+                .then(news => {
+                    const grid = document.getElementById('news-grid');
+                    if (news.length === 0) {
+                        grid.innerHTML = '<div class="loading">No hi ha notícies disponibles</div>';
+                        return;
+                    }
+                    grid.innerHTML = news.map(item => {
+                        let card = '<div class="news-card" onclick="window.open(\'' + item.url + '\', \'_blank\')"><div class="news-info">';
+                        card += '<div class="news-source">' + item.source + '</div>';
+                        card += '<div class="news-title">' + item.title + '</div>';
+                        if (item.publish_date) card += '<div class="news-date">📅 ' + formatDate(item.publish_date) + '</div>';
+                        card += '</div></div>';
+                        return card;
+                    }).join('');
+                })
+                .catch(err => {
+                    console.error('Error carregant notícies:', err);
+                    document.getElementById('news-grid').innerHTML = '<div class="loading">Error carregant notícies</div>';
+                });
+        }
+        
+        loadNews();
+    </script>
+</body>
+</html>

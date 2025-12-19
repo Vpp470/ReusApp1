@@ -1,0 +1,78 @@
+{
+  "expo": {
+    "name": "ReusApp",
+    "slug": "reusapp",
+    "version": "1.0.1",
+    "orientation": "portrait",
+    "icon": "./assets/images/logo-color.jpg",
+    "scheme": "reusapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/logo-color.jpg",
+      "resizeMode": "contain",
+      "backgroundColor": "#e87308"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "cat.reus.reusapp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo-color.jpg",
+        "backgroundColor": "#e87308"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "cat.reus.reusapp",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/logo-color.jpg",
+      "name": "El Tomb de Reus",
+      "shortName": "ReusApp",
+      "lang": "ca",
+      "scope": "/",
+      "startUrl": "/",
+      "backgroundColor": "#e87308",
+      "themeColor": "#e87308",
+      "display": "standalone",
+      "orientation": "portrait",
+      "preferRelatedApplications": false,
+      "description": "Aplicació oficial d'El Tomb de Reus - Descobreix establiments, ofertes, esdeveniments i més!",
+      "dir": "auto"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#D84315"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Permet a El Tomb de Reus usar la teva ubicació per mostrar-te establiments propers."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permet a El Tomb de Reus accedir a la càmera per escanejar codis QR de tickets."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

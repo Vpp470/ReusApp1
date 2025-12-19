@@ -1,0 +1,728 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Pressable,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import { CameraView, Camera } from 'expo-camera';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useAuthStore } from '../../src/store/authStore';
+import { ticketsService } from '../../src/services/api';
+import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
+import i18n from '../../src/i18n';
+
+export default function ScannerScreen() {
+  const { user } = useAuthStore();
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [scanned, setScanned] = useState(false);
+  const [manualCode, setManualCode] = useState('');
+  const [scanning, setScanning] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [showManualInput, setShowManualInput] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      requestCameraPermission();
+    }
+  }, []);
+
+  const requestCameraPermission = async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    setHasPermission(status === 'granted');
+  };
+
+  const handleBarCodeScanned = async ({ data }: { type: string; data: string }) => {
+    if (scanned) return;
+    
+    setScanned(true);
+    setScanning(true);
+
+    try {
+      const response = await ticketsService.scan({
+        user_id: user?.id || '',
+        ticket_code: data,
+      });
+
+      Alert.alert(
+        i18n.t('scanner.success'),
+        response.message || i18n.t('scanner.successMessage'),
+        [
+          {
+            text: i18n.t('common.ok'),
+            onPress: () => {
+              setScanned(false);
+              setScanning(false);
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
+      Alert.alert(
+        i18n.t('scanner.error'),
+        error.response?.data?.detail || i18n.t('scanner.errorMessage'),
+        [
+          {
+            text: i18n.t('common.retry'),
+            onPress: () => {
+              setScanned(false);
+              setScanning(false);
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    if (!manualCode.trim()) {
+      Alert.alert(i18n.t('scanner.error'), i18n.t('scanner.enterCode'));
+      return;
+    }
+
+    setScanning(true);
+
+    try {
+      const response = await ticketsService.scan({
+        user_id: user?.id || '',
+        ticket_code: manualCode.trim(),
+      });
+
+      Alert.alert(
+        i18n.t('scanner.success'),
+        response.message || i18n.t('scanner.successMessage'),
+        [
+          {
+            text: i18n.t('common.ok'),
+            onPress: () => {
+              setManualCode('');
+              setScanning(false);
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
+      Alert.alert(
+        i18n.t('scanner.error'),
+        error.response?.data?.detail || i18n.t('scanner.errorMessage'),
+        [
+          {
+            text: i18n.t('common.retry'),
+            onPress: () => {
+              setScanning(false);
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  // Vista inicial (información y opciones)
+  if (!showCamera && !showManualInput) {
+    return (
+      <View style={styles.containerWhite}>
+        <View style={styles.header}>
+          <MaterialIcons name="qr-code-scanner" size={80} color={Colors.primary} />
+          <Text style={styles.title}>{i18n.t('scanner.title')}</Text>
+          <Text style={styles.subtitle}>
+            {Platform.OS === 'web' 
+              ? i18n.t('scanner.webSubtitle')
+              : 'Escaneja el codi QR del teu tiquet o introdueix-lo manualment'}
+          </Text>
+        </View>
+
+        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+          <View style={styles.infoCard}>
+            <MaterialIcons name="info" size={24} color={Colors.info} />
+            <Text style={styles.infoText}>{i18n.t('scanner.infoMessage')}</Text>
+          </View>
+
+          {/* Botons d'acció */}
+          <View style={styles.actionButtons}>
+            {Platform.OS !== 'web' && hasPermission && (
+              <Pressable
+                style={styles.actionButton}
+                onPress={() => setShowCamera(true)}
+              >
+                <MaterialIcons name="qr-code-scanner" size={32} color={Colors.white} />
+                <Text style={styles.actionButtonText}>Escanejar amb Càmera</Text>
+              </Pressable>
+            )}
+            
+            <Pressable
+              style={[styles.actionButton, styles.actionButtonSecondary]}
+              onPress={() => setShowManualInput(true)}
+            >
+              <MaterialIcons name="keyboard" size={32} color={Colors.primary} />
+              <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary]}>
+                Introduir Codi Manual
+              </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.exampleSection}>
+            <Text style={styles.exampleTitle}>{i18n.t('scanner.whereToFind')}</Text>
+            <View style={styles.exampleItem}>
+              <MaterialIcons name="receipt" size={20} color={Colors.primary} />
+              <Text style={styles.exampleText}>{i18n.t('scanner.findLocations.receipt')}</Text>
+            </View>
+            <View style={styles.exampleItem}>
+              <MaterialIcons name="qr-code-2" size={20} color={Colors.primary} />
+              <Text style={styles.exampleText}>{i18n.t('scanner.findLocations.qr')}</Text>
+            </View>
+            <View style={styles.exampleItem}>
+              <MaterialIcons name="email" size={20} color={Colors.primary} />
+              <Text style={styles.exampleText}>{i18n.t('scanner.findLocations.email')}</Text>
+            </View>
+          </View>
+
+          <View style={styles.benefitsSection}>
+            <Text style={styles.benefitsTitle}>{i18n.t('scanner.benefits.title')}</Text>
+            <View style={styles.benefitItem}>
+              <MaterialIcons name="card-giftcard" size={20} color={Colors.success} />
+              <Text style={styles.benefitText}>{i18n.t('scanner.benefits.raffles')}</Text>
+            </View>
+            <View style={styles.benefitItem}>
+              <MaterialIcons name="star" size={20} color={Colors.success} />
+              <Text style={styles.benefitText}>{i18n.t('scanner.benefits.points')}</Text>
+            </View>
+            <View style={styles.benefitItem}>
+              <MaterialIcons name="local-offer" size={20} color={Colors.success} />
+              <Text style={styles.benefitText}>{i18n.t('scanner.benefits.offers')}</Text>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // Vista d'entrada manual de codi
+  if (showManualInput) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable 
+            onPress={() => setShowManualInput(false)}
+            style={styles.backButton}
+          >
+            <MaterialIcons name="arrow-back" size={24} color={Colors.primary} />
+          </Pressable>
+          <MaterialIcons name="keyboard" size={60} color={Colors.primary} />
+          <Text style={styles.title}>{i18n.t('scanner.manualCode')}</Text>
+          <Text style={styles.subtitle}>{i18n.t('scanner.manualSubtitle')}</Text>
+        </View>
+
+        <View style={styles.content}>
+          <View style={styles.manualSection}>
+            <Text style={styles.sectionTitle}>Codi del Tiquet</Text>
+
+            <View style={styles.inputContainer}>
+              <MaterialIcons name="confirmation-number" size={24} color={Colors.gray} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder={i18n.t('scanner.inputPlaceholder')}
+                placeholderTextColor={Colors.gray}
+                value={manualCode}
+                onChangeText={setManualCode}
+                autoCapitalize="characters"
+                autoCorrect={false}
+              />
+              {manualCode.length > 0 && (
+                <Pressable
+                  onPress={() => setManualCode('')}
+                  style={styles.clearButton}
+                >
+                  <MaterialIcons name="close" size={20} color={Colors.gray} />
+                </Pressable>
+              )}
+            </View>
+
+            <Pressable
+              style={[styles.submitButton, (!manualCode || scanning) && styles.submitButtonDisabled]}
+              onPress={handleManualSubmit}
+              disabled={!manualCode || scanning}
+            >
+              {scanning ? (
+                <ActivityIndicator color={Colors.white} />
+              ) : (
+                <>
+                  <MaterialIcons name="check-circle" size={24} color={Colors.white} />
+                  <Text style={styles.submitButtonText}>{i18n.t('scanner.submit')}</Text>
+                </>
+              )}
+            </Pressable>
+          </View>
+
+          <View style={styles.exampleSection}>
+            <Text style={styles.exampleTitle}>{i18n.t('scanner.whereToFind')}</Text>
+            <View style={styles.exampleItem}>
+              <MaterialIcons name="receipt" size={20} color={Colors.primary} />
+              <Text style={styles.exampleText}>{i18n.t('scanner.findLocations.receipt')}</Text>
+            </View>
+            <View style={styles.exampleItem}>
+              <MaterialIcons name="qr-code-2" size={20} color={Colors.primary} />
+              <Text style={styles.exampleText}>{i18n.t('scanner.findLocations.qr')}</Text>
+            </View>
+            <View style={styles.exampleItem}>
+              <MaterialIcons name="email" size={20} color={Colors.primary} />
+              <Text style={styles.exampleText}>{i18n.t('scanner.findLocations.email')}</Text>
+            </View>
+          </View>
+
+          <View style={styles.benefitsSection}>
+            <Text style={styles.benefitsTitle}>{i18n.t('scanner.benefits.title')}</Text>
+            <View style={styles.benefitItem}>
+              <MaterialIcons name="card-giftcard" size={20} color={Colors.success} />
+              <Text style={styles.benefitText}>{i18n.t('scanner.benefits.raffles')}</Text>
+            </View>
+            <View style={styles.benefitItem}>
+              <MaterialIcons name="star" size={20} color={Colors.success} />
+              <Text style={styles.benefitText}>{i18n.t('scanner.benefits.points')}</Text>
+            </View>
+            <View style={styles.benefitItem}>
+              <MaterialIcons name="local-offer" size={20} color={Colors.success} />
+              <Text style={styles.benefitText}>{i18n.t('scanner.benefits.offers')}</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // Vista para móvil con cámara
+  if (hasPermission === null) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={styles.loadingText}>Sol·licitant permisos de càmera...</Text>
+      </View>
+    );
+  }
+
+  if (hasPermission === false) {
+    return (
+      <View style={styles.container}>
+        <MaterialIcons name="camera-alt" size={80} color={Colors.lightGray} />
+        <Text style={styles.permissionText}>
+          No s'ha concedit accés a la càmera
+        </Text>
+        <Pressable
+          style={styles.manualButton}
+          onPress={() => setShowCamera(false)}
+        >
+          <Text style={styles.manualButtonText}>Introduir codi manualment</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <CameraView
+        style={StyleSheet.absoluteFillObject}
+        facing="back"
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        barcodeScannerSettings={{
+          barcodeTypes: ['qr'],
+        }}
+      />
+
+      {/* Overlay fosc per tot menys l'àrea d'escaneig */}
+      <View style={styles.overlayContainer}>
+        {/* Àrea d'escaneig a la part superior */}
+        <View style={styles.topScanSection}>
+          <View style={styles.scanAreaWrapper}>
+            <View style={styles.scanArea}>
+              <View style={[styles.corner, styles.topLeft]} />
+              <View style={[styles.corner, styles.topRight]} />
+              <View style={[styles.corner, styles.bottomLeft]} />
+              <View style={[styles.corner, styles.bottomRight]} />
+            </View>
+          </View>
+          
+          {/* Text instruccions just sota el requadre */}
+          <View style={styles.instructionContainer}>
+            <Text style={styles.instructionText}>
+              Apunta la càmera al codi QR del tiquet
+            </Text>
+          </View>
+        </View>
+
+        {/* Botons just després del requadre */}
+        <View style={styles.buttonsContainer}>
+          {scanning && (
+            <View style={styles.processingContainer}>
+              <ActivityIndicator size="large" color={Colors.white} />
+              <Text style={styles.processingText}>Processant ticket...</Text>
+            </View>
+          )}
+
+          {scanned && !scanning && (
+            <Pressable
+              style={styles.scanButton}
+              onPress={() => setScanned(false)}
+            >
+              <MaterialIcons name="refresh" size={24} color={Colors.white} />
+              <Text style={styles.scanButtonText}>Escanejar Altre</Text>
+            </Pressable>
+          )}
+          
+          <Pressable
+            style={[styles.scanButton, styles.secondaryButton]}
+            onPress={() => setShowCamera(false)}
+          >
+            <MaterialIcons name="keyboard" size={24} color={Colors.primary} />
+            <Text style={[styles.scanButtonText, styles.secondaryButtonText]}>
+              Codi Manual
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Espai inferior amb overlay fosc */}
+        <View style={styles.bottomOverlay} />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.black,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  containerWhite: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    paddingBottom: 120, // Espai per la barra de navegació
+  },
+  header: {
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl,
+    paddingHorizontal: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+    width: '100%',
+    position: 'relative',
+  },
+  backButton: {
+    position: 'absolute',
+    left: Spacing.md,
+    top: Spacing.xl,
+    padding: Spacing.sm,
+  },
+  actionButtons: {
+    width: '100%',
+    paddingHorizontal: Spacing.lg,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.lg,
+    gap: Spacing.md,
+  },
+  actionButton: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.md,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  actionButtonSecondary: {
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  actionButtonText: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc
+  },
+  actionButtonTextSecondary: {
+    color: Colors.primary,
+  },
+  title: {
+    fontSize: FontSizes.xxl,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  subtitle: {
+    fontSize: FontSizes.sm,
+    color: Colors.darkGray, // Text gris per fons blanc
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  loadingText: {
+    fontSize: FontSizes.md,
+    color: Colors.textDark, // Text fosc per fons blanc
+    marginTop: Spacing.md,
+  },
+  permissionText: {
+    fontSize: FontSizes.lg,
+    color: Colors.textDark, // Text fosc per fons blanc
+    textAlign: 'center',
+    marginTop: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+  },
+  manualButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginTop: Spacing.xl,
+  },
+  manualButtonText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+  },
+  cameraContainer: {
+    flex: 1,
+    width: '100%',
+  },
+  overlayContainer: {
+    flex: 1,
+  },
+  topScanSection: {
+    paddingTop: 60,
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  scanAreaWrapper: {
+    padding: Spacing.lg,
+  },
+  scanArea: {
+    width: 250,
+    height: 250,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  corner: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderColor: Colors.primary,
+  },
+  topLeft: {
+    top: -2,
+    left: -2,
+    borderTopWidth: 4,
+    borderLeftWidth: 4,
+  },
+  topRight: {
+    top: -2,
+    right: -2,
+    borderTopWidth: 4,
+    borderRightWidth: 4,
+  },
+  bottomLeft: {
+    bottom: -2,
+    left: -2,
+    borderBottomWidth: 4,
+    borderLeftWidth: 4,
+  },
+  bottomRight: {
+    bottom: -2,
+    right: -2,
+    borderBottomWidth: 4,
+    borderRightWidth: 4,
+  },
+  instructionContainer: {
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.lg,
+  },
+  buttonsContainer: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  bottomOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  instructionText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.md,
+    textAlign: 'center',
+  },
+  processingContainer: {
+    position: 'absolute',
+    alignItems: 'center',
+  },
+  processingText: {
+    fontSize: FontSizes.md,
+    color: Colors.textDark, // Text fosc per fons blanc
+    marginTop: Spacing.md,
+    fontWeight: 'bold',
+  },
+  scanButton: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
+  },
+  scanButtonText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+    marginLeft: Spacing.sm,
+  },
+  secondaryButton: {
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  secondaryButtonText: {
+    color: Colors.primary,
+  },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    padding: Spacing.lg,
+    backgroundColor: Colors.background,
+  },
+  infoCard: {
+    flexDirection: 'row',
+    backgroundColor: Colors.info + '15',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.xl,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    color: Colors.textDark, // Text fosc per fons blanc
+    marginLeft: Spacing.md,
+    lineHeight: 20,
+  },
+  manualSection: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc
+    marginBottom: Spacing.xs,
+  },
+  sectionSubtitle: {
+    fontSize: FontSizes.sm,
+    color: Colors.darkGray, // Text gris per fons blanc
+    marginBottom: Spacing.md,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+  },
+  inputIcon: {
+    marginRight: Spacing.sm,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    fontSize: FontSizes.md,
+    color: Colors.textDark, // Text fosc per fons blanc
+  },
+  clearButton: {
+    padding: Spacing.sm,
+  },
+  submitButton: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  submitButtonText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+    marginLeft: Spacing.sm,
+  },
+  exampleSection: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+  exampleTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc
+    marginBottom: Spacing.md,
+  },
+  exampleItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  exampleText: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    color: Colors.darkGray, // Text gris per fons blanc
+    marginLeft: Spacing.md,
+  },
+  benefitsSection: {
+    backgroundColor: Colors.success + '15',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+  },
+  benefitsTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc
+    marginBottom: Spacing.md,
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  benefitText: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    color: Colors.textDark, // Text fosc per fons blanc
+    marginLeft: Spacing.md,
+  },
+});

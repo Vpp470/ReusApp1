@@ -1,0 +1,6 @@
+Force deploy timestamp: 2025-12-15 02:45:00
+Canvis inclosos:
+- Logo blanc a totes les pàgines
+- Colors nous (verd #4CAF50)
+- Text "REUS COMERÇ i FUTUR"
+- Pantalla de consentiment

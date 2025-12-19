@@ -1,0 +1,998 @@
+<!-- 
+=================================================================
+EL TOMB DE REUS - SOLUCIÓ WORDPRESS COMPLETA (7 PÀGINES)
+=================================================================
+
+INSTRUCCIONS D'INSTAL·LACIÓ:
+
+1. INSTAL·LA EL PLUGIN:
+   - Ves a WordPress Admin > Plugins > Afegir Nou
+   - Cerca "Insert Headers and Footers"
+   - Instal·la i activa el plugin de WPBeginner
+
+2. AFEGEIX AQUEST CODI:
+   - Ves a Configuració > Insert Headers and Footers
+   - Enganxa TOT aquest codi al camp "Scripts in Footer"
+   - Desa els canvis
+
+3. CREA LES 7 PÀGINES AL WORDPRESS:
+   
+   Pàgina 1: "Inici" o "Home"
+   - Títol: Inici
+   - Slug: inici (o home)
+   - Al contingut, afegeix només aquest text: [tomb-home]
+   
+   Pàgina 2: "Mapa"
+   - Títol: Mapa
+   - Slug: mapa
+   - Al contingut, afegeix només aquest text: [tomb-mapa]
+   
+   Pàgina 3: "Què és El Tomb?"
+   - Títol: Què és El Tomb?
+   - Slug: que-es-el-tomb
+   - Al contingut, afegeix només aquest text: [tomb-sobre]
+   
+   Pàgina 4: "Establiments"
+   - Títol: Establiments
+   - Slug: establiments
+   - Al contingut, afegeix només aquest text: [tomb-establiments]
+   
+   Pàgina 5: "Ofertes"
+   - Títol: Ofertes
+   - Slug: ofertes
+   - Al contingut, afegeix només aquest text: [tomb-ofertes]
+   
+   Pàgina 6: "Notícies"
+   - Títol: Notícies
+   - Slug: noticies
+   - Al contingut, afegeix només aquest text: [tomb-noticies]
+   
+   Pàgina 7: "Esdeveniments"
+   - Títol: Esdeveniments
+   - Slug: esdeveniments
+   - Al contingut, afegeix només aquest text: [tomb-esdeveniments]
+
+4. CONFIGURA EL MENÚ:
+   - Ves a Aparença > Menús
+   - Crea un menú nou o edita l'existent
+   - Afegeix les 7 pàgines al menú
+   - Desa el menú
+
+=================================================================
+-->
+
+<!-- Leaflet CSS per als mapes -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<!-- Meta tags anti-caché -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<style>
+/* Variables globals */
+:root {
+    --tomb-primary: #E63946;
+    --tomb-secondary: #457B9D;
+    --tomb-text-dark: #1D3557;
+    --tomb-text-light: #6C757D;
+    --tomb-bg-light: #F8F9FA;
+}
+
+/* Reset de marges per WordPress */
+.tomb-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.tomb-container * {
+    box-sizing: border-box;
+}
+
+/* Menú flotant personalitzat */
+.tomb-floating-menu {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+    border-radius: 12px;
+}
+
+.tomb-menu-nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tomb-menu-nav a {
+    text-decoration: none;
+    color: var(--tomb-text-dark);
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.tomb-menu-nav a:hover {
+    color: var(--tomb-primary);
+    background: rgba(230, 57, 70, 0.1);
+}
+
+.tomb-menu-nav a.active {
+    color: white;
+    background: var(--tomb-primary);
+}
+
+/* Títols de pàgina */
+.tomb-page-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--tomb-text-dark);
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.tomb-page-subtitle {
+    font-size: 1.3rem;
+    color: var(--tomb-text-light);
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+/* HOME - Hero i botons */
+.tomb-hero {
+    background: linear-gradient(135deg, #E63946 0%, #457B9D 100%);
+    padding: 4rem 2rem;
+    border-radius: 16px;
+    text-align: center;
+    color: white;
+    margin-bottom: 3rem;
+}
+
+.tomb-hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    font-weight: 800;
+}
+
+.tomb-hero p {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+}
+
+.tomb-nav-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.tomb-nav-button {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    text-decoration: none;
+    color: var(--tomb-text-dark);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.tomb-nav-button:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.tomb-nav-button-icon {
+    font-size: 3rem;
+}
+
+.tomb-nav-button h3 {
+    font-size: 1.3rem;
+    margin: 0;
+    color: var(--tomb-text-dark);
+}
+
+.tomb-nav-button p {
+    font-size: 0.95rem;
+    color: var(--tomb-text-light);
+    margin: 0;
+}
+
+/* MAPA */
+.tomb-map-full {
+    width: 100%;
+    height: 600px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* SOBRE */
+.tomb-about-section {
+    background: white;
+    padding: 3rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+}
+
+.tomb-about-section h3 {
+    font-size: 1.8rem;
+    color: var(--tomb-primary);
+    margin-bottom: 1.5rem;
+}
+
+.tomb-about-section p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--tomb-text-dark);
+    margin-bottom: 1rem;
+}
+
+.tomb-values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.tomb-value-card {
+    background: var(--tomb-bg-light);
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.tomb-value-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.tomb-value-card h4 {
+    font-size: 1.3rem;
+    color: var(--tomb-text-dark);
+    margin: 1rem 0;
+}
+
+/* ESTABLIMENTS */
+.tomb-search-box {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+.tomb-search-box input {
+    width: 100%;
+    padding: 1.2rem 1.5rem;
+    font-size: 1.1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 50px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.tomb-search-box input:focus {
+    border-color: var(--tomb-primary);
+    box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.1);
+}
+
+.tomb-establishments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.tomb-establishment-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+}
+
+.tomb-establishment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.tomb-establishment-image {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #E63946 0%, #457B9D 100%);
+}
+
+.tomb-establishment-info {
+    padding: 1.5rem;
+}
+
+.tomb-establishment-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--tomb-text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.tomb-establishment-address,
+.tomb-establishment-phone {
+    font-size: 0.95rem;
+    color: var(--tomb-text-light);
+    margin-bottom: 0.5rem;
+}
+
+/* OFERTES */
+.tomb-offers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2.5rem;
+}
+
+.tomb-offer-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+    position: relative;
+}
+
+.tomb-offer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.tomb-offer-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--tomb-primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 700;
+    z-index: 1;
+}
+
+.tomb-offer-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #E63946 0%, #457B9D 100%);
+}
+
+.tomb-offer-info {
+    padding: 2rem;
+}
+
+.tomb-offer-establishment {
+    font-size: 0.9rem;
+    color: var(--tomb-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.tomb-offer-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--tomb-text-dark);
+    margin-bottom: 1rem;
+}
+
+.tomb-offer-description {
+    font-size: 1rem;
+    color: var(--tomb-text-light);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.tomb-offer-validity {
+    font-size: 0.85rem;
+    color: var(--tomb-text-light);
+    font-style: italic;
+}
+
+/* NOTÍCIES */
+.tomb-news-list {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.tomb-news-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    transition: all 0.3s;
+    border-left: 4px solid var(--tomb-primary);
+}
+
+.tomb-news-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.tomb-news-date {
+    font-size: 0.9rem;
+    color: var(--tomb-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.tomb-news-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--tomb-text-dark);
+    margin-bottom: 1rem;
+}
+
+.tomb-news-content {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--tomb-text-light);
+}
+
+.tomb-news-link {
+    color: var(--tomb-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.tomb-news-link:hover {
+    text-decoration: underline;
+}
+
+/* ESDEVENIMENTS */
+.tomb-events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2.5rem;
+}
+
+.tomb-event-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+}
+
+.tomb-event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.tomb-event-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #E63946 0%, #457B9D 100%);
+}
+
+.tomb-event-info {
+    padding: 2rem;
+}
+
+.tomb-event-category {
+    display: inline-block;
+    background: rgba(230, 57, 70, 0.1);
+    color: var(--tomb-primary);
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.tomb-event-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--tomb-text-dark);
+    margin-bottom: 1rem;
+}
+
+.tomb-event-description {
+    font-size: 1rem;
+    color: var(--tomb-text-light);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.tomb-event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--tomb-text-light);
+}
+
+/* Loading */
+.tomb-loading {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--tomb-text-light);
+    padding: 3rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tomb-page-title {
+        font-size: 2rem;
+    }
+    
+    .tomb-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .tomb-nav-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .tomb-establishments-grid,
+    .tomb-offers-grid,
+    .tomb-events-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+(function() {
+    'use strict';
+    
+    const API_BASE_URL = 'https://reusapp-backend-production.up.railway.app/api';
+    const SITE_URL = window.location.origin;
+    
+    // Funcions auxiliars
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ca-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+    
+    // Detectar quina pàgina estem visualitzant
+    function detectPage() {
+        const content = document.body.textContent;
+        
+        if (content.includes('[tomb-home]')) return 'home';
+        if (content.includes('[tomb-mapa]')) return 'mapa';
+        if (content.includes('[tomb-sobre]')) return 'sobre';
+        if (content.includes('[tomb-establiments]')) return 'establiments';
+        if (content.includes('[tomb-ofertes]')) return 'ofertes';
+        if (content.includes('[tomb-noticies]')) return 'noticies';
+        if (content.includes('[tomb-esdeveniments]')) return 'esdeveniments';
+        
+        return null;
+    }
+    
+    // Crear menú de navegació
+    function createMenu(currentPage) {
+        const pages = [
+            { slug: 'inici', label: 'Inici', page: 'home' },
+            { slug: 'mapa', label: 'Mapa', page: 'mapa' },
+            { slug: 'que-es-el-tomb', label: 'Què és El Tomb?', page: 'sobre' },
+            { slug: 'establiments', label: 'Establiments', page: 'establiments' },
+            { slug: 'ofertes', label: 'Ofertes', page: 'ofertes' },
+            { slug: 'noticies', label: 'Notícies', page: 'noticies' },
+            { slug: 'esdeveniments', label: 'Esdeveniments', page: 'esdeveniments' }
+        ];
+        
+        let menuHTML = '<div class="tomb-floating-menu"><nav class="tomb-menu-nav">';
+        
+        pages.forEach(p => {
+            const activeClass = p.page === currentPage ? 'active' : '';
+            menuHTML += `<a href="${SITE_URL}/${p.slug}/" class="${activeClass}">${p.label}</a>`;
+        });
+        
+        menuHTML += '</nav></div>';
+        return menuHTML;
+    }
+    
+    // RENDERITZADORS PER CADA PÀGINA
+    
+    async function renderHome(container) {
+        container.innerHTML = `
+            ${createMenu('home')}
+            <div class="tomb-hero">
+                <h1>Descobreix el comerç de Reus</h1>
+                <p>Espai a Reus on hi trobaràs petits comerços especialitzats, grans firmes, cadenes i franquícies barrejades amb terrasses, bars i restaurants.</p>
+            </div>
+            
+            <div class="tomb-nav-buttons">
+                <a href="${SITE_URL}/mapa/" class="tomb-nav-button">
+                    <div class="tomb-nav-button-icon">📍</div>
+                    <h3>Mapa</h3>
+                    <p>Explora tots els comerços geolocalitzats</p>
+                </a>
+                
+                <a href="${SITE_URL}/establiments/" class="tomb-nav-button">
+                    <div class="tomb-nav-button-icon">🏪</div>
+                    <h3>Establiments</h3>
+                    <p>Descobreix els nostres associats</p>
+                </a>
+                
+                <a href="${SITE_URL}/ofertes/" class="tomb-nav-button">
+                    <div class="tomb-nav-button-icon">🎁</div>
+                    <h3>Ofertes</h3>
+                    <p>Les millors promocions i descomptes</p>
+                </a>
+                
+                <a href="${SITE_URL}/esdeveniments/" class="tomb-nav-button">
+                    <div class="tomb-nav-button-icon">🎉</div>
+                    <h3>Esdeveniments</h3>
+                    <p>Campanyes i activitats especials</p>
+                </a>
+                
+                <a href="${SITE_URL}/noticies/" class="tomb-nav-button">
+                    <div class="tomb-nav-button-icon">📰</div>
+                    <h3>Notícies</h3>
+                    <p>Actualitat del comerç local</p>
+                </a>
+                
+                <a href="${SITE_URL}/que-es-el-tomb/" class="tomb-nav-button">
+                    <div class="tomb-nav-button-icon">ℹ️</div>
+                    <h3>Què és El Tomb?</h3>
+                    <p>Coneix la nostra associació</p>
+                </a>
+            </div>
+        `;
+    }
+    
+    async function renderMapa(container) {
+        container.innerHTML = `
+            ${createMenu('mapa')}
+            <h1 class="tomb-page-title">Mapa d'establiments</h1>
+            <p class="tomb-page-subtitle">Explora tots els comerços associats geolocalitzats</p>
+            <div id="tomb-map" class="tomb-map-full"></div>
+        `;
+        
+        // Inicialitzar mapa
+        setTimeout(() => {
+            const map = L.map('tomb-map').setView([41.1556, 1.1064], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Carregar establiments
+            fetch(`${API_BASE_URL}/establishments`)
+                .then(r => r.json())
+                .then(establishments => {
+                    establishments
+                        .filter(est => est.status !== 'TANCAT' && est.status !== 'Ocult' && est.latitude && est.longitude)
+                        .forEach(est => {
+                            const marker = L.marker([est.latitude, est.longitude]).addTo(map);
+                            marker.bindPopup(`
+                                <div style="min-width: 200px;">
+                                    <h3 style="margin: 0 0 8px 0; color: #E63946;">${est.name}</h3>
+                                    ${est.address ? `<p style="margin: 4px 0;">📍 ${est.address}</p>` : ''}
+                                    ${est.phone ? `<p style="margin: 4px 0;">📞 ${est.phone}</p>` : ''}
+                                </div>
+                            `);
+                        });
+                });
+        }, 100);
+    }
+    
+    async function renderSobre(container) {
+        container.innerHTML = `
+            ${createMenu('sobre')}
+            <h1 class="tomb-page-title">Què és El Tomb de Reus?</h1>
+            <p class="tomb-page-subtitle">Una associació que agrupa les botigues del centre de Reus amb l'objectiu de potenciar i promocionar el comerç i la restauració locals.</p>
+            
+            <div class="tomb-about-section">
+                <h3>La nostra missió</h3>
+                <p>El Tomb de Reus neix amb la voluntat de crear un espai a Reus on trobaràs petits comerços especialitzats, grans firmes, cadenes i franquícies barrejades amb terrasses, bars i restaurants.</p>
+                <p>Defensem un model de comerç de proximitat, amb una identitat pròpia i distintiva, que contribueix a una ciutat més compacta i sostenible.</p>
+            </div>
+            
+            <div class="tomb-about-section">
+                <h3>Què oferim</h3>
+                <p>Treballem per mantenir viu el comerç local, oferint avantatges als nostres socis i promocionant les seves activitats a través de diferents canals i esdeveniments.</p>
+                <p>A través de la nostra plataforma digital, els clients poden descobrir tots els establiments associats, conèixer les seves ofertes especials i estar al dia de les notícies del comerç local.</p>
+            </div>
+            
+            <div class="tomb-values-grid">
+                <div class="tomb-value-card">
+                    <div class="tomb-value-icon">🏪</div>
+                    <h4>Comerç Local</h4>
+                    <p>Promoció dels establiments de proximitat</p>
+                </div>
+                
+                <div class="tomb-value-card">
+                    <div class="tomb-value-icon">🌱</div>
+                    <h4>Sostenibilitat</h4>
+                    <p>Model de ciutat compacta i sostenible</p>
+                </div>
+                
+                <div class="tomb-value-card">
+                    <div class="tomb-value-icon">🤝</div>
+                    <h4>Comunitat</h4>
+                    <p>Suport mutu entre comerciants</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    async function renderEstabliments(container) {
+        container.innerHTML = `
+            ${createMenu('establiments')}
+            <h1 class="tomb-page-title">Els nostres establiments</h1>
+            <p class="tomb-page-subtitle">Descobreix tots els comerços associats a El Tomb de Reus</p>
+            
+            <div class="tomb-search-box">
+                <input type="text" id="tomb-search" placeholder="Cerca per nom, adreça..." />
+            </div>
+            
+            <div id="tomb-establishments-grid" class="tomb-establishments-grid">
+                <div class="tomb-loading">Carregant establiments...</div>
+            </div>
+        `;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/establishments`);
+            let establishments = await response.json();
+            establishments = establishments.filter(est => est.status !== 'TANCAT' && est.status !== 'Ocult');
+            
+            const renderEstablishmentsList = (list) => {
+                const grid = document.getElementById('tomb-establishments-grid');
+                if (list.length === 0) {
+                    grid.innerHTML = '<div class="tomb-loading">No s\'han trobat establiments</div>';
+                    return;
+                }
+                
+                grid.innerHTML = list.map(est => `
+                    <div class="tomb-establishment-card">
+                        <div class="tomb-establishment-image"></div>
+                        <div class="tomb-establishment-info">
+                            <div class="tomb-establishment-name">${est.name}</div>
+                            ${est.address ? `<div class="tomb-establishment-address">📍 ${est.address}</div>` : ''}
+                            ${est.phone ? `<div class="tomb-establishment-phone">📞 ${est.phone}</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            };
+            
+            renderEstablishmentsList(establishments);
+            
+            // Search
+            document.getElementById('tomb-search').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = establishments.filter(est =>
+                    est.name.toLowerCase().includes(term) ||
+                    (est.address && est.address.toLowerCase().includes(term))
+                );
+                renderEstablishmentsList(filtered);
+            });
+        } catch (error) {
+            document.getElementById('tomb-establishments-grid').innerHTML = 
+                '<div class="tomb-loading">Error carregant establiments</div>';
+        }
+    }
+    
+    async function renderOfertes(container) {
+        container.innerHTML = `
+            ${createMenu('ofertes')}
+            <h1 class="tomb-page-title">Ofertes i Promocions</h1>
+            <p class="tomb-page-subtitle">Aprofita les millors ofertes dels nostres comerços</p>
+            
+            <div id="tomb-offers-grid" class="tomb-offers-grid">
+                <div class="tomb-loading">Carregant ofertes...</div>
+            </div>
+        `;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/offers`);
+            let offers = await response.json();
+            
+            // Filter active offers
+            const now = new Date();
+            offers = offers.filter(offer => {
+                const validFrom = new Date(offer.valid_from);
+                const validUntil = new Date(offer.valid_until);
+                return now >= validFrom && now <= validUntil;
+            });
+            
+            const grid = document.getElementById('tomb-offers-grid');
+            
+            if (offers.length === 0) {
+                grid.innerHTML = '<div class="tomb-loading">No hi ha ofertes actives actualment</div>';
+                return;
+            }
+            
+            grid.innerHTML = offers.map(offer => `
+                <div class="tomb-offer-card">
+                    ${offer.discount_percentage ? `<div class="tomb-offer-badge">-${offer.discount_percentage}%</div>` : ''}
+                    ${offer.image_url ? `<img src="${offer.image_url}" class="tomb-offer-image" alt="${offer.title}" />` : '<div class="tomb-offer-image"></div>'}
+                    <div class="tomb-offer-info">
+                        ${offer.establishment_name ? `<div class="tomb-offer-establishment">${offer.establishment_name}</div>` : ''}
+                        <div class="tomb-offer-title">${offer.title}</div>
+                        <div class="tomb-offer-description">${offer.description || ''}</div>
+                        <div class="tomb-offer-validity">Vàlid fins el ${formatDate(offer.valid_until)}</div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            document.getElementById('tomb-offers-grid').innerHTML = 
+                '<div class="tomb-loading">Error carregant ofertes</div>';
+        }
+    }
+    
+    async function renderNoticies(container) {
+        container.innerHTML = `
+            ${createMenu('noticies')}
+            <h1 class="tomb-page-title">Notícies</h1>
+            <p class="tomb-page-subtitle">Mantingues-te informat sobre el comerç local de Reus</p>
+            
+            <div id="tomb-news-list" class="tomb-news-list">
+                <div class="tomb-loading">Carregant notícies...</div>
+            </div>
+        `;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/news?limit=50`);
+            const news = await response.json();
+            
+            const list = document.getElementById('tomb-news-list');
+            
+            if (news.length === 0) {
+                list.innerHTML = '<div class="tomb-loading">No hi ha notícies disponibles</div>';
+                return;
+            }
+            
+            list.innerHTML = news.map(article => `
+                <div class="tomb-news-card">
+                    <div class="tomb-news-date">${formatDate(article.published_at || article.created_at)}</div>
+                    <div class="tomb-news-title">${article.title}</div>
+                    <div class="tomb-news-content">${article.content || article.summary || ''}</div>
+                    ${article.source_url ? `
+                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0;">
+                            <a href="${article.source_url}" target="_blank" rel="noopener" class="tomb-news-link">
+                                Llegir més →
+                            </a>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        } catch (error) {
+            document.getElementById('tomb-news-list').innerHTML = 
+                '<div class="tomb-loading">Error carregant notícies</div>';
+        }
+    }
+    
+    async function renderEsdeveniments(container) {
+        container.innerHTML = `
+            ${createMenu('esdeveniments')}
+            <h1 class="tomb-page-title">Esdeveniments</h1>
+            <p class="tomb-page-subtitle">Descobreix les campanyes i activitats especials</p>
+            
+            <div id="tomb-events-grid" class="tomb-events-grid">
+                <div class="tomb-loading">Carregant esdeveniments...</div>
+            </div>
+        `;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/events`);
+            let events = await response.json();
+            
+            // Filter active events
+            const now = new Date();
+            events = events.filter(event => {
+                const validFrom = new Date(event.valid_from);
+                const validUntil = new Date(event.valid_until);
+                return now >= validFrom && now <= validUntil;
+            });
+            
+            const grid = document.getElementById('tomb-events-grid');
+            
+            if (events.length === 0) {
+                grid.innerHTML = '<div class="tomb-loading">No hi ha esdeveniments actius actualment</div>';
+                return;
+            }
+            
+            grid.innerHTML = events.map(event => `
+                <div class="tomb-event-card">
+                    ${event.image_url ? `<img src="${event.image_url}" class="tomb-event-image" alt="${event.title}" />` : '<div class="tomb-event-image"></div>'}
+                    <div class="tomb-event-info">
+                        ${event.category ? `<div class="tomb-event-category">${event.category}</div>` : ''}
+                        <div class="tomb-event-title">${event.title}</div>
+                        <div class="tomb-event-description">${event.description || ''}</div>
+                        <div class="tomb-event-details">
+                            ${event.location ? `<div>📍 ${event.location}</div>` : ''}
+                            <div>📅 Fins el ${formatDate(event.valid_until)}</div>
+                            ${event.participating_establishment_ids && event.participating_establishment_ids.length > 0 ? `
+                                <div>🏪 ${event.participating_establishment_ids.length} establiments participants</div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            document.getElementById('tomb-events-grid').innerHTML = 
+                '<div class="tomb-loading">Error carregant esdeveniments</div>';
+        }
+    }
+    
+    // Inicialització
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPage = detectPage();
+        
+        if (!currentPage) {
+            console.log('El Tomb de Reus: No s\'ha detectat cap shortcode');
+            return;
+        }
+        
+        console.log('El Tomb de Reus: Carregant pàgina', currentPage);
+        
+        // Trobar el contenidor
+        const shortcodeText = `[tomb-${currentPage}]`;
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        let node;
+        let targetElement = null;
+        
+        while (node = walker.nextNode()) {
+            if (node.textContent.includes(shortcodeText)) {
+                targetElement = node.parentElement;
+                break;
+            }
+        }
+        
+        if (!targetElement) {
+            console.error('El Tomb de Reus: No s\'ha trobat el contenidor');
+            return;
+        }
+        
+        // Crear contenidor El Tomb
+        const tombContainer = document.createElement('div');
+        tombContainer.className = 'tomb-container';
+        targetElement.innerHTML = '';
+        targetElement.appendChild(tombContainer);
+        
+        // Renderitzar la pàgina corresponent
+        switch(currentPage) {
+            case 'home':
+                renderHome(tombContainer);
+                break;
+            case 'mapa':
+                renderMapa(tombContainer);
+                break;
+            case 'sobre':
+                renderSobre(tombContainer);
+                break;
+            case 'establiments':
+                renderEstabliments(tombContainer);
+                break;
+            case 'ofertes':
+                renderOfertes(tombContainer);
+                break;
+            case 'noticies':
+                renderNoticies(tombContainer);
+                break;
+            case 'esdeveniments':
+                renderEsdeveniments(tombContainer);
+                break;
+        }
+        
+        console.log('✅ El Tomb de Reus: Pàgina carregada correctament');
+    });
+})();
+</script>

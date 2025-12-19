@@ -1,0 +1,462 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Image,
+  Linking,
+  Alert,
+} from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import QRCode from 'react-native-qrcode-svg';
+import { Colors, Spacing, FontSizes, BorderRadius } from '../../src/constants/colors';
+import { establishmentsService } from '../../src/services/api';
+import type { Establishment } from '../../src/types';
+import { useAuthStore } from '../../src/store/authStore';
+
+export default function EstablishmentDetailScreen() {
+  const router = useRouter();
+  const { id } = useLocalSearchParams();
+  const { user } = useAuthStore();
+  const [establishment, setEstablishment] = useState<Establishment | null>(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Comprovar si l'usuari pot veure el QR (admin o propietari)
+  const canViewQR = user && establishment && (
+    user.role === 'admin' || 
+    user.establishment_id === establishment.id ||
+    user.establishment_id === establishment._id
+  );
+
+  useEffect(() => {
+    if (id) {
+      loadEstablishment();
+    }
+  }, [id]);
+
+  const loadEstablishment = async () => {
+    try {
+      const data = await establishmentsService.getById(id as string);
+      setEstablishment(data);
+    } catch (error) {
+      console.error('Error loading establishment:', error);
+      Alert.alert('Error', 'No s\'ha pogut carregar l\'establiment');
+      router.back();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenMap = () => {
+    if (establishment?.latitude && establishment?.longitude) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${establishment.latitude},${establishment.longitude}`;
+      Linking.openURL(url);
+    }
+  };
+
+  const handleCall = () => {
+    if (establishment?.phone) {
+      Linking.openURL(`tel:${establishment.phone}`);
+    }
+  };
+
+  const handleEmail = () => {
+    if (establishment?.email) {
+      Linking.openURL(`mailto:${establishment.email}`);
+    }
+  };
+
+  const handleOpenWebsite = () => {
+    if (establishment?.website) {
+      Linking.openURL(establishment.website);
+    }
+  };
+
+  const handleOpenSocial = (url?: string) => {
+    if (url) {
+      Linking.openURL(url);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  if (!establishment) {
+    return null;
+  }
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          {establishment.name}
+        </Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 100 }}>
+        {/* Image */}
+        {establishment.image_url ? (
+          <Image source={{ uri: establishment.image_url }} style={styles.image} />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <MaterialIcons name="store" size={80} color={Colors.lightGray} />
+          </View>
+        )}
+
+        {/* Category badge */}
+        {establishment.category && (
+          <View style={styles.categoryContainer}>
+            <View style={styles.categoryBadge}>
+              <MaterialIcons name="label" size={16} color={Colors.primary} />
+              <Text style={styles.categoryText}>{establishment.category}</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Name and QR Code */}
+        <View style={styles.section}>
+          <View style={styles.nameQrContainer}>
+            <View style={styles.nameContainer}>
+              <Text style={styles.title}>{establishment.name}</Text>
+              {establishment.description && (
+                <Text style={styles.description}>{establishment.description}</Text>
+              )}
+            </View>
+            <View style={styles.qrContainer}>
+              <Text style={styles.qrLabel}>DNI Digital</Text>
+              <QRCode
+                value={`ESTAB-${establishment.id || establishment._id}`}
+                size={80}
+                color={Colors.text}
+                backgroundColor={Colors.white}
+              />
+              <Text style={styles.qrId}>ID: {(establishment.id || establishment._id)?.substring(0, 8)}...</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Contact Info */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Informació de Contacte</Text>
+
+          {establishment.address && (
+            <TouchableOpacity style={styles.infoItem} onPress={handleOpenMap}>
+              <MaterialIcons name="location-on" size={24} color={Colors.primary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Adreça</Text>
+                <Text style={styles.infoValue}>{establishment.address}</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={Colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+
+          {establishment.phone && (
+            <TouchableOpacity style={styles.infoItem} onPress={handleCall}>
+              <MaterialIcons name="phone" size={24} color={Colors.primary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Telèfon</Text>
+                <Text style={styles.infoValue}>{establishment.phone}</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={Colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+
+          {establishment.email && (
+            <TouchableOpacity style={styles.infoItem} onPress={handleEmail}>
+              <MaterialIcons name="email" size={24} color={Colors.primary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Email</Text>
+                <Text style={styles.infoValue}>{establishment.email}</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={Colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+
+          {establishment.website && (
+            <TouchableOpacity style={styles.infoItem} onPress={handleOpenWebsite}>
+              <MaterialIcons name="language" size={24} color={Colors.primary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Web</Text>
+                <Text style={styles.infoValue} numberOfLines={1}>{establishment.website}</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={Colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Opening Hours */}
+        {establishment.opening_hours && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Horaris</Text>
+            <View style={styles.hoursContainer}>
+              <MaterialIcons name="access-time" size={24} color={Colors.primary} />
+              <Text style={styles.hoursText}>{establishment.opening_hours}</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Social Media */}
+        {(establishment.facebook || establishment.instagram || establishment.twitter) && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Xarxes Socials</Text>
+            <View style={styles.socialContainer}>
+              {establishment.facebook && (
+                <TouchableOpacity
+                  style={styles.socialButton}
+                  onPress={() => handleOpenSocial(establishment.facebook)}
+                >
+                  <MaterialIcons name="facebook" size={32} color="#1877F2" />
+                </TouchableOpacity>
+              )}
+              {establishment.instagram && (
+                <TouchableOpacity
+                  style={styles.socialButton}
+                  onPress={() => handleOpenSocial(establishment.instagram)}
+                >
+                  <MaterialIcons name="photo-camera" size={32} color="#E4405F" />
+                </TouchableOpacity>
+              )}
+              {establishment.twitter && (
+                <TouchableOpacity
+                  style={styles.socialButton}
+                  onPress={() => handleOpenSocial(establishment.twitter)}
+                >
+                  <MaterialIcons name="chat-bubble" size={32} color="#1DA1F2" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* Action Buttons */}
+        <View style={styles.actionsContainer}>
+          {establishment.latitude && establishment.longitude && (
+            <TouchableOpacity style={styles.actionButton} onPress={handleOpenMap}>
+              <MaterialIcons name="directions" size={24} color={Colors.white} />
+              <Text style={styles.actionButtonText}>Com arribar</Text>
+            </TouchableOpacity>
+          )}
+
+          {establishment.phone && (
+            <TouchableOpacity style={[styles.actionButton, styles.actionButtonSecondary]} onPress={handleCall}>
+              <MaterialIcons name="phone" size={24} color={Colors.primary} />
+              <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary]}>Trucar</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+  },
+  backButton: {
+    padding: Spacing.xs,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    color: Colors.white,
+    textAlign: 'center',
+    marginHorizontal: Spacing.md,
+  },
+  content: {
+    flex: 1,
+  },
+  image: {
+    width: '100%',
+    height: 250,
+    backgroundColor: Colors.lightGray,
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: 250,
+    backgroundColor: Colors.lightGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryContainer: {
+    position: 'absolute',
+    top: 220,
+    left: Spacing.lg,
+  },
+  categoryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+    gap: Spacing.xs,
+  },
+  categoryText: {
+    fontSize: FontSizes.sm,
+    color: Colors.primary,
+    fontWeight: 'bold',
+  },
+  section: {
+    backgroundColor: Colors.white,
+    padding: Spacing.lg,
+    marginTop: Spacing.md,
+  },
+  nameQrContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: Spacing.md,
+  },
+  nameContainer: {
+    flex: 1,
+  },
+  title: {
+    fontSize: FontSizes.xxl,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: Spacing.sm,
+  },
+  description: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+  },
+  qrContainer: {
+    alignItems: 'center',
+    padding: Spacing.md,
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  qrLabel: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+    fontWeight: 'bold',
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+  },
+  qrId: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+    marginTop: Spacing.xs,
+  },
+  sectionTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: Spacing.md,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+  },
+  infoContent: {
+    flex: 1,
+    marginLeft: Spacing.md,
+  },
+  infoLabel: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+    marginBottom: 2,
+  },
+  infoValue: {
+    fontSize: FontSizes.md,
+    color: Colors.text,
+  },
+  hoursContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.md,
+  },
+  hoursText: {
+    flex: 1,
+    fontSize: FontSizes.md,
+    color: Colors.text,
+    lineHeight: 22,
+  },
+  socialContainer: {
+    flexDirection: 'row',
+    gap: Spacing.lg,
+  },
+  socialButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    padding: Spacing.lg,
+    gap: Spacing.md,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.sm,
+  },
+  actionButtonSecondary: {
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  actionButtonText: {
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+    color: Colors.white,
+  },
+  actionButtonTextSecondary: {
+    color: Colors.primary,
+  },
+});

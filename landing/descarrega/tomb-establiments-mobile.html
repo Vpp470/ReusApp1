@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Establiments - El Tomb de Reus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0d1f1a 0%, #1a3a2e 50%, #0d1f1a 100%);
+            min-height: 100vh;
+            position: relative;
+            
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(61, 122, 95, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(45, 90, 69, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        
+        .logo-container {
+            position: fixed;
+            top: 30px;
+            left: 40px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(26, 58, 46, 0.8) 0%, rgba(19, 43, 35, 0.6) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(61, 122, 95, 0.3);
+            border-radius: 16px;
+            padding: 12px 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        
+        .logo-container:hover {
+            transform: translateY(-2px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.2);
+        
+        .logo-container img {
+            width: 140px;
+            height: auto;
+            display: block;
+        
+        .logo-container img {
+            width: 140px;
+            height: auto;
+            display: block;
+        
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 120px 40px 60px;
+            position: relative;
+            z-index: 1;
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 60px;
+        
+        .page-subtitle {
+            font-size: 0.95rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #D4AF37;
+            font-weight: 600;
+            margin-bottom: 20px;
+        
+        .page-title { 
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem; 
+            margin-bottom: 20px; 
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        
+        .search-bar { 
+            max-width: 600px; 
+            margin: 0 auto 50px;
+        
+        .search-bar input { 
+            width: 100%; 
+            padding: 16px 24px; 
+            border-radius: 50px; 
+            border: 1px solid rgba(61, 122, 95, 0.3);
+            background: rgba(26, 58, 46, 0.5);
+            backdrop-filter: blur(10px);
+            font-size: 1rem;
+            color: white;
+            transition: all 0.3s;
+        
+        .search-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        
+        .search-bar input:focus {
+            outline: none;
+            border-color: #D4AF37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        
+        .establishments-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 30px;
+            margin-bottom: 40px;
+        
+        .establishment-card { 
+            background: linear-gradient(135deg, rgba(26, 58, 46, 0.7) 0%, rgba(19, 43, 35, 0.5) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(61, 122, 95, 0.2);
+            border-radius: 20px; 
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        
+        .establishment-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(61, 122, 95, 0.15) 0%, rgba(212, 175, 55, 0.08) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        
+        .establishment-card:hover::before {
+            opacity: 1;
+        
+        .establishment-card:hover { 
+            transform: translateY(-8px);
+            border-color: rgba(212, 175, 55, 0.4);
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.2);
+        
+        .establishment-image { 
+            width: 100%; 
+            height: 200px; 
+            object-fit: contain; background: rgba(10, 10, 10, 0.5);
+        
+        .establishment-info { 
+            padding: 24px;
+            position: relative;
+            z-index: 1;
+        
+        .establishment-name { 
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        
+        .establishment-category { 
+            display: inline-block;
+            background: rgba(212, 175, 55, 0.2);
+            color: #D4AF37;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        
+        .establishment-description { 
+            font-size: 0.95rem;
+            color: #b0b0b0;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        
+        .establishment-address { 
+            font-size: 0.9rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        
+        .establishment-address i {
+            width: 16px;
+            height: 16px;
+            stroke: #D4AF37;
+        
+        .loading { 
+            text-align: center; 
+            font-size: 1.2rem; 
+            color: white; 
+            padding: 3rem;
+        
+        .load-more-btn { 
+            display: block; 
+            margin: 2rem auto; 
+            padding: 16px 40px; 
+            background: linear-gradient(135deg, #D4AF37 0%, #b8941f 100%);
+            color: #0d1f1a; 
+            border: none; 
+            border-radius: 50px; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            transition: all 0.3s;
+        
+        .load-more-btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+        
+        
+        /* Lightbox Modal */
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            justify-content: center;
+            align-items: center;
+        
+        .lightbox-modal.active {
+            display: flex !important;
+        
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        
+        .lightbox-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            max-height: 90vh;
+            max-width: 90vw;
+        
+        .lightbox-close {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+            background: rgba(0,0,0,0.7);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        
+        .lightbox-close:hover {
+            background: rgba(212, 175, 55, 0.9);
+            transform: scale(1.1);
+        
+        .lightbox-zoom-icon {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(212, 175, 55, 0.9);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
+            pointer-events: none;
+        
+        .establishment-card:hover .lightbox-zoom-icon {
+            background: rgba(212, 175, 55, 1);
+            transform: scale(1.1);
+        
+        .establishment-image {
+            cursor: pointer;
+            transition: transform 0.3s;
+        
+        .establishment-image:hover {
+            transform: scale(1.05);
+        
+        /* MÒBIL - CSS Ultra Simple amb Textos GRANS */
+            /* Eliminar TOTS els efectes pesats */
+            * {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+            
+            /* Scroll natiu i fluid */
+            html, body {
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                touch-action: pan-y !important;
+            }
+            
+            /* Fons sòlid sense efectes */
+            body {
+                background: #0d1f1a !important;
+            }
+            
+            body::before {
+                display: none !important;
+            }
+            
+            /* Cards simples */
+            .establishment-card, .offer-card, .event-card, .news-card {
+                background: #1a3a2e !important;
+                border: 1px solid #3d7a5f !important;
+                padding: 24px !important;
+                margin-bottom: 18px !important;
+            }
+            
+            /* Logo */
+            .logo-container {
+                background: #1a3a2e !important;
+                top: 15px !important;
+                left: 15px !important;
+                padding: 10px 14px !important;
+            }
+            
+            .logo-container img {
+                width: 100px !important;
+            }
+            
+            /* Container */
+            .container {
+                padding: 100px 20px 40px !important;
+            }
+            
+            /* TEXTOS GRANS com ahir */
+            .page-title {
+                font-size: 3rem !important;
+            }
+            
+            .establishment-title, .offer-title, .event-title, .news-title {
+                font-size: 1.6rem !important;
+                margin-bottom: 10px !important;
+            }
+            
+            .establishment-category, .offer-category, .event-category {
+                font-size: 1.1rem !important;
+            }
+            
+            .establishment-description, .offer-description, .event-description {
+                font-size: 1.15rem !important;
+                line-height: 1.6 !important;
+            }
+            
+            .establishment-address {
+                font-size: 1.05rem !important;
+            }
+            
+            /* Grid */
+            .establishments-grid, .offers-grid, .events-grid, .news-grid {
+                grid-template-columns: 1fr !important;
+                gap: 18px !important;
+            }
+            
+            /* Imatges */
+            .establishment-image, .offer-image, .event-image {
+                height: 200px !important;
+            }
+    </style>
+</head>
+<body>
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox-modal" onclick="if(event.target === this) closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <div class="lightbox-content">
+            <img id="lightbox-img" class="lightbox-image" src="" alt="">
+        </div>
+    </div>
+    <a href="https://eltombdereus.com/" target="_parent" class="logo-container">
+        <img src="https://tomb-redesign-1.preview.emergentagent.com/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" />
+    </a>
+    
+    <div class="container">
+        <div class="page-header">
+            <div class="page-subtitle">Descobreix</div>
+            <h1 class="page-title">Els nostres Establiments</h1>
+        </div>
+        
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Cerca per nom, adreça o categoria..." />
+        </div>
+        
+        <div id="establishments-grid" class="establishments-grid">
+            <div class="loading">Carregant establiments...</div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'https://tomb-redesign-1.preview.emergentagent.com/api';
+        let allEstablishments = [];
+        let displayedEstablishments = [];
+        let currentPage = 0;
+        const ITEMS_PER_PAGE = 30;  // Grid Instagram: 3 columnes x 10 files
+        
+        fetch(API_BASE_URL + '/establishments')
+            .then(r => r.json())
+            .then(data => {
+                allEstablishments = data;
+                displayedEstablishments = allEstablishments;
+                loadMoreEstablishments();
+            })
+            .catch(err => {
+                console.error('Error carregant establiments:', err);
+                document.getElementById('establishments-grid').innerHTML = '<div class="loading">Error carregant establiments. Si us plau, refresca la pagina.</div>';
+            });
+        
+        function loadMoreEstablishments() {
+            const start = currentPage * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const toShow = displayedEstablishments.slice(start, end);
+            
+            if (toShow.length === 0) return;
+            
+            const grid = document.getElementById('establishments-grid');
+            
+            if (currentPage === 0) {
+                grid.innerHTML = '';
+            } else {
+                const oldBtn = document.getElementById('load-more-btn');
+                if (oldBtn) oldBtn.remove();
+            }
+            
+            const cardsHTML = toShow.map(est => {
+                let card = '<div class="establishment-card">';
+                
+                if (est.logo_url || est.image_url) {
+                    const imageUrl = est.logo_url || est.image_url;
+                    card += '<div style="position: relative;">';
+                    card += '<img src="' + imageUrl + '" alt="' + est.name + '" class="establishment-image" loading="lazy" onclick="openLightbox(\'' + imageUrl + '\')" />';
+                    card += '<div class="lightbox-zoom-icon">🔍</div>';
+                    card += '</div>';
+                }
+                
+                card += '<div class="establishment-info">';
+                card += '<div class="establishment-name">' + est.name + '</div>';
+                if (est.category) card += '<div class="establishment-category">' + est.category + '</div>';
+                if (est.description) card += '<div class="establishment-description">' + est.description + '</div>';
+                if (est.address) card += '<div class="establishment-address"><i data-feather="map-pin"></i>' + est.address + '</div>';
+                card += '</div></div>';
+                return card;
+            }).join('');
+            
+            grid.innerHTML += cardsHTML;
+            feather.replace();
+            
+            if (end < displayedEstablishments.length) {
+                const btn = document.createElement('button');
+                btn.id = 'load-more-btn';
+                btn.className = 'load-more-btn';
+                btn.textContent = 'Carregar més (' + (displayedEstablishments.length - end) + ' restants)';
+                btn.onclick = function() {
+                    currentPage++;
+                    loadMoreEstablishments();
+                };
+                grid.parentElement.appendChild(btn);
+            }
+            
+            currentPage++;
+        
+        document.getElementById('search-input').addEventListener('input', function(e) {
+            const search = e.target.value.toLowerCase();
+            displayedEstablishments = allEstablishments.filter(est => {
+                return (est.name && est.name.toLowerCase().includes(search)) || 
+                       (est.address && est.address.toLowerCase().includes(search)) ||
+                       (est.category && est.category.toLowerCase().includes(search));
+            });
+            
+            currentPage = 0;
+            document.getElementById('establishments-grid').innerHTML = '';
+            const oldBtn = document.getElementById('load-more-btn');
+            if (oldBtn) oldBtn.remove();
+            
+            if (displayedEstablishments.length === 0) {
+                document.getElementById('establishments-grid').innerHTML = '<div class="loading">No s\'han trobat establiments</div>';
+            } else {
+                loadMoreEstablishments();
+            }
+        });
+        
+        // Lightbox functions
+        function openLightbox(imgSrc) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = imgSrc;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        
+        // Tancar amb ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
+</body>
+</html>

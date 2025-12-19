@@ -1,0 +1,56 @@
+========================================
+COMANDES PER PUJAR EL CODI A GITHUB
+Usuari: vpp470
+========================================
+
+⚠️ IMPORTANT: Executa aquestes comandes UNA PER UNA, en ordre:
+
+---
+COMANDA 1: Inicialitzar Git
+---
+cd /app/backend
+git init
+
+---
+COMANDA 2: Afegir tots els fitxers
+---
+git add .
+
+---
+COMANDA 3: Fer el primer commit
+---
+git commit -m "Initial commit - ReusApp Backend for Railway"
+
+---
+COMANDA 4: Afegir el repositori remot
+⚠️ Substitueix URL_DEL_REPOSITORI per la URL que GitHub et va donar
+Hauria de ser: https://github.com/vpp470/reusapp-backend.git
+---
+git remote add origin https://github.com/vpp470/reusapp-backend.git
+
+---
+COMANDA 5: Canviar a la branca main
+---
+git branch -M main
+
+---
+COMANDA 6: Pujar el codi a GitHub
+⚠️ Et demanarà el teu usuari i contrasenya de GitHub
+Usuari: vpp470
+Contrasenya: (la teva contrasenya de GitHub)
+---
+git push -u origin main
+
+========================================
+✅ Si tot va bé, veuràs:
+"Branch 'main' set up to track remote branch 'main' from 'origin'"
+========================================
+
+NOTA: Si GitHub et demana autenticació i no funciona amb contrasenya,
+necessitaràs un Personal Access Token:
+1. Ves a: https://github.com/settings/tokens
+2. Clica "Generate new token (classic)"
+3. Marca "repo" (tot)
+4. Copia el token
+5. Usa aquest token com a contrasenya
+========================================

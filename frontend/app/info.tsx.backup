@@ -1,0 +1,231 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  ActivityIndicator,
+  Image,
+  Linking,
+  TouchableOpacity,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { Colors, Spacing, FontSizes, BorderRadius } from '../src/constants/colors';
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+interface InfoContent {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  contact_email?: string;
+  order: number;
+}
+
+export default function InfoScreen() {
+  const router = useRouter();
+  const [content, setContent] = useState<InfoContent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+
+  useEffect(() => {
+    loadContent();
+  }, []);
+
+  const loadContent = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/info/content`);
+      setContent(response.data);
+    } catch (error) {
+      console.error('Error carregant informació:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadContent();
+  };
+
+  const openEmail = (email: string) => {
+    Linking.openURL(`mailto:${email}`);
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>El Tomb de Reus</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Carregant informació...</Text>
+        </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />
+          }
+        >
+          {content.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <MaterialIcons name="info" size={64} color={Colors.textSecondary} />
+              <Text style={styles.emptyText}>No hi ha informació disponible</Text>
+            </View>
+          ) : (
+            content.map((item) => (
+              <View key={item.id} style={styles.infoCard}>
+                {item.image && (
+                  <Image source={{ uri: item.image }} style={styles.infoImage} />
+                )}
+                <View style={styles.infoBody}>
+                  <Text style={styles.infoTitle}>{item.title}</Text>
+                  <Text style={styles.infoDescription}>{item.description}</Text>
+                  {item.contact_email && (
+                    <TouchableOpacity
+                      style={styles.contactButton}
+                      onPress={() => openEmail(item.contact_email!)}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialIcons name="email" size={20} color={Colors.white} />
+                      <Text style={styles.contactText}>{item.contact_email}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            ))
+          )}
+
+          {/* Informació fixa si no hi ha contingut */}
+          {content.length === 0 && (
+            <View style={styles.defaultInfo}>
+              <Text style={styles.defaultTitle}>El Tomb de Reus</Text>
+              <Text style={styles.defaultText}>
+                Associació de comerciants del centre històric de Reus que treballa per
+                dinamitzar i promocionar el comerç local.
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+      )}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    backgroundColor: Colors.primary,
+  },
+  headerTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.white,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: Spacing.md,
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+  },
+  scrollContent: {
+    padding: Spacing.md,
+    paddingBottom: 100,
+  },
+  infoCard: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  infoImage: {
+    width: '100%',
+    aspectRatio: 4 / 6, // Format 4x6
+    backgroundColor: Colors.lightGray,
+  },
+  infoBody: {
+    padding: Spacing.lg,
+  },
+  infoTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: Spacing.md,
+  },
+  infoDescription: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+    lineHeight: 24,
+    marginBottom: Spacing.md,
+  },
+  contactButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  contactText: {
+    fontSize: FontSizes.md,
+    color: Colors.white,
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl,
+  },
+  emptyText: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+    marginTop: Spacing.md,
+  },
+  defaultInfo: {
+    backgroundColor: Colors.white,
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.md,
+  },
+  defaultTitle: {
+    fontSize: FontSizes.xxl,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    marginBottom: Spacing.md,
+  },
+  defaultText: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+    lineHeight: 24,
+  },
+});

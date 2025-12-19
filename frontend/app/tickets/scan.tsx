@@ -1,0 +1,567 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Pressable,
+  Alert,
+  ActivityIndicator,
+  Image,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import { Colors, Spacing, FontSizes, BorderRadius } from '../../src/constants/colors';
+import { useAuthStore } from '../../src/store/authStore';
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+export default function ScanTicketScreen() {
+  const router = useRouter();
+  const { token } = useAuthStore();
+  const [permission, requestPermission] = useCameraPermissions();
+  const [processing, setProcessing] = useState(false);
+  const [participations, setParticipations] = useState(0);
+  const [scanMode, setScanMode] = useState<'menu' | 'qr' | 'photo'>('menu'); // menu, qr, photo
+  const [scanned, setScanned] = useState(false);
+
+  const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+
+  useEffect(() => {
+    loadParticipations();
+  }, []);
+
+  const loadParticipations = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/tickets/my-participations`, {
+        headers: { Authorization: token! },
+      });
+      setParticipations(response.data.participations || 0);
+    } catch (error) {
+      console.error('Error carregant participacions:', error);
+    }
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      processTicket(`data:image/jpeg;base64,${result.assets[0].base64}`);
+    }
+  };
+
+  const takePhoto = async () => {
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      processTicket(`data:image/jpeg;base64,${result.assets[0].base64}`);
+    }
+  };
+
+  const handleBarCodeScanned = async ({ data }: { type: string; data: string }) => {
+    if (scanned) return;
+    
+    setScanned(true);
+    setProcessing(true);
+
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/tickets/scan`,
+        { ticket_code: data },
+        { headers: { Authorization: token! } }
+      );
+
+      Alert.alert(
+        '🎉 Tiquet Validat!',
+        response.data.message || 'Tiquet processat correctament!',
+        [
+          {
+            text: 'Veure Participacions',
+            onPress: () => {
+              setScanned(false);
+              setScanMode('menu');
+              router.push('/tickets/participations');
+            },
+          },
+          { 
+            text: 'Escanejar Altre', 
+            onPress: () => {
+              setScanned(false);
+              setProcessing(false);
+              loadParticipations();
+            } 
+          },
+        ]
+      );
+      loadParticipations();
+    } catch (error: any) {
+      Alert.alert(
+        'Error',
+        error.response?.data?.detail || 'No s\'ha pogut processar el codi QR',
+        [
+          {
+            text: 'Reintentar',
+            onPress: () => {
+              setScanned(false);
+              setProcessing(false);
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const processTicket = async (imageBase64: string) => {
+    try {
+      setProcessing(true);
+      
+      const response = await axios.post(
+        `${API_URL}/api/tickets/process`,
+        { ticket_image: imageBase64 },
+        { headers: { Authorization: token! } }
+      );
+
+      if (response.data.success) {
+        Alert.alert(
+          '🎉 Tiquet Validat!',
+          `${response.data.message}\n\nEstabliment: ${response.data.establishment}\nImport: ${response.data.amount}€\n\nTotal participacions: ${participations + response.data.participations}`,
+          [
+            {
+              text: 'Veure Participacions',
+              onPress: () => router.push('/tickets/participations'),
+            },
+            { text: 'Escanejar Altre', onPress: () => { setScanMode('menu'); loadParticipations(); } },
+          ]
+        );
+        loadParticipations();
+      }
+    } catch (error: any) {
+      console.error('Error processant tiquet:', error);
+      Alert.alert(
+        'Error',
+        error.response?.data?.detail || 'No s\'ha pogut processar el tiquet. Comprova que sigui llegible i d\'un establiment associat.'
+      );
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  if (!permission) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.permissionContainer}>
+          <MaterialIcons name="camera-alt" size={64} color={Colors.textSecondary} />
+          <Text style={styles.permissionTitle}>Accés a la Càmera</Text>
+          <Text style={styles.permissionText}>
+            Necessitem accés a la càmera per escanejar els teus tiquets
+          </Text>
+          <Pressable style={styles.permissionButton} onPress={requestPermission}>
+            <Text style={styles.permissionButtonText}>Permetre Càmera</Text>
+          </Pressable>
+          <Pressable style={styles.galleryButton} onPress={pickImage}>
+            <MaterialIcons name="photo-library" size={20} color={Colors.primary} />
+            <Text style={styles.galleryButtonText}>Seleccionar de Galeria</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Vista de escàner QR
+  if (scanMode === 'qr' && permission?.granted) {
+    return (
+      <View style={styles.container}>
+        <CameraView
+          style={StyleSheet.absoluteFillObject}
+          facing="back"
+          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+          barcodeScannerSettings={{
+            barcodeTypes: ['qr'],
+          }}
+        />
+
+        <SafeAreaView style={styles.scannerOverlay} edges={['top']}>
+          <View style={styles.scannerHeader}>
+            <Pressable onPress={() => setScanMode('menu')}>
+              <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+            </Pressable>
+            <Text style={styles.scannerHeaderTitle}>Escanejar Codi QR</Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <View style={styles.scannerContent}>
+            <View style={styles.scanAreaWrapper}>
+              <View style={styles.scanArea}>
+                <View style={[styles.corner, styles.topLeft]} />
+                <View style={[styles.corner, styles.topRight]} />
+                <View style={[styles.corner, styles.bottomLeft]} />
+                <View style={[styles.corner, styles.bottomRight]} />
+              </View>
+            </View>
+            
+            <Text style={styles.scannerInstructionText}>
+              Apunta la càmera al codi QR del tiquet
+            </Text>
+
+            {processing && (
+              <View style={styles.processingContainer}>
+                <ActivityIndicator size="large" color={Colors.white} />
+                <Text style={styles.scannerProcessingText}>Processant ticket...</Text>
+              </View>
+            )}
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+        </Pressable>
+        <Text style={styles.headerTitle}>Escaneja Tiquet</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <View style={styles.participationsBar}>
+        <MaterialIcons name="confirmation-number" size={24} color={Colors.primary} />
+        <Text style={styles.participationsText}>
+          {participations} participació{participations !== 1 ? 'ns' : ''} acumulada{participations !== 1 ? 'es' : ''}
+        </Text>
+      </View>
+
+      <View style={styles.content}>
+        <View style={styles.infoBox}>
+          <MaterialIcons name="info" size={20} color={Colors.primary} />
+          <Text style={styles.infoText}>
+            Per cada 10€ de compra generes 1 participació per al sorteig mensual
+          </Text>
+        </View>
+
+        <View style={styles.buttonsContainer}>
+          {/* Botó escanejar QR */}
+          {permission?.granted && (
+            <Pressable
+              style={styles.qrButton}
+              onPress={() => setScanMode('qr')}
+              disabled={processing}
+            >
+              <MaterialIcons name="qr-code-scanner" size={48} color={Colors.white} />
+              <Text style={styles.photoButtonText}>Escanejar QR</Text>
+            </Pressable>
+          )}
+
+          <Pressable
+            style={styles.photoButton}
+            onPress={takePhoto}
+            disabled={processing}
+          >
+            <MaterialIcons name="camera-alt" size={48} color={Colors.white} />
+            <Text style={styles.photoButtonText}>Fer Foto</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.galleryButtonLarge}
+            onPress={pickImage}
+            disabled={processing}
+          >
+            <MaterialIcons name="photo-library" size={48} color={Colors.white} />
+            <Text style={styles.photoButtonText}>Galeria</Text>
+          </Pressable>
+        </View>
+
+        {processing && (
+          <View style={styles.processingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.processingText}>Processant tiquet amb IA...</Text>
+          </View>
+        )}
+
+        <View style={styles.instructions}>
+          <Text style={styles.instructionsTitle}>Com funciona:</Text>
+          <Text style={styles.instructionItem}>📱 Escanejar codi QR (si en tens)</Text>
+          <Text style={styles.instructionItem}>📸 O fes una foto clara del tiquet</Text>
+          <Text style={styles.instructionItem}>🔍 El sistema llegirà automàticament les dades</Text>
+          <Text style={styles.instructionItem}>✅ Es validarà que sigui d'un establiment associat</Text>
+          <Text style={styles.instructionItem}>🎯 Generaràs participacions segons l'import</Text>
+          <Text style={styles.instructionItem}>🏆 Participa al sorteig mensual</Text>
+        </View>
+
+        <Pressable
+          style={styles.historyButton}
+          onPress={() => router.push('/tickets/participations')}
+        >
+          <MaterialIcons name="history" size={20} color={Colors.primary} />
+          <Text style={styles.historyButtonText}>Veure Historial</Text>
+        </Pressable>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    backgroundColor: Colors.primary,
+  },
+  headerTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc
+  },
+  participationsBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    backgroundColor: Colors.primaryLight,
+    gap: Spacing.sm,
+  },
+  participationsText: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  content: {
+    flex: 1,
+    padding: Spacing.lg,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: Colors.white,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    color: Colors.textDark, // Text fosc per fons blanc
+    lineHeight: 20,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  photoButton: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  galleryButtonLarge: {
+    flex: 1,
+    backgroundColor: Colors.secondary,
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  photoButtonText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  processingContainer: {
+    alignItems: 'center',
+    marginVertical: Spacing.xl,
+  },
+  processingText: {
+    marginTop: Spacing.md,
+    fontSize: FontSizes.md,
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontWeight: '600',
+  },
+  instructions: {
+    backgroundColor: Colors.white,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+  },
+  instructionsTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    marginBottom: Spacing.md,
+    color: Colors.textDark, // Text fosc per fons blanc
+  },
+  instructionItem: {
+    fontSize: FontSizes.sm,
+    color: Colors.textDark, // Text fosc per fons blanc
+    marginBottom: Spacing.sm,
+    lineHeight: 22,
+  },
+  historyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    gap: Spacing.sm,
+  },
+  historyButtonText: {
+    fontSize: FontSizes.md,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  permissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.xl,
+  },
+  permissionTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+    color: Colors.textDark, // Text fosc per fons blanc
+  },
+  permissionText: {
+    fontSize: FontSizes.md,
+    color: Colors.textDark, // Text fosc per fons blanc
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+  },
+  permissionButton: {
+    backgroundColor: Colors.primary,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    minWidth: 200,
+    alignItems: 'center',
+  },
+  permissionButtonText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  galleryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    marginTop: Spacing.md,
+    gap: Spacing.sm,
+  },
+  galleryButtonText: {
+    color: Colors.primary,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  qrButton: {
+    flex: 1,
+    backgroundColor: Colors.success,
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  scannerOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  scannerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  scannerHeaderTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc
+  },
+  scannerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  scanAreaWrapper: {
+    padding: Spacing.xl,
+  },
+  scanArea: {
+    width: 250,
+    height: 250,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  corner: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderColor: Colors.success,
+  },
+  topLeft: {
+    top: -2,
+    left: -2,
+    borderTopWidth: 4,
+    borderLeftWidth: 4,
+  },
+  topRight: {
+    top: -2,
+    right: -2,
+    borderTopWidth: 4,
+    borderRightWidth: 4,
+  },
+  bottomLeft: {
+    bottom: -2,
+    left: -2,
+    borderBottomWidth: 4,
+    borderLeftWidth: 4,
+  },
+  bottomRight: {
+    bottom: -2,
+    right: -2,
+    borderBottomWidth: 4,
+    borderRightWidth: 4,
+  },
+  scannerInstructionText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.md,
+    textAlign: 'center',
+    marginTop: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+  },
+  scannerProcessingText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    marginTop: Spacing.md,
+  },
+});

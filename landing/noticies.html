@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notícies - El Tomb de Reus</title>
+    <link rel="icon" type="image/png" href="https://eltombdereus.com/wp-content/uploads/2024/07/cropped-logo-tomb.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        .floating-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .menu-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-logo img { height: 50px; }
+        
+        .menu-nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+        
+        .menu-nav a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        
+        .menu-nav a:hover { color: var(--primary-color); }
+        
+        .menu-nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+        }
+        
+        .page-content {
+            margin-top: 90px;
+            padding: 3rem 2rem;
+        }
+        
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .news-list {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .news-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .news-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .news-date {
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .news-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        
+        .news-content {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: var(--text-light);
+        }
+        
+        .news-source {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        .news-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .news-link:hover {
+            text-decoration: underline;
+        }
+        
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--text-light);
+            padding: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-nav { display: none; }
+            .page-title { font-size: 2rem; }
+            .news-card { padding: 2rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="floating-menu">
+        <div class="menu-content">
+            <div class="menu-logo">
+                <a href="home.html">
+                    <img src="https://eltombdereus.com/wp-content/uploads/2024/07/logo-tomb.png" alt="El Tomb de Reus">
+                </a>
+            </div>
+            <div class="menu-nav">
+                <a href="home.html">Inici</a>
+                <a href="mapa.html">Mapa</a>
+                <a href="sobre.html">Què és El Tomb?</a>
+                <a href="establiments.html">Establiments</a>
+                <a href="ofertes.html">Ofertes</a>
+                <a href="noticies.html" class="active">Notícies</a>
+                <a href="esdeveniments.html">Esdeveniments</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <h1 class="page-title">Notícies</h1>
+        <p class="page-subtitle">Mantingues-te informat sobre el comerç local de Reus</p>
+        
+        <div id="news-list" class="news-list">
+            <div class="loading">Carregant notícies...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://reusapp-backend-production.up.railway.app/api';
+
+        document.addEventListener('DOMContentLoaded', loadNews);
+
+        async function loadNews() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/news?limit=50`);
+                const news = await response.json();
+                renderNews(news);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('news-list').innerHTML = 
+                    '<div class="loading">Error carregant notícies</div>';
+            }
+        }
+
+        function renderNews(news) {
+            const list = document.getElementById('news-list');
+            
+            if (news.length === 0) {
+                list.innerHTML = '<div class="loading">No hi ha notícies disponibles</div>';
+                return;
+            }
+            
+            list.innerHTML = news.map(article => {
+                const date = new Date(article.published_at || article.created_at);
+                const formattedDate = date.toLocaleDateString('ca-ES', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                
+                return `
+                    <div class="news-card">
+                        <div class="news-date">${formattedDate}</div>
+                        <div class="news-title">${article.title}</div>
+                        <div class="news-content">${article.content || article.summary || ''}</div>
+                        ${article.source_url ? `
+                            <div class="news-source">
+                                <a href="${article.source_url}" target="_blank" rel="noopener" class="news-link">
+                                    Llegir més →
+                                </a>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

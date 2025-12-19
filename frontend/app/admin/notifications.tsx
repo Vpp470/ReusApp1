@@ -1,0 +1,297 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Pressable,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, Spacing, FontSizes, BorderRadius } from '../../src/constants/colors';
+import { useAuthStore } from '../../src/store/authStore';
+import { sendLocalNotification } from '../../src/services/notifications';
+
+export default function AdminNotificationsScreen() {
+  const router = useRouter();
+  const { token } = useAuthStore();
+  
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSendTestNotification = async () => {
+    if (!title || !body) {
+      Alert.alert('Error', 'Títol i missatge són obligatoris');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await sendLocalNotification(title, body);
+      Alert.alert('Èxit', 'Notificació de prova enviada!');
+      setTitle('');
+      setBody('');
+    } catch (error) {
+      Alert.alert('Error', 'No s\'ha pogut enviar la notificació');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+        </Pressable>
+        <Text style={styles.headerTitle}>Notificacions Push</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+        {/* Info */}
+        <View style={styles.infoBox}>
+          <MaterialIcons name="info" size={24} color={Colors.primary} />
+          <Text style={styles.infoText}>
+            Aquesta funcionalitat només funciona en dispositius físics amb Expo Go o l'app compilada.
+          </Text>
+        </View>
+
+        {/* Test Notification */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Notificació de Prova (Local)</Text>
+          <Text style={styles.sectionSubtitle}>
+            Envia una notificació local al teu dispositiu per provar
+          </Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Títol *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Títol de la notificació"
+              placeholderTextColor={Colors.lightGray}
+              value={title}
+              onChangeText={setTitle}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Missatge *</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Contingut de la notificació"
+              placeholderTextColor={Colors.lightGray}
+              value={body}
+              onChangeText={setBody}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+          </View>
+
+          <Pressable
+            style={styles.sendButton}
+            onPress={handleSendTestNotification}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={Colors.white} />
+            ) : (
+              <>
+                <MaterialIcons name="send" size={20} color={Colors.white} />
+                <Text style={styles.sendButtonText}>Enviar Prova Local</Text>
+              </>
+            )}
+          </Pressable>
+        </View>
+
+        {/* Future: Broadcast Notifications */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Notificacions Massives</Text>
+          <Text style={styles.sectionSubtitle}>
+            Funcionalitat per enviar notificacions a tots els usuaris
+          </Text>
+          
+          <View style={styles.comingSoon}>
+            <MaterialIcons name="schedule" size={48} color={Colors.lightGray} />
+            <Text style={styles.comingSoonText}>Pròximament</Text>
+          </View>
+        </View>
+
+        {/* Instructions */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Instruccions</Text>
+          
+          <View style={styles.instruction}>
+            <View style={styles.instructionNumber}>
+              <Text style={styles.instructionNumberText}>1</Text>
+            </View>
+            <Text style={styles.instructionText}>
+              Les notificacions de prova s'envien localment al teu dispositiu
+            </Text>
+          </View>
+
+          <View style={styles.instruction}>
+            <View style={styles.instructionNumber}>
+              <Text style={styles.instructionNumberText}>2</Text>
+            </View>
+            <Text style={styles.instructionText}>
+              Per enviar notificacions reals a altres usuaris, es necessita configurar un servidor de notificacions
+            </Text>
+          </View>
+
+          <View style={styles.instruction}>
+            <View style={styles.instructionNumber}>
+              <Text style={styles.instructionNumberText}>3</Text>
+            </View>
+            <Text style={styles.instructionText}>
+              Les notificacions automàtiques s'envien quan s'aprova o rebutja una promoció
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+  },
+  backButton: {
+    padding: Spacing.xs,
+  },
+  headerTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: Spacing.lg,
+    paddingBottom: 100,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: Colors.primary + '20',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    color: Colors.textDark, // Text fosc per fons blanc // Text blanc per llegibilitat
+  },
+  section: {
+    backgroundColor: Colors.white,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.lg,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc // Text blanc per llegibilitat
+    marginBottom: Spacing.xs,
+  },
+  sectionSubtitle: {
+    fontSize: FontSizes.sm,
+    color: Colors.darkGray, // Text gris per fons blanc
+    marginBottom: Spacing.md,
+  },
+  inputGroup: {
+    marginBottom: Spacing.md,
+  },
+  label: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.textDark, // Text fosc per fons blanc // Text blanc per llegibilitat
+    marginBottom: Spacing.xs,
+  },
+  input: {
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    fontSize: FontSizes.md,
+    color: Colors.white, // Text blanc per llegibilitat
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  sendButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.sm,
+  },
+  sendButtonText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+  },
+  comingSoon: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl,
+  },
+  comingSoonText: {
+    fontSize: FontSizes.md,
+    color: Colors.darkGray, // Text gris per fons blanc
+    marginTop: Spacing.sm,
+  },
+  instruction: {
+    flexDirection: 'row',
+    marginBottom: Spacing.md,
+    alignItems: 'flex-start',
+  },
+  instructionNumber: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
+  instructionNumberText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+  },
+  instructionText: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    color: Colors.textDark, // Text fosc per fons blanc // Text blanc per llegibilitat
+    lineHeight: 20,
+  },
+});

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esdeveniments - El Tomb de Reus</title>
+    <link rel="icon" type="image/png" href="https://eltombdereus.com/wp-content/uploads/2024/07/cropped-logo-tomb.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        .floating-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .menu-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-logo img { height: 50px; }
+        
+        .menu-nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+        
+        .menu-nav a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        
+        .menu-nav a:hover { color: var(--primary-color); }
+        
+        .menu-nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+        }
+        
+        .page-content {
+            margin-top: 90px;
+            padding: 3rem 2rem;
+        }
+        
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .event-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .event-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #E63946 0%, #457B9D 100%);
+        }
+        
+        .event-info {
+            padding: 2rem;
+        }
+        
+        .event-category {
+            display: inline-block;
+            background: rgba(230, 57, 70, 0.1);
+            color: var(--primary-color);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .event-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        
+        .event-description {
+            font-size: 1rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .event-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        .event-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--text-light);
+            padding: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-nav { display: none; }
+            .page-title { font-size: 2rem; }
+            .events-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="floating-menu">
+        <div class="menu-content">
+            <div class="menu-logo">
+                <a href="home.html">
+                    <img src="https://eltombdereus.com/wp-content/uploads/2024/07/logo-tomb.png" alt="El Tomb de Reus">
+                </a>
+            </div>
+            <div class="menu-nav">
+                <a href="home.html">Inici</a>
+                <a href="mapa.html">Mapa</a>
+                <a href="sobre.html">Què és El Tomb?</a>
+                <a href="establiments.html">Establiments</a>
+                <a href="ofertes.html">Ofertes</a>
+                <a href="noticies.html">Notícies</a>
+                <a href="esdeveniments.html" class="active">Esdeveniments</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <h1 class="page-title">Esdeveniments</h1>
+        <p class="page-subtitle">Descobreix les campanyes i activitats especials</p>
+        
+        <div id="events-grid" class="events-grid">
+            <div class="loading">Carregant esdeveniments...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://reusapp-backend-production.up.railway.app/api';
+
+        document.addEventListener('DOMContentLoaded', loadEvents);
+
+        async function loadEvents() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/events`);
+                let events = await response.json();
+                
+                // Filter active events
+                const now = new Date();
+                events = events.filter(event => {
+                    const validFrom = new Date(event.valid_from);
+                    const validUntil = new Date(event.valid_until);
+                    return now >= validFrom && now <= validUntil;
+                });
+                
+                renderEvents(events);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('events-grid').innerHTML = 
+                    '<div class="loading">Error carregant esdeveniments</div>';
+            }
+        }
+
+        function renderEvents(events) {
+            const grid = document.getElementById('events-grid');
+            
+            if (events.length === 0) {
+                grid.innerHTML = '<div class="loading">No hi ha esdeveniments actius actualment</div>';
+                return;
+            }
+            
+            grid.innerHTML = events.map(event => {
+                const validUntil = new Date(event.valid_until);
+                const formattedDate = validUntil.toLocaleDateString('ca-ES', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                
+                return `
+                    <div class="event-card">
+                        ${event.image_url ? `<img src="${event.image_url}" class="event-image" alt="${event.title}" />` : '<div class="event-image"></div>'}
+                        <div class="event-info">
+                            ${event.category ? `<div class="event-category">${event.category}</div>` : ''}
+                            <div class="event-title">${event.title}</div>
+                            <div class="event-description">${event.description || ''}</div>
+                            <div class="event-details">
+                                ${event.location ? `
+                                    <div class="event-detail">
+                                        <span>📍</span>
+                                        <span>${event.location}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="event-detail">
+                                    <span>📅</span>
+                                    <span>Fins el ${formattedDate}</span>
+                                </div>
+                                ${event.participating_establishment_ids && event.participating_establishment_ids.length > 0 ? `
+                                    <div class="event-detail">
+                                        <span>🏪</span>
+                                        <span>${event.participating_establishment_ids.length} establiments participants</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

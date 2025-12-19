@@ -1,0 +1,587 @@
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert,
+  Platform,
+  Linking,
+  FlatList,
+  ScrollView,
+} from 'react-native';
+import { WebView } from 'react-native-webview';
+import * as Location from 'expo-location';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { establishmentsService } from '../../src/services/api';
+import { Colors, Spacing, FontSizes, BorderRadius } from '../../src/constants/colors';
+import type { Establishment } from '../../src/types';
+import i18n from '../../src/i18n';
+
+export default function MapScreen() {
+  const router = useRouter();
+  const webViewRef = useRef<WebView>(null);
+  const [establishments, setEstablishments] = useState<Establishment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEstablishment, setSelectedEstablishment] = useState<Establishment | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadEstablishments();
+    getUserLocation();
+  }, []);
+
+  const getUserLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    } catch (error) {
+      console.error('Error getting location:', error);
+    }
+  };
+
+  const loadEstablishments = async () => {
+    try {
+      const data = await establishmentsService.getAll();
+      console.log(`📊 Loaded ${data.length} establishments from API`);
+      
+      // Filtrar: només establiments amb coordenades (els tancats ja estan filtrats pel backend)
+      const withCoords = data.filter(est => est.latitude && est.longitude);
+      console.log(`📍 ${withCoords.length} establishments have coordinates`);
+      
+      setEstablishments(withCoords);
+      
+      if (withCoords.length === 0) {
+        setError('No hi ha establiments amb coordenades per mostrar al mapa');
+      }
+    } catch (error) {
+      console.error('Error loading establishments:', error);
+      setError('No s\'han pogut carregar els establiments');
+      Alert.alert('Error', 'No s\'han pogut carregar els establiments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generar HTML pel mapa amb Leaflet (OpenStreetMap)
+  const generateMapHTML = () => {
+    const center = userLocation || { latitude: 41.1557, longitude: 1.1072 }; // Reus per defecte
+    
+    const markers = establishments.map((est, index) => {
+      const name = est.name.replace(/'/g, "\\'").replace(/"/g, '\\"');
+      const category = est.category ? est.category.replace(/'/g, "\\'").replace(/"/g, '\\"') : '';
+      const address = est.address ? est.address.replace(/'/g, "\\'").replace(/"/g, '\\"') : '';
+      
+      return `
+      L.marker([${est.latitude}, ${est.longitude}], {
+        icon: blueIcon
+      }).addTo(map)
+        .bindPopup('<div style="min-width: 200px;">' +
+          '<h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333;">${name}</h3>' +
+          ${category ? `'<p style="margin: 4px 0; color: #007AFF; font-weight: 600;">${category}</p>' +` : ''}
+          ${address ? `'<p style="margin: 4px 0; color: #666; font-size: 14px;">${address}</p>' +` : ''}
+          '<button onclick="window.ReactNativeWebView.postMessage(\\'${est.id}\\')" ' +
+            'style="margin-top: 8px; padding: 8px 16px; background: #007AFF; color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%;">' +
+            'Veure detalls' +
+          '</button>' +
+          '</div>');
+    `;
+    }).join('\n');
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <style>
+          body { margin: 0; padding: 0; }
+          #map { width: 100%; height: 100vh; }
+        </style>
+      </head>
+      <body>
+        <div id="map"></div>
+        <script>
+          var map = L.map('map').setView([${center.latitude}, ${center.longitude}], 14);
+          
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+          }).addTo(map);
+
+          // Icona blava per establiments
+          var blueIcon = L.icon({
+            iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNSIgaGVpZ2h0PSI0MSIgdmlld0JveD0iMCAwIDI1IDQxIj48cGF0aCBmaWxsPSIjMDA3QUZGIiBkPSJNMTIuNSAwQzUuNiAwIDAgNS42IDAgMTIuNWMwIDEuNCAwLjIgMi44IDAuNyA0LjFMOC4zIDM1bC0wLjEgMC4xQzkuNCAzNy4xIDEwLjkgMzkgMTIuNSA0MWMxLjYtMiAzLjEtMy45IDQuMy02bC0wLjEtMC4xTDI0LjMgMTYuNmMwLjUtMS4zIDAuNy0yLjcgMC43LTQuMUMyNSA1LjYgMTkuNCAwIDEyLjUgMHpNMTIuNSAxN2MtMi41IDAtNC41LTItNC41LTQuNXMyLTQuNSA0LjUtNC41IDQuNSAyIDQuNSA0LjVTMTUgMTcgMTIuNSAxN3oiLz48L3N2Zz4=',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+          });
+
+          // Icona vermella per posició usuari
+          var redIcon = L.icon({
+            iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNSIgaGVpZ2h0PSI0MSIgdmlld0JveD0iMCAwIDI1IDQxIj48cGF0aCBmaWxsPSIjRkYwMDAwIiBkPSJNMTIuNSAwQzUuNiAwIDAgNS42IDAgMTIuNWMwIDEuNCAwLjIgMi44IDAuNyA0LjFMOC4zIDM1bC0wLjEgMC4xQzkuNCAzNy4xIDEwLjkgMzkgMTIuNSA0MWMxLjYtMiAzLjEtMy45IDQuMy02bC0wLjEtMC4xTDI0LjMgMTYuNmMwLjUtMS4zIDAuNy0yLjcgMC43LTQuMUMyNSA1LjYgMTkuNCAwIDEyLjUgMHpNMTIuNSAxN2MtMi41IDAtNC41LTItNC41LTQuNXMyLTQuNSA0LjUtNC41IDQuNSAyIDQuNSA0LjVTMTUgMTcgMTIuNSAxN3oiLz48L3N2Zz4=',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+          });
+
+          ${userLocation ? `
+          // Afegir marcador de posició usuari
+          L.marker([${userLocation.latitude}, ${userLocation.longitude}], {
+            icon: redIcon
+          }).addTo(map)
+            .bindPopup('<strong>La teva posició</strong>');
+          ` : ''}
+
+          // Afegir marcadors d'establiments
+          ${markers}
+        </script>
+      </body>
+      </html>
+    `;
+  };
+
+  const openMapsApp = (establishment: Establishment) => {
+    const latLng = `${establishment.latitude},${establishment.longitude}`;
+    const label = establishment.name;
+    const url = `https://www.google.com/maps/search/?api=1&query=${latLng}`;
+
+    Linking.openURL(url);
+  };
+
+  const renderEstablishmentCard = ({ item }: { item: Establishment }) => (
+    <TouchableOpacity
+      style={styles.establishmentCard}
+      onPress={() => setSelectedEstablishment(item)}
+    >
+      <View style={styles.iconContainer}>
+        <MaterialIcons name="store" size={32} color={Colors.primary} />
+      </View>
+      <View style={styles.establishmentInfo}>
+        <Text style={styles.establishmentName}>{item.name}</Text>
+        {item.category && (
+          <Text style={styles.establishmentCategory}>{item.category}</Text>
+        )}
+        {item.address && (
+          <View style={styles.addressRow}>
+            <MaterialIcons name="location-on" size={14} color={Colors.textSecondary} />
+            <Text style={styles.addressText}>{item.address}</Text>
+          </View>
+        )}
+      </View>
+      <MaterialIcons name="chevron-right" size={24} color={Colors.gray} />
+    </TouchableOpacity>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  const handleWebViewMessage = (event: any) => {
+    const establishmentId = event.nativeEvent.data;
+    const establishment = establishments.find(est => est.id === establishmentId);
+    if (establishment) {
+      setSelectedEstablishment(establishment);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={styles.loadingText}>Carregant mapa...</Text>
+      </View>
+    );
+  }
+
+  // Mostrar mapa interactiu per a tots els platforms (web, iOS, Android)
+  // Ara TOTS els platforms usen WebView amb HTML dinàmic generat
+  return (
+    <View style={styles.container}>
+      <WebView
+        ref={webViewRef}
+        source={{ html: generateMapHTML() }}
+        style={styles.map}
+        onMessage={handleWebViewMessage}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        onError={(syntheticEvent) => {
+          const { nativeEvent } = syntheticEvent;
+          console.error('WebView error:', nativeEvent);
+          setError(`Error carregant mapa: ${nativeEvent.description}`);
+        }}
+        onLoadEnd={() => {
+          console.log('Map loaded successfully with', establishments.length, 'establishments');
+          setError(null);
+        }}
+        onHttpError={(syntheticEvent) => {
+          const { nativeEvent } = syntheticEvent;
+          console.error('HTTP error:', nativeEvent);
+          setError(`Error HTTP: ${nativeEvent.statusCode}`);
+        }}
+      />
+      {error && (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            onPress={() => {
+              setError(null);
+              webViewRef.current?.reload();
+            }}
+          >
+            <Text style={styles.retryText}>Reintentar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {selectedEstablishment && (
+        <View style={styles.modal}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setSelectedEstablishment(null)}
+            >
+              <MaterialIcons name="close" size={28} color={Colors.textDark} />
+            </TouchableOpacity>
+
+            <Text style={styles.modalTitle}>{selectedEstablishment.name}</Text>
+
+            {selectedEstablishment.category && (
+              <Text style={styles.modalCategory}>{selectedEstablishment.category}</Text>
+            )}
+
+            <ScrollView style={styles.modalScroll}>
+              {selectedEstablishment.description && (
+                <Text style={styles.modalDescription}>
+                  {selectedEstablishment.description
+                    .replace(/<\/?p[^>]*>/g, '')
+                    .replace(/<\/?br[^>]*>/g, ' ')
+                    .replace(/<\/?[a-z]+[^>]*>/g, '')
+                    .replace(/&nbsp;/g, ' ')
+                    .replace(/&amp;/g, '&')
+                    .replace(/\s+/g, ' ')
+                    .trim()}
+                </Text>
+              )}
+
+              {selectedEstablishment.address && (
+                <TouchableOpacity
+                  style={styles.modalRow}
+                  onPress={() => openMapsApp(selectedEstablishment)}
+                >
+                  <MaterialIcons name="location-on" size={20} color={Colors.primary} />
+                  <Text style={[styles.modalRowText, styles.linkText]}>
+                    {selectedEstablishment.address}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {selectedEstablishment.phone && (
+                <TouchableOpacity
+                  style={styles.modalRow}
+                  onPress={() => Linking.openURL(`tel:${selectedEstablishment.phone}`)}
+                >
+                  <MaterialIcons name="phone" size={20} color={Colors.success} />
+                  <Text style={[styles.modalRowText, styles.linkText]}>
+                    {selectedEstablishment.phone}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {selectedEstablishment.website && (
+                <TouchableOpacity
+                  style={styles.modalRow}
+                  onPress={() => Linking.openURL(selectedEstablishment.website!)}
+                >
+                  <MaterialIcons name="language" size={20} color={Colors.primary} />
+                  <Text style={[styles.modalRowText, styles.linkText]}>
+                    Lloc web
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </ScrollView>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => openMapsApp(selectedEstablishment)}
+              >
+                <MaterialIcons name="directions" size={20} color={Colors.white} />
+                <Text style={styles.modalButtonText}>Com arribar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.secondaryModalButton]}
+                onPress={() => {
+                  setSelectedEstablishment(null);
+                  router.push(`/establishments/${selectedEstablishment.id}`);
+                }}
+              >
+                <MaterialIcons name="info" size={20} color={Colors.primary} />
+                <Text style={[styles.modalButtonText, styles.secondaryModalButtonText]}>
+                  Veure detalls
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  map: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+  },
+  loadingText: {
+    marginTop: Spacing.md,
+    fontSize: FontSizes.md,
+    color: Colors.darkGray, // Text gris per fons blanc
+  },
+  webHeader: {
+    backgroundColor: Colors.white,
+    padding: Spacing.xl,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  webHeaderTitle: {
+    fontSize: FontSizes.xxl,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.xs,
+  },
+  webHeaderSubtitle: {
+    fontSize: FontSizes.sm,
+    color: Colors.darkGray, // Text gris per fons blanc
+    textAlign: 'center',
+  },
+  list: {
+    padding: Spacing.md,
+    paddingBottom: 100,
+  },
+  separator: {
+    height: Spacing.sm,
+  },
+  webBanner: {
+    backgroundColor: Colors.info,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+  },
+  webBannerText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.sm,
+    marginLeft: Spacing.sm,
+    flex: 1,
+  },
+  listContainer: {
+    padding: Spacing.md,
+    paddingBottom: 100, // Espai per al menú inferior
+  },
+  establishmentCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.primary + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+  },
+  establishmentInfo: {
+    flex: 1,
+  },
+  establishmentName: {
+    fontSize: FontSizes.md,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text negre per targetes blanques
+    marginBottom: Spacing.xs,
+  },
+  establishmentCategory: {
+    fontSize: FontSizes.sm,
+    color: Colors.primary,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+  },
+  addressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addressText: {
+    fontSize: FontSizes.xs,
+    color: Colors.darkGray, // Text gris per fons blanc
+    marginLeft: 4,
+    flex: 1,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl * 2,
+  },
+  emptyText: {
+    fontSize: FontSizes.lg,
+    color: Colors.darkGray, // Text gris per fons blanc
+    marginTop: Spacing.md,
+  },
+  modal: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: Spacing.lg,
+    paddingBottom: 100, // Espai per al menú inferior
+    maxHeight: '80%',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    padding: Spacing.sm,
+    zIndex: 10,
+    backgroundColor: Colors.lightGray,
+    borderRadius: 20,
+  },
+  modalTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text negre per fons blanc
+    marginBottom: Spacing.xs,
+    paddingRight: Spacing.xl,
+  },
+  modalCategory: {
+    fontSize: FontSizes.sm,
+    color: Colors.primary,
+    fontWeight: '600',
+    marginBottom: Spacing.md,
+  },
+  modalScroll: {
+    maxHeight: 300,
+  },
+  modalDescription: {
+    fontSize: FontSizes.sm,
+    color: Colors.darkGray, // Text gris fosc per fons blanc
+    marginBottom: Spacing.md,
+    lineHeight: 20,
+  },
+  modalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+  },
+  modalRowText: {
+    fontSize: FontSizes.sm,
+    color: Colors.textDark, // Text negre per fons blanc
+    marginLeft: Spacing.md,
+    flex: 1,
+  },
+  linkText: {
+    color: Colors.primary,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    marginTop: Spacing.md,
+    marginBottom: 80, // Espai per al menú inferior
+    gap: Spacing.md,
+  },
+  modalButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    padding: Spacing.md,
+    borderRadius: 10,
+  },
+  modalButtonText: {
+    color: Colors.white, // Text blanc per botó verd
+    fontSize: FontSizes.sm,
+    fontWeight: 'bold',
+    marginLeft: Spacing.sm,
+  },
+  errorBanner: {
+    position: 'absolute',
+    top: 50,
+    left: Spacing.md,
+    right: Spacing.md,
+    backgroundColor: Colors.error,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  errorText: {
+    flex: 1,
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.sm,
+    marginRight: Spacing.sm,
+  },
+  retryText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontSize: FontSizes.sm,
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  secondaryModalButton: {
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  secondaryModalButtonText: {
+    color: Colors.primary,
+  },
+});

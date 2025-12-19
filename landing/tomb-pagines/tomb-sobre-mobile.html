@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Què és El Tomb? - El Tomb de Reus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0d1f1a 0%, #1a3a2e 50%, #0d1f1a 100%);
+            min-height: 100vh;
+            position: relative;
+            
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(61, 122, 95, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(45, 90, 69, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        
+        .logo-container {
+            position: fixed;
+            top: 30px;
+            left: 40px;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(26, 58, 46, 0.8) 0%, rgba(19, 43, 35, 0.6) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(61, 122, 95, 0.3);
+            border-radius: 16px;
+            padding: 12px 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        
+        .logo-container:hover {
+            transform: translateY(-2px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.2);
+        
+        .logo-container img {
+            width: 140px;
+            height: auto;
+            display: block;
+            filter: brightness(0) invert(1);
+        
+        .logo-container img {
+            width: 140px;
+            height: auto;
+            display: block;
+            filter: brightness(0) invert(1);
+        
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 120px 40px 60px;
+            position: relative;
+            z-index: 1;
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 60px;
+        
+        .page-subtitle {
+            font-size: 0.95rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #D4AF37;
+            font-weight: 600;
+            margin-bottom: 20px;
+        
+        .page-title { 
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem; 
+            margin-bottom: 20px; 
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        
+        .intro-text {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+            line-height: 1.8;
+            text-align: center;
+            margin-bottom: 60px;
+        
+        .about-section {
+            background: linear-gradient(135deg, rgba(26, 58, 46, 0.7) 0%, rgba(19, 43, 35, 0.5) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(61, 122, 95, 0.2);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+        
+        .about-section h3 {
+            font-size: 1.8rem;
+            color: #D4AF37;
+            margin-bottom: 20px;
+            font-weight: 700;
+        
+        .about-section p {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #e0e0e0;
+            margin-bottom: 16px;
+        
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        
+        .value-card {
+            background: linear-gradient(135deg, rgba(26, 58, 46, 0.7) 0%, rgba(19, 43, 35, 0.5) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(61, 122, 95, 0.2);
+            padding: 35px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.4s;
+        
+        .value-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(212, 175, 55, 0.4);
+            box-shadow: 0 15px 50px rgba(212, 175, 55, 0.2);
+        
+        .value-icon {
+            width: 56px;
+            height: 56px;
+            stroke: #D4AF37;
+            stroke-width: 1.5;
+            margin: 0 auto 20px;
+        
+        .value-card h4 {
+            font-size: 1.4rem;
+            color: #ffffff;
+            margin-bottom: 12px;
+            font-weight: 700;
+        
+        .value-card p {
+            font-size: 1rem;
+            color: #b0b0b0;
+            line-height: 1.6;
+        
+        
+        /* MÒBIL - CSS Ultra Simple amb Textos GRANS */
+            /* Eliminar TOTS els efectes pesats */
+            * {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+            
+            /* Scroll natiu i fluid */
+            html, body {
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                touch-action: pan-y !important;
+            }
+            
+            /* Fons sòlid sense efectes */
+            body {
+                background: #0d1f1a !important;
+            }
+            
+            body::before {
+                display: none !important;
+            }
+            
+            /* Cards simples */
+            .establishment-card, .offer-card, .event-card, .news-card {
+                background: #1a3a2e !important;
+                border: 1px solid #3d7a5f !important;
+                padding: 24px !important;
+                margin-bottom: 18px !important;
+            }
+            
+            /* Logo */
+            .logo-container {
+                background: #1a3a2e !important;
+                top: 15px !important;
+                left: 15px !important;
+                padding: 10px 14px !important;
+            }
+            
+            .logo-container img {
+                width: 100px !important;
+            }
+            
+            /* Container */
+            .container {
+                padding: 100px 20px 40px !important;
+            }
+            
+            /* TEXTOS GRANS com ahir */
+            .page-title {
+                font-size: 3rem !important;
+            }
+            
+            .establishment-title, .offer-title, .event-title, .news-title {
+                font-size: 1.6rem !important;
+                margin-bottom: 10px !important;
+            }
+            
+            .establishment-category, .offer-category, .event-category {
+                font-size: 1.1rem !important;
+            }
+            
+            .establishment-description, .offer-description, .event-description {
+                font-size: 1.15rem !important;
+                line-height: 1.6 !important;
+            }
+            
+            .establishment-address {
+                font-size: 1.05rem !important;
+            }
+            
+            /* Grid */
+            .establishments-grid, .offers-grid, .events-grid, .news-grid {
+                grid-template-columns: 1fr !important;
+                gap: 18px !important;
+            }
+            
+            /* Imatges */
+            .establishment-image, .offer-image, .event-image {
+                height: 200px !important;
+            }
+    </style>
+</head>
+<body>
+    <a href="/api/landing/tomb-pagines/tomb-inici.html" target="_parent" class="logo-container">
+        <img src="https://tomb-redesign-1.preview.emergentagent.com/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" />
+    </a>
+    
+    <div class="container">
+        <div class="page-header">
+            <div class="page-subtitle">Coneix-nos</div>
+            <h1 class="page-title">Què és El Tomb?</h1>
+        </div>
+        
+        <p class="intro-text">
+            L'Associació de Comerciants El Tomb de Reus treballa des de 1995 per dinamitzar i potenciar el comerç local de la nostra ciutat.
+        </p>
+        
+        <div class="about-section">
+            <h3>La nostra missió</h3>
+            <p>
+                El Tomb de Reus és una associació que agrupa més de 250 establiments del centre de Reus, amb l'objectiu comú de promocionar el comerç de proximitat i oferir una experiència de compra única als nostres ciutadans.
+            </p>
+            <p>
+                Treballem per mantenir viu el cor comercial de Reus, organitzant campanyes promocionals, esdeveniments especials i oferint avantatges exclusius als nostres clients.
+            </p>
+        </div>
+        
+        <div class="about-section">
+            <h3>Què oferim</h3>
+            <p>
+                Com a soci d'El Tomb, els nostres establiments compten amb suport promocional, visibilitat a través dels nostres canals digitals, participació en esdeveniments col·lectius i formació contínua per adaptar-se als nous temps.
+            </p>
+            <p>
+                Els consumidors poden gaudir d'ofertes exclusives, descobrir nous negocis i rebre informació actualitzada sobre totes les novetats del comerç de Reus.
+            </p>
+        </div>
+        
+        <div class="values-grid">
+            <div class="value-card">
+                <i data-feather="heart" class="value-icon"></i>
+                <h4>Proximitat</h4>
+                <p>Defensem el comerç de barri i el tracte personal que només el petit comerç pot oferir</p>
+            </div>
+            
+            <div class="value-card">
+                <i data-feather="users" class="value-icon"></i>
+                <h4>Comunitat</h4>
+                <p>Creem xarxa entre comerciants i fortim els llaços amb els nostres veïns i clients</p>
+            </div>
+            
+            <div class="value-card">
+                <i data-feather="trending-up" class="value-icon"></i>
+                <h4>Innovació</h4>
+                <p>Adaptem el comerç tradicional a les noves tecnologies i necessitats del consumidor modern</p>
+            </div>
+            
+            <div class="value-card">
+                <i data-feather="award" class="value-icon"></i>
+                <h4>Qualitat</h4>
+                <p>Els nostres associats ofereixen productes i serveis d'alta qualitat amb assessorament expert</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        feather.replace();
+    </script>
+</body>
+</html>

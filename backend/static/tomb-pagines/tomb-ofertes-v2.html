@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Promocions - El Tomb de Reus</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding-bottom: 2rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 8rem 2rem 2rem; }
+        .page-title { font-size: 3rem; font-weight: 800; text-align: center; margin-bottom: 1rem; color: white; }
+        .page-subtitle { font-size: 1.3rem; color: rgba(255,255,255,0.9); text-align: center; margin-bottom: 3rem; }
+        .offers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2.5rem; }
+        .offer-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s; position: relative; }
+        .offer-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+        .offer-badge { position: absolute; top: 1rem; right: 1rem; background: #E63946; color: white; padding: 0.5rem 1rem; border-radius: 50px; font-weight: 700; z-index: 1; }
+        .offer-image { width: 100%; height: 220px; object-fit: cover; background: linear-gradient(135deg, #E63946 0%, #457B9D 100%); }
+        .offer-info { padding: 2rem; }
+        .offer-establishment { font-size: 0.9rem; color: #E63946; font-weight: 600; margin-bottom: 0.5rem; }
+        .offer-title { font-size: 1.5rem; font-weight: 700; color: #1D3557; margin-bottom: 1rem; }
+        .offer-description { font-size: 1rem; color: #6C757D; line-height: 1.6; margin-bottom: 1rem; }
+        .offer-validity { font-size: 0.85rem; color: #999; font-style: italic; }
+        .loading { text-align: center; font-size: 1.2rem; color: white; padding: 3rem; }
+        @media (max-width: 768px) { 
+            html, body { 
+                will-change: auto !important; 
+                -webkit-overflow-scrolling: touch !important; 
+            }
+            
+            .page-title { font-size: 2rem; } 
+            .offers-grid { grid-template-columns: 1fr; }
+            .container { padding: 6rem 1rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <a href="/api/landing/tomb-pagines/tomb-inici.html" target="_parent" style="position: fixed; top: 20px; left: 20px; z-index: 1001;">
+        <img src="https://reus-commerce-1.emergent.host/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" style="width: 120px; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; filter: brightness(0) invert(1);" />
+    </a>
+    
+    <div class="container">
+        <h1 class="page-title">Promocions</h1>
+        <p class="page-subtitle">Descobreix les millors ofertes i descomptes dels nostres establiments</p>
+        <div id="offers-grid" class="offers-grid">
+            <div class="loading">Carregant promocions...</div>
+        </div>
+    </div>
+    <script>
+        const API_BASE_URL = 'https://reus-commerce-1.emergent.host/api';
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ca-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        
+        function loadOffers() {
+            fetch(API_BASE_URL + '/offers')
+                .then(r => r.json())
+                .then(data => {
+                    const now = new Date();
+                    const offers = data.filter(offer => {
+                        const validFrom = new Date(offer.valid_from);
+                        const validUntil = new Date(offer.valid_until);
+                        return now >= validFrom && now <= validUntil;
+                    });
+                    
+                    const grid = document.getElementById('offers-grid');
+                    if (offers.length === 0) {
+                        grid.innerHTML = '<div class="loading">No hi ha promocions actives actualment</div>';
+                        return;
+                    }
+                    
+                    grid.innerHTML = offers.map(offer => {
+                        let card = '<div class="offer-card">';
+                        if (offer.discount_percentage) {
+                            card += '<div class="offer-badge">-' + offer.discount_percentage + '%</div>';
+                        }
+                        if (offer.image_url) {
+                            card += '<img src="' + offer.image_url + '" class="offer-image" alt="' + offer.title + '" loading="lazy" />';
+                        } else {
+                            card += '<div class="offer-image"></div>';
+                        }
+                        card += '<div class="offer-info">';
+                        if (offer.establishment_name) {
+                            card += '<div class="offer-establishment">' + offer.establishment_name + '</div>';
+                        }
+                        card += '<div class="offer-title">' + offer.title + '</div>';
+                        card += '<div class="offer-description">' + (offer.description || '') + '</div>';
+                        
+                        // Afegir enllaç web si existeix
+                        if (offer.web_link) {
+                            card += '<div style="margin-top: 12px;; filter: brightness(0) invert(1);"><a href="' + offer.web_link + '" target="_blank" style="color: #E63946; text-decoration: none; font-weight: 600;">🌐 Més informació</a></div>';
+                        }
+                        
+                        // Afegir telèfon si existeix
+                        if (offer.phone) {
+                            card += '<div style="margin-top: 8px;; filter: brightness(0) invert(1);"><a href="tel:' + offer.phone + '" style="color: #E63946; text-decoration: none; font-weight: 600;">📞 ' + offer.phone + '</a></div>';
+                        }
+                        
+                        card += '<div class="offer-validity">Vàlid fins el ' + formatDate(offer.valid_until) + '</div>';
+                        card += '</div></div>';
+                        return card;
+                    }).join('');
+                })
+                .catch(err => {
+                    console.error('Error carregant promocions:', err);
+                    document.getElementById('offers-grid').innerHTML = '<div class="loading">Error carregant promocions</div>';
+                });
+        }
+        
+        // Carregar ofertes inicialment
+        loadOffers();
+        
+        // Auto-actualitzar cada 15 minuts
+        setInterval(loadOffers, 15 * 60 * 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!-- 
+=================================================================
+SOLUCIÓ WORDPRESS PER ELTOMBDEREUS.COM
+=================================================================
+
+INSTRUCCIONS:
+1. Aneu a WordPress Admin
+2. Aparença > Personalitzar > CSS Addicional (o Editor de Temes)
+3. O bé: Instal·leu el plugin "Insert Headers and Footers"
+4. Copieu tot el codi de sota i enganxeu-lo
+
+=================================================================
+-->
+
+<!-- META TAGS ANTI-CACHÉ (Afegir al <head>) -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<!-- ESTILS PER LA SECCIÓ D'ESTABLIMENTS -->
+<style>
+.tomb-establishments-section {
+    padding: 60px 20px;
+    background: #f8f9fa;
+}
+
+.tomb-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.tomb-section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.tomb-section-subtitle {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #7f8c8d;
+    margin-bottom: 40px;
+}
+
+.tomb-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.tomb-stat-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.tomb-stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #e74c3c;
+    margin-bottom: 10px;
+}
+
+.tomb-stat-label {
+    font-size: 1rem;
+    color: #7f8c8d;
+}
+
+.tomb-establishments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    margin-top: 40px;
+}
+
+.tomb-establishment-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tomb-establishment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.tomb-establishment-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.tomb-establishment-content {
+    padding: 20px;
+}
+
+.tomb-establishment-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2c3e50;
+}
+
+.tomb-establishment-category {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+}
+
+.tomb-establishment-address {
+    font-size: 0.9rem;
+    color: #555;
+    margin: 8px 0;
+}
+
+.tomb-establishment-phone {
+    font-size: 0.9rem;
+    color: #555;
+    margin: 8px 0;
+}
+
+.tomb-loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2rem;
+    color: #7f8c8d;
+}
+</style>
+
+<!-- SECCIÓ HTML -->
+<div class="tomb-establishments-section">
+    <div class="tomb-container">
+        <h2 class="tomb-section-title">Els Nostres Establiments</h2>
+        <p class="tomb-section-subtitle">Descobreix el comerç local de Reus</p>
+        
+        <!-- Estadístiques -->
+        <div class="tomb-stats">
+            <div class="tomb-stat-card">
+                <div class="tomb-stat-number" id="tomb-total-establishments">0</div>
+                <div class="tomb-stat-label">Establiments</div>
+            </div>
+            <div class="tomb-stat-card">
+                <div class="tomb-stat-number" id="tomb-total-offers">0</div>
+                <div class="tomb-stat-label">Ofertes Actives</div>
+            </div>
+            <div class="tomb-stat-card">
+                <div class="tomb-stat-number" id="tomb-total-events">0</div>
+                <div class="tomb-stat-label">Esdeveniments</div>
+            </div>
+        </div>
+        
+        <!-- Grid d'Establiments -->
+        <div id="tomb-establishments-grid" class="tomb-establishments-grid">
+            <p class="tomb-loading">Carregant establiments...</p>
+        </div>
+    </div>
+</div>
+
+<!-- JAVASCRIPT AMB ANTI-CACHÉ -->
+<script>
+(function() {
+    'use strict';
+    
+    // API URL - RAILWAY PRODUCCIÓ
+    const API_BASE_URL = 'https://reusapp-backend-production.up.railway.app/api';
+    
+    // Afegir timestamp per evitar caché
+    const CACHE_BUSTER = '?t=' + new Date().getTime();
+    
+    console.log('🚀 Carregant dades des de l\'API de Railway...');
+    
+    // Carregar establiments
+    async function loadEstablishments() {
+        try {
+            const response = await fetch(API_BASE_URL + '/establishments' + CACHE_BUSTER, {
+                method: 'GET',
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Error carregant establiments');
+            }
+            
+            const establishments = await response.json();
+            console.log('✅ Carregats ' + establishments.length + ' establiments');
+            
+            renderEstablishments(establishments);
+            document.getElementById('tomb-total-establishments').textContent = establishments.length;
+            
+        } catch (error) {
+            console.error('❌ Error:', error);
+            document.getElementById('tomb-establishments-grid').innerHTML = 
+                '<p class="tomb-loading">Error carregant establiments. Si us plau, refresca la pàgina.</p>';
+        }
+    }
+    
+    // Carregar ofertes (només per comptar)
+    async function loadOffers() {
+        try {
+            const response = await fetch(API_BASE_URL + '/offers' + CACHE_BUSTER, {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+            
+            if (!response.ok) throw new Error('Error carregant ofertes');
+            
+            const offers = await response.json();
+            
+            // Filtrar ofertes actives
+            const now = new Date();
+            const activeOffers = offers.filter(offer => {
+                const validUntil = new Date(offer.valid_until);
+                return now <= validUntil;
+            });
+            
+            document.getElementById('tomb-total-offers').textContent = activeOffers.length;
+            console.log('✅ Ofertes actives: ' + activeOffers.length);
+            
+        } catch (error) {
+            console.error('❌ Error carregant ofertes:', error);
+        }
+    }
+    
+    // Carregar esdeveniments (només per comptar)
+    async function loadEvents() {
+        try {
+            const response = await fetch(API_BASE_URL + '/events' + CACHE_BUSTER, {
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+            
+            if (!response.ok) throw new Error('Error carregant esdeveniments');
+            
+            const events = await response.json();
+            
+            // Filtrar esdeveniments actius
+            const now = new Date();
+            const activeEvents = events.filter(event => {
+                const validUntil = new Date(event.valid_until);
+                return now <= validUntil;
+            });
+            
+            document.getElementById('tomb-total-events').textContent = activeEvents.length;
+            console.log('✅ Esdeveniments actius: ' + activeEvents.length);
+            
+        } catch (error) {
+            console.error('❌ Error carregant esdeveniments:', error);
+        }
+    }
+    
+    // Renderitzar establiments
+    function renderEstablishments(establishments) {
+        const grid = document.getElementById('tomb-establishments-grid');
+        
+        if (!establishments || establishments.length === 0) {
+            grid.innerHTML = '<p class="tomb-loading">No hi ha establiments disponibles.</p>';
+            return;
+        }
+        
+        // Limitar a 12 establiments per no saturar la pàgina
+        const limitedEstablishments = establishments.slice(0, 12);
+        
+        grid.innerHTML = limitedEstablishments.map(est => {
+            const imageUrl = est.logo_url || est.image_url || 'https://via.placeholder.com/300x200?text=Sense+imatge';
+            
+            return `
+                <div class="tomb-establishment-card">
+                    <img 
+                        src="${imageUrl}" 
+                        alt="${est.name}"
+                        class="tomb-establishment-img"
+                        onerror="this.src='https://via.placeholder.com/300x200?text=Sense+imatge'"
+                    >
+                    <div class="tomb-establishment-content">
+                        <h3 class="tomb-establishment-name">${est.name}</h3>
+                        ${est.category ? `<p class="tomb-establishment-category">${est.category}</p>` : ''}
+                        ${est.address ? `<p class="tomb-establishment-address">📍 ${est.address}</p>` : ''}
+                        ${est.phone ? `<p class="tomb-establishment-phone">📞 ${est.phone}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Animar números
+    function animateNumber(elementId, target) {
+        const element = document.getElementById(elementId);
+        let current = 0;
+        const increment = target / 50;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                element.textContent = target;
+                clearInterval(timer);
+            } else {
+                element.textContent = Math.floor(current);
+            }
+        }, 20);
+    }
+    
+    // Iniciar quan el DOM estigui llest
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEstablishments();
+            loadOffers();
+            loadEvents();
+        });
+    } else {
+        loadEstablishments();
+        loadOffers();
+        loadEvents();
+    }
+    
+    console.log('✅ Script El Tomb de Reus carregat correctament');
+    
+})();
+</script>
+
+<!-- 
+=================================================================
+FI DEL CODI
+=================================================================
+
+OPCIONS PER AFEGIR-HO AL WORDPRESS:
+
+OPCIÓ 1: Plugin "Insert Headers and Footers"
+1. Instal·la el plugin gratuït "Insert Headers and Footers"
+2. Aneu a Settings > Insert Headers and Footers
+3. Enganxeu el codi complet al camp "Scripts in Footer"
+4. Desa els canvis
+
+OPCIÓ 2: Widget HTML Personalitzat
+1. Aneu a Aparença > Widgets
+2. Afegiu un widget "HTML Personalitzat" a la ubicació desitjada
+3. Enganxeu el codi complet
+4. Desa
+
+OPCIÓ 3: Editor de Temes (Advanced)
+1. Aneu a Aparença > Editor de Temes
+2. Seleccioneu footer.php o el fitxer corresponent
+3. Enganxeu el codi abans del </body>
+4. Actualitza el fitxer
+
+OPCIÓ 4: Shortcode (Més fàcil)
+1. Instal·la el plugin "Code Snippets"
+2. Crea un nou snippet que retorni el HTML
+3. Usa el shortcode [tomb_establishments] a qualsevol pàgina
+
+VERIFICACIÓ:
+- Obre la consola del navegador (F12)
+- Hauries de veure missatges com "✅ Carregats X establiments"
+- Les dades es carregaran automàticament sense caché
+
+=================================================================
+-->

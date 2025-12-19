@@ -1,0 +1,420 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Pressable,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  Modal,
+  Image,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
+import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
+import { useAuthStore } from '../../src/store/authStore';
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+interface InfoItem {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  contact_email?: string;
+  order: number;
+}
+
+export default function AdminInfoScreen() {
+  const router = useRouter();
+  const { token } = useAuthStore();
+  const [content, setContent] = useState<InfoItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<InfoItem | null>(null);
+
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    image: '',
+    contact_email: '',
+    order: 0,
+  });
+
+  const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+
+  useEffect(() => {
+    loadContent();
+  }, []);
+
+  const loadContent = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/info/content`);
+      setContent(response.data);
+    } catch (error) {
+      console.error('Error carregant informació:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 6],
+      quality: 0.7,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setFormData({ ...formData, image: `data:image/jpeg;base64,${result.assets[0].base64}` });
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formData.title || !formData.description) {
+      Alert.alert('Error', 'Emplena el títol i la descripció');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const payload = {
+        ...formData,
+        is_active: true,
+      };
+
+      if (editingItem) {
+        await axios.put(`${API_URL}/api/info/content/${editingItem.id}`, payload, {
+          headers: { Authorization: token! },
+        });
+        Alert.alert('Èxit', 'Informació actualitzada');
+      } else {
+        await axios.post(`${API_URL}/api/info/content`, payload, {
+          headers: { Authorization: token! },
+        });
+        Alert.alert('Èxit', 'Informació creada');
+      }
+
+      setModalVisible(false);
+      resetForm();
+      loadContent();
+    } catch (error: any) {
+      console.error('Error guardant:', error);
+      Alert.alert('Error', error.response?.data?.detail || 'No s\'ha pogut guardar');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    Alert.alert('Confirmar', 'Eliminar aquesta informació?', [
+      { text: 'Cancel·lar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await axios.delete(`${API_URL}/api/info/content/${id}`, {
+              headers: { Authorization: token! },
+            });
+            Alert.alert('Èxit', 'Informació eliminada');
+            loadContent();
+          } catch (error) {
+            Alert.alert('Error', 'No s\'ha pogut eliminar');
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleEdit = (item: InfoItem) => {
+    setEditingItem(item);
+    setFormData({
+      title: item.title,
+      description: item.description,
+      image: item.image || '',
+      contact_email: item.contact_email || '',
+      order: item.order || 0,
+    });
+    setModalVisible(true);
+  };
+
+  const resetForm = () => {
+    setEditingItem(null);
+    setFormData({
+      title: '',
+      description: '',
+      image: '',
+      contact_email: '',
+      order: 0,
+    });
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+        </Pressable>
+        <Text style={styles.headerTitle}>Gestió d'Informació</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <View style={styles.actions}>
+        <Pressable style={styles.addButton} onPress={() => setModalVisible(true)}>
+          <MaterialIcons name="add" size={20} color={Colors.white} />
+          <Text style={styles.addButtonText}>Nova Informació</Text>
+        </Pressable>
+      </View>
+
+      {loading ? (
+        <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 50 }} />
+      ) : (
+        <ScrollView contentContainerStyle={styles.listContainer}>
+          {content.map((item) => (
+            <View key={item.id} style={styles.card}>
+              {item.image && (
+                <Image source={{ uri: item.image }} style={styles.cardImage} />
+              )}
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text style={styles.cardDescription} numberOfLines={3}>
+                  {item.description}
+                </Text>
+                {item.contact_email && (
+                  <Text style={styles.cardEmail}>📧 {item.contact_email}</Text>
+                )}
+                <View style={styles.cardActions}>
+                  <Pressable onPress={() => handleEdit(item)} style={styles.editButton}>
+                    <MaterialIcons name="edit" size={20} color={Colors.primary} />
+                  </Pressable>
+                  <Pressable onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
+                    <MaterialIcons name="delete" size={20} color={Colors.error} />
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+
+      {/* Modal Crear/Editar */}
+      <Modal visible={modalVisible} animationType="slide" onRequestClose={() => setModalVisible(false)}>
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Pressable onPress={() => { setModalVisible(false); resetForm(); }}>
+              <MaterialIcons name="close" size={24} color={Colors.text} />
+            </Pressable>
+            <Text style={styles.modalTitle}>{editingItem ? 'Editar' : 'Nova'} Informació</Text>
+            <Pressable onPress={handleSave}>
+              <MaterialIcons name="check" size={24} color={Colors.primary} />
+            </Pressable>
+          </View>
+
+          <ScrollView style={styles.form}>
+            <Text style={styles.label}>Títol *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.title}
+              onChangeText={(text) => setFormData({ ...formData, title: text })}
+              placeholder="Títol de la informació"
+            />
+
+            <Text style={styles.label}>Descripció *</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.description}
+              onChangeText={(text) => setFormData({ ...formData, description: text })}
+              placeholder="Descripció completa..."
+              multiline
+              numberOfLines={6}
+            />
+
+            <Text style={styles.label}>Imatge (4x6)</Text>
+            <Pressable style={styles.imageButton} onPress={pickImage}>
+              {formData.image ? (
+                <Image source={{ uri: formData.image }} style={styles.imagePreview} />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <MaterialIcons name="add-a-photo" size={32} color={Colors.textSecondary} />
+                  <Text style={styles.imagePlaceholderText}>Seleccionar imatge 4x6</Text>
+                </View>
+              )}
+            </Pressable>
+
+            <Text style={styles.label}>Correu de Contacte</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.contact_email}
+              onChangeText={(text) => setFormData({ ...formData, contact_email: text })}
+              placeholder="contacte@eltombdereus.cat"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <Text style={styles.label}>Ordre de Visualització</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.order.toString()}
+              onChangeText={(text) => setFormData({ ...formData, order: parseInt(text) || 0 })}
+              placeholder="0"
+              keyboardType="numeric"
+            />
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    backgroundColor: Colors.primary,
+  },
+  headerTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.textDark, // Text fosc per fons blanc
+  },
+  actions: {
+    padding: Spacing.md,
+  },
+  addButton: {
+    flexDirection: 'row',
+    backgroundColor: Colors.primary,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+  },
+  addButtonText: {
+    color: Colors.textDark, // Text fosc per fons blanc
+    fontWeight: '600',
+  },
+  listContainer: {
+    padding: Spacing.md,
+    paddingBottom: 100,
+  },
+  card: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.md,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardImage: {
+    width: '100%',
+    aspectRatio: 4 / 6,
+    backgroundColor: Colors.lightGray,
+  },
+  cardContent: {
+    padding: Spacing.md,
+  },
+  cardTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+    color: Colors.textDark, // Text fosc per fons blanc // Text blanc per llegibilitat
+    marginBottom: Spacing.sm,
+  },
+  cardDescription: {
+    fontSize: FontSizes.md,
+    color: Colors.darkGray, // Text gris per fons blanc
+    marginBottom: Spacing.sm,
+  },
+  cardEmail: {
+    fontSize: FontSizes.sm,
+    color: Colors.primary,
+    marginBottom: Spacing.sm,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  editButton: {
+    padding: Spacing.sm,
+  },
+  deleteButton: {
+    padding: Spacing.sm,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    backgroundColor: Colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+  },
+  modalTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+  },
+  form: {
+    flex: 1,
+    padding: Spacing.md,
+  },
+  label: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+    marginTop: Spacing.sm,
+  },
+  input: {
+    backgroundColor: Colors.white,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+    fontSize: FontSizes.md,
+  },
+  textArea: {
+    minHeight: 120,
+    textAlignVertical: 'top',
+  },
+  imageButton: {
+    aspectRatio: 4 / 6,
+    borderRadius: BorderRadius.md,
+    overflow: 'hidden',
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.lightGray,
+  },
+  imagePlaceholderText: {
+    marginTop: Spacing.xs,
+    color: Colors.darkGray, // Text gris per fons blanc
+  },
+});

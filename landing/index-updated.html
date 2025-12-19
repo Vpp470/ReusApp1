@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Tomb de Reus - Descobreix el comerç de Reus</title>
+    <meta name="description" content="Espai a Reus on hi trobaràs petits comerços especialitzats, gran firmes, cadenes i franquícies barrejades amb terrasses, bars i restaurants.">
+    
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://eltombdereus.com/wp-content/uploads/2024/07/cropped-logo-tomb.png">
+    
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Estils addicionals per targetes petites i cercador -->
+    <style>
+        /* Cercador */
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .search-input:focus {
+            border-color: #E63946;
+            box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+        }
+        
+        /* Targetes més petites */
+        .establishments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 30px;
+        }
+        
+        .establishment-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .establishment-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .establishment-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+        
+        .establishment-info {
+            padding: 12px;
+        }
+        
+        .establishment-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1D3557;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .establishment-category {
+            font-size: 0.75rem;
+            color: #E63946;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        
+        .establishment-address,
+        .establishment-phone {
+            font-size: 0.75rem;
+            color: #6C757D;
+            margin: 4px 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .establishments-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
+            
+            .establishment-image {
+                height: 100px;
+            }
+            
+            .establishment-info {
+                padding: 10px;
+            }
+            
+            .establishment-name {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <img src="https://eltombdereus.com/wp-content/uploads/2024/07/logo-tomb.png" alt="El Tomb de Reus" class="logo-img">
+                <div class="logo"></div>
+                <nav class="nav">
+                    <a href="#map">Mapa</a>
+                    <a href="#about">Què és El Tomb?</a>
+                    <a href="#establiments">Establiments</a>
+                    <a href="#ofertes">Ofertes</a>
+                    <a href="#noticies">Notícies</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <h1 class="hero-title">Descobreix el comerç de Reus</h1>
+            <p class="hero-subtitle">Espai a Reus on hi trobaràs petits comerços especialitzats, gran firmes, cadenes i franquícies barrejades amb terrasses, bars i restaurants.</p>
+            
+            <div class="app-buttons">
+                <button class="app-button ios-button" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                    </svg>
+                    <div class="app-button-text">
+                        <span class="app-button-small">Descarregar a</span>
+                        <span class="app-button-large">App Store</span>
+                        <span class="coming-soon">Pròximament</span>
+                    </div>
+                </button>
+                
+                <button class="app-button android-button" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 20.5v-17c0-.59.34-1.11.84-1.35L13.69 12l-9.85 9.85c-.5-.24-.84-.76-.84-1.35zm13.81-5.38L6.05 21.34l8.49-4.77-1.73-1.45zM19.69 12c0 .37-.2.7-.52.87l-2.42 1.37-1.73-1.45 1.73-1.45 2.42 1.37c.32.17.52.5.52.87zm-2.94-1.24L6 4.34 15.81 9.11l.94.79z"/>
+                    </svg>
+                    <div class="app-button-text">
+                        <span class="app-button-small">Descarregar a</span>
+                        <span class="app-button-large">Google Play</span>
+                        <span class="coming-soon">Pròximament</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map" class="section map-section">
+        <div class="container">
+            <h2 class="section-title">Troba els nostres comerços</h2>
+            <p class="section-subtitle">Tots els establiments geolocalitzats al mapa</p>
+            <div id="establishments-map" class="map-container"></div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about-section">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">Què és El Tomb de Reus?</h2>
+                    <p class="about-description">
+                        El Tomb de Reus és una associació que agrupa les botigues del centre de Reus 
+                        amb l'objectiu de potenciar i promocionar el comerç i la restauració locals, 
+                        contribuint així a una ciutat més compacta i sostenible.
+                    </p>
+                    <p class="about-description">
+                        Defensem un model de comerç de proximitat, amb una identitat pròpia i distintiva, 
+                        i treballem per fer-lo més visible i atractiu.
+                    </p>
+                </div>
+                <div class="about-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-establishments">0</div>
+                        <div class="stat-label">Establiments</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-offers">0</div>
+                        <div class="stat-label">Ofertes Actives</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-news">0</div>
+                        <div class="stat-label">Notícies</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Establishments Section -->
+    <section id="establiments" class="section establishments-section">
+        <div class="container">
+            <h2 class="section-title">Establiments Associats</h2>
+            <p class="section-subtitle">Descobreix els nostres locals associats</p>
+            
+            <!-- Cercador -->
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    class="search-input" 
+                    placeholder="🔍 Cerca per nom d'establiment..."
+                >
+            </div>
+            
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">Tots</button>
+                <button class="filter-tab" data-filter="local_associat">Locals Associats</button>
+                <button class="filter-tab" data-filter="patrocinador">Patrocinadors</button>
+            </div>
+            
+            <div id="establishments-grid" class="establishments-grid">
+                <!-- Establishments will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Offers Section -->
+    <section id="ofertes" class="section offers-section">
+        <div class="container">
+            <h2 class="section-title">Ofertes Destacades</h2>
+            <p class="section-subtitle">Les millors ofertes dels nostres establiments</p>
+            
+            <div id="offers-carousel" class="offers-carousel">
+                <!-- Offers will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- News Section -->
+    <section id="noticies" class="section news-section">
+        <div class="container">
+            <h2 class="section-title">Últimes Notícies</h2>
+            <p class="section-subtitle">Mantén-te informat sobre Reus</p>
+            
+            <div id="news-grid" class="news-grid">
+                <!-- News will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>El Tomb de Reus</h3>
+                    <p>Descobreix el comerç local de Reus</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Enllaços</h3>
+                    <ul class="footer-links">
+                        <li><a href="#map">Mapa</a></li>
+                        <li><a href="#establiments">Establiments</a></li>
+                        <li><a href="#ofertes">Ofertes</a></li>
+                        <li><a href="#noticies">Notícies</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Xarxes Socials</h3>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/eltombdereus/" target="_blank" class="social-link">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                            Facebook
+                        </a>
+                        <a href="https://www.instagram.com/eltombdereus" target="_blank" class="social-link">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                            Instagram
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 El Tomb de Reus. Tots els drets reservats.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- CODI ACTUALITZAT AMB API DE RAILWAY I ANTI-CACHÉ -->
+    <script>
+    (function() {
+        'use strict';
+        
+        const API_BASE_URL = 'https://reusapp-backend-production.up.railway.app/api';
+        const CACHE_BUSTER = '?t=' + new Date().getTime();
+        
+        let map = null;
+        let allEstablishments = [];
+        let currentFilter = 'all';
+        
+        console.log('🚀 Carregant dades des de l\'API de Railway...');
+        
+        // Inicialitzar el mapa
+        function initMap() {
+            const mapElement = document.getElementById('establishments-map');
+            if (!mapElement) return;
+            
+            const reusCoords = [41.1553, 1.1074];
+            map = L.map('establishments-map').setView(reusCoords, 14);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            window.establishmentsMap = map;
+            console.log('✅ Mapa inicialitzat');
+        }
+        
+        // Afegir marcadors al mapa
+        function addMarkersToMap(establishments) {
+            if (!map) return;
+            
+            let markersAdded = 0;
+            establishments.forEach(est => {
+                if (est.latitude && est.longitude) {
+                    L.marker([est.latitude, est.longitude])
+                        .addTo(map)
+                        .bindPopup(`
+                            <div style="min-width: 200px;">
+                                <h3 style="margin: 0 0 8px 0; font-size: 1.1rem;">${est.name}</h3>
+                                ${est.category ? `<p style="margin: 4px 0; color: #666;"><strong>Categoria:</strong> ${est.category}</p>` : ''}
+                                ${est.address ? `<p style="margin: 4px 0;">📍 ${est.address}</p>` : ''}
+                                ${est.phone ? `<p style="margin: 4px 0;">📞 ${est.phone}</p>` : ''}
+                            </div>
+                        `);
+                    markersAdded++;
+                }
+            });
+            
+            console.log(`✅ Afegits ${markersAdded} marcadors al mapa`);
+        }
+        
+        // Carregar establiments
+        async function loadEstablishments() {
+            try {
+                const response = await fetch(API_BASE_URL + '/establishments' + CACHE_BUSTER, {
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Error carregant establiments');
+                
+                let rawEstablishments = await response.json();
+                console.log('✅ Carregats ' + rawEstablishments.length + ' establiments des de l\'API');
+                
+                // Filtrar establiments amb status "TANCAT" o "Ocult"
+                allEstablishments = rawEstablishments.filter(function(est) {
+                    return est.status !== 'TANCAT' && est.status !== 'Ocult';
+                });
+                console.log('✅ Després de filtrar: ' + allEstablishments.length + ' establiments visibles (filtrats: ' + (rawEstablishments.length - allEstablishments.length) + ')');
+                
+                // Actualitzar estadístiques
+                const totalEl = document.getElementById('total-establishments');
+                if (totalEl) totalEl.textContent = allEstablishments.length;
+                
+                // Afegir marcadors al mapa
+                addMarkersToMap(allEstablishments);
+                
+                // Renderitzar graella
+                renderEstablishments(allEstablishments);
+                
+                // Afegir event listeners als filtres
+                setupFilters();
+                
+                // Afegir event listener al cercador
+                setupSearch();
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                const grid = document.getElementById('establishments-grid');
+                if (grid) {
+                    grid.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">Error carregant establiments. Si us plau, refresca la pàgina.</p>';
+                }
+            }
+        }
+        
+        // Configurar cercador
+        function setupSearch() {
+            const searchInput = document.getElementById('search-input');
+            if (!searchInput) return;
+            
+            searchInput.addEventListener('input', function(e) {
+                filterEstablishments();
+            });
+        }
+        
+        // Configurar filtres
+        function setupFilters() {
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Actualitzar UI
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Aplicar filtre
+                    currentFilter = this.getAttribute('data-filter');
+                    filterEstablishments();
+                });
+            });
+        }
+        
+        // Filtrar establiments
+        function filterEstablishments() {
+            let filtered = allEstablishments;
+            
+            // PRIMER: Filtrar establiments tancats i ocults (NO es mostren MAI)
+            filtered = filtered.filter(est => {
+                const status = (est.status || '').toUpperCase();
+                return status !== 'TANCAT' && status !== 'OCULT';
+            });
+            
+            // SEGON: Aplicar filtre per tipus
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(est => 
+                    est.establishment_type === currentFilter
+                );
+            }
+            
+            // TERCER: Aplicar filtre per cercador
+            const searchInput = document.getElementById('search-input');
+            if (searchInput && searchInput.value.trim()) {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                filtered = filtered.filter(est => {
+                    const name = (est.name || '').toLowerCase();
+                    const category = (est.category || '').toLowerCase();
+                    const address = (est.address || '').toLowerCase();
+                    
+                    return name.includes(searchTerm) || 
+                           category.includes(searchTerm) || 
+                           address.includes(searchTerm);
+                });
+            }
+            
+            renderEstablishments(filtered);
+        }
+        
+        // Renderitzar establiments
+        function renderEstablishments(establishments) {
+            const grid = document.getElementById('establishments-grid');
+            if (!grid) return;
+            
+            if (!establishments || establishments.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">No hi ha establiments amb aquest filtre.</p>';
+                return;
+            }
+            
+            grid.innerHTML = establishments.map(est => {
+                const imageUrl = est.logo_url || est.image_url || 'https://via.placeholder.com/300x200?text=Sense+imatge';
+                
+                return `
+                    <div class="establishment-card">
+                        <img 
+                            src="${imageUrl}" 
+                            alt="${est.name}"
+                            class="establishment-image"
+                            onerror="this.src='https://via.placeholder.com/300x200?text=Sense+imatge'"
+                        >
+                        <div class="establishment-info">
+                            <h3 class="establishment-name">${est.name}</h3>
+                            ${est.category ? `<p class="establishment-category">${est.category}</p>` : ''}
+                            ${est.address ? `<p class="establishment-address">📍 ${est.address}</p>` : ''}
+                            ${est.phone ? `<p class="establishment-phone">📞 ${est.phone}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Carregar ofertes
+        async function loadOffers() {
+            try {
+                const response = await fetch(API_BASE_URL + '/offers' + CACHE_BUSTER, {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Error carregant ofertes');
+                
+                const offers = await response.json();
+                const now = new Date();
+                const activeOffers = offers.filter(offer => {
+                    const validUntil = new Date(offer.valid_until);
+                    return now <= validUntil;
+                });
+                
+                const totalEl = document.getElementById('total-offers');
+                if (totalEl) totalEl.textContent = activeOffers.length;
+                
+                renderOffers(activeOffers);
+                console.log('✅ Ofertes actives: ' + activeOffers.length);
+                
+            } catch (error) {
+                console.error('❌ Error carregant ofertes:', error);
+            }
+        }
+        
+        // Renderitzar ofertes
+        function renderOffers(offers) {
+            const carousel = document.getElementById('offers-carousel');
+            if (!carousel) return;
+            
+            if (!offers || offers.length === 0) {
+                carousel.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">No hi ha ofertes actives actualment.</p>';
+                return;
+            }
+            
+            carousel.innerHTML = offers.slice(0, 6).map(offer => `
+                <div class="offer-card">
+                    <h4>${offer.title}</h4>
+                    <p>${offer.description || ''}</p>
+                    ${offer.discount_percentage ? `<span class="offer-discount">${offer.discount_percentage}% DESC.</span>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // Carregar notícies
+        async function loadNews() {
+            try {
+                const response = await fetch(API_BASE_URL + '/news' + CACHE_BUSTER, {
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Error carregant notícies');
+                
+                const news = await response.json();
+                
+                const totalEl = document.getElementById('total-news');
+                if (totalEl) totalEl.textContent = news.length;
+                
+                renderNews(news);
+                console.log('✅ Notícies: ' + news.length);
+                
+            } catch (error) {
+                console.error('❌ Error carregant notícies:', error);
+            }
+        }
+        
+        // Renderitzar notícies
+        function renderNews(news) {
+            const grid = document.getElementById('news-grid');
+            if (!grid) return;
+            
+            if (!news || news.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">No hi ha notícies disponibles.</p>';
+                return;
+            }
+            
+            grid.innerHTML = news.slice(0, 6).map(item => `
+                <div class="news-card">
+                    ${item.image_url ? `<img src="${item.image_url}" alt="${item.title}">` : ''}
+                    <div class="news-content">
+                        <h4>${item.title}</h4>
+                        <p>${item.summary || item.description || ''}</p>
+                        ${item.url ? `<a href="${item.url}" target="_blank" class="news-link">Llegir més →</a>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Iniciar tot
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                initMap();
+                loadEstablishments();
+                loadOffers();
+                loadNews();
+            });
+        } else {
+            initMap();
+            loadEstablishments();
+            loadOffers();
+            loadNews();
+        }
+        
+        console.log('✅ Script El Tomb de Reus carregat correctament');
+        
+    })();
+    </script>
+</body>
+</html>

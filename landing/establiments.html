@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Establiments - El Tomb de Reus</title>
+    <link rel="icon" type="image/png" href="https://eltombdereus.com/wp-content/uploads/2024/07/cropped-logo-tomb.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        .floating-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .menu-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-logo img { height: 50px; }
+        
+        .menu-nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+        
+        .menu-nav a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        
+        .menu-nav a:hover { color: var(--primary-color); }
+        
+        .menu-nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+        }
+        
+        .page-content {
+            margin-top: 90px;
+            padding: 3rem 2rem;
+        }
+        
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 1.2rem 3rem 1.2rem 1.5rem;
+            font-size: 1.1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(230, 57, 70, 0.1);
+        }
+        
+        .establishments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .establishment-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+        
+        .establishment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .establishment-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #E63946 0%, #457B9D 100%);
+        }
+        
+        .establishment-info {
+            padding: 1.5rem;
+        }
+        
+        .establishment-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .establishment-address {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .establishment-phone {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--text-light);
+            padding: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-nav { display: none; }
+            .page-title { font-size: 2rem; }
+            .establishments-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="floating-menu">
+        <div class="menu-content">
+            <div class="menu-logo">
+                <a href="home.html">
+                    <img src="https://eltombdereus.com/wp-content/uploads/2024/07/logo-tomb.png" alt="El Tomb de Reus">
+                </a>
+            </div>
+            <div class="menu-nav">
+                <a href="home.html">Inici</a>
+                <a href="mapa.html">Mapa</a>
+                <a href="sobre.html">Què és El Tomb?</a>
+                <a href="establiments.html" class="active">Establiments</a>
+                <a href="ofertes.html">Ofertes</a>
+                <a href="noticies.html">Notícies</a>
+                <a href="esdeveniments.html">Esdeveniments</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <h1 class="page-title">Els nostres establiments</h1>
+        <p class="page-subtitle">Descobreix tots els comerços associats a El Tomb de Reus</p>
+        
+        <div class="search-box">
+            <input type="text" id="search" placeholder="Cerca per nom, adreça..." />
+        </div>
+        
+        <div id="establishments-grid" class="establishments-grid">
+            <div class="loading">Carregant establiments...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://reusapp-backend-production.up.railway.app/api';
+        let allEstablishments = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEstablishments();
+            document.getElementById('search').addEventListener('input', filterEstablishments);
+        });
+
+        async function loadEstablishments() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/establishments`);
+                allEstablishments = await response.json();
+                allEstablishments = allEstablishments.filter(est => 
+                    est.status !== 'TANCAT' && est.status !== 'Ocult'
+                );
+                renderEstablishments(allEstablishments);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('establishments-grid').innerHTML = 
+                    '<div class="loading">Error carregant establiments</div>';
+            }
+        }
+
+        function renderEstablishments(establishments) {
+            const grid = document.getElementById('establishments-grid');
+            
+            if (establishments.length === 0) {
+                grid.innerHTML = '<div class="loading">No s\'han trobat establiments</div>';
+                return;
+            }
+            
+            grid.innerHTML = establishments.map(est => `
+                <div class="establishment-card">
+                    <div class="establishment-image"></div>
+                    <div class="establishment-info">
+                        <div class="establishment-name">${est.name}</div>
+                        ${est.address ? `
+                            <div class="establishment-address">
+                                <span>📍</span>
+                                <span>${est.address}</span>
+                            </div>
+                        ` : ''}
+                        ${est.phone ? `
+                            <div class="establishment-phone">
+                                <span>📞</span>
+                                <span>${est.phone}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterEstablishments() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const filtered = allEstablishments.filter(est => 
+                est.name.toLowerCase().includes(searchTerm) ||
+                (est.address && est.address.toLowerCase().includes(searchTerm))
+            );
+            renderEstablishments(filtered);
+        }
+    </script>
+</body>
+</html>

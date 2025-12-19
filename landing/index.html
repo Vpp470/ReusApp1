@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Tomb de Reus - Descobreix el comerç de Reus</title>
+    <meta name="description" content="Espai a Reus on hi trobaràs petits comerços especialitzats, gran firmes, cadenes i franquícies barrejades amb terrasses, bars i restaurants.">
+    
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://eltombdereus.com/wp-content/uploads/2024/07/cropped-logo-tomb.png">
+    <link rel="shortcut icon" type="image/png" href="https://eltombdereus.com/wp-content/uploads/2024/07/cropped-logo-tomb.png">
+    
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="https://eltombdereus.com/wp-content/uploads/2024/07/logo-tomb.png" alt="El Tomb de Reus" class="logo-img">
+                </div>
+                <nav class="nav">
+                    <a href="#map">Mapa</a>
+                    <a href="#about">Què és El Tomb?</a>
+                    <a href="#esdeveniments">Esdeveniments</a>
+                    <a href="#establiments">Establiments</a>
+                    <a href="#ofertes">Ofertes</a>
+                    <a href="#noticies">Notícies</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <h1 class="hero-title">Descobreix el comerç de Reus</h1>
+            <p class="hero-subtitle">Espai a Reus on hi trobaràs petits comerços especialitzats, gran firmes, cadenes i franquícies barrejades amb terrasses, bars i restaurants.</p>
+            
+            <div class="app-buttons">
+                <!-- Botó ReusApp Web (Principal) -->
+                <a href="https://www.reusapp.com" class="app-button reusapp-button" target="_blank">
+                    <img src="reusapp-icon.png" alt="ReusApp" class="app-icon">
+                    <div class="app-button-text">
+                        <span class="app-button-small">Obre l'aplicació</span>
+                        <span class="app-button-large">ReusApp</span>
+                        <span class="app-available">Disponible ara!</span>
+                    </div>
+                </a>
+                
+                <button class="app-button ios-button" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                    </svg>
+                    <div class="app-button-text">
+                        <span class="app-button-small">Descarregar a</span>
+                        <span class="app-button-large">App Store</span>
+                        <span class="coming-soon">Pròximament</span>
+                    </div>
+                </button>
+                
+                <button class="app-button android-button" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 20.5v-17c0-.59.34-1.11.84-1.35L13.69 12l-9.85 9.85c-.5-.24-.84-.76-.84-1.35zm13.81-5.38L6.05 21.34l8.49-4.77-1.73-1.45zM19.69 12c0 .37-.2.7-.52.87l-2.42 1.37-1.73-1.45 1.73-1.45 2.42 1.37c.32.17.52.5.52.87zm-2.94-1.24L6 4.34 15.81 9.11l.94.79z"/>
+                    </svg>
+                    <div class="app-button-text">
+                        <span class="app-button-small">Descarregar a</span>
+                        <span class="app-button-large">Google Play</span>
+                        <span class="coming-soon">Pròximament</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map" class="section map-section">
+        <div class="container">
+            <h2 class="section-title">Troba els nostres comerços</h2>
+            <p class="section-subtitle">Tots els establiments geolocalitzats al mapa</p>
+            <div id="establishments-map" class="map-container"></div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about-section">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">Què és El Tomb de Reus?</h2>
+                    <p class="about-description">
+                        El Tomb de Reus és una associació que agrupa les botigues del centre de Reus 
+                        amb l'objectiu de potenciar i promocionar el comerç i la restauració locals, 
+                        contribuint així a una ciutat més compacta i sostenible.
+                    </p>
+                    <p class="about-description">
+                        Defensem un model de comerç de proximitat, amb una identitat pròpia i distintiva, 
+                        i treballem per fer-lo més visible i atractiu.
+                    </p>
+                </div>
+                <div class="about-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-establishments">0</div>
+                        <div class="stat-label">Establiments</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-offers">0</div>
+                        <div class="stat-label">Ofertes Actives</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-events">0</div>
+                        <div class="stat-label">Esdeveniments</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Events Section -->
+    <section id="esdeveniments" class="section events-section">
+        <div class="container">
+            <h2 class="section-title">Esdeveniments</h2>
+            <p class="section-subtitle">Descobreix els esdeveniments del Tomb de Reus</p>
+            
+            <div id="events-carousel" class="events-carousel">
+                <!-- Events will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Establishments Section -->
+    <section id="establiments" class="section establishments-section">
+        <div class="container">
+            <h2 class="section-title">Establiments Associats</h2>
+            <p class="section-subtitle">Descobreix els nostres locals associats</p>
+            
+            <!-- Search Bar -->
+            <div class="establishments-search">
+                <div class="search-input-container">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input 
+                        type="text" 
+                        id="establishments-search-input" 
+                        class="search-input" 
+                        placeholder="Cerca per nom, carrer o tipus d'activitat..."
+                    >
+                    <button id="clear-search" class="clear-search-btn" style="display: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div id="search-results-count" class="search-results-count"></div>
+            </div>
+            
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">Tots</button>
+                <button class="filter-tab" data-filter="local_associat">Locals Associats</button>
+                <button class="filter-tab" data-filter="patrocinador">Patrocinadors</button>
+            </div>
+            
+            <div id="establishments-grid" class="establishments-grid-logos">
+                <!-- Establishments logos will be loaded here -->
+            </div>
+            
+            <div id="no-results" class="no-results" style="display: none;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <p>No s'han trobat establiments amb aquesta cerca</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Establishment Detail Modal -->
+    <div id="establishment-modal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeEstablishmentModal()"></div>
+        <div class="modal-content establishment-modal-content">
+            <button class="modal-close" onclick="closeEstablishmentModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div id="establishment-detail-content">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Offers Section -->
+    <section id="ofertes" class="section offers-section">
+        <div class="container">
+            <h2 class="section-title">Ofertes Destacades</h2>
+            <p class="section-subtitle">Les millors ofertes dels nostres establiments</p>
+            
+            <div id="offers-carousel" class="offers-carousel">
+                <!-- Offers will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- News Section -->
+    <section id="noticies" class="section news-section">
+        <div class="container">
+            <h2 class="section-title">Últimes Notícies</h2>
+            <p class="section-subtitle">Mantén-te informat sobre Reus</p>
+            
+            <div id="news-grid" class="news-grid">
+                <!-- News will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <img src="reusapp-icon.png" alt="ReusApp" class="footer-logo">
+                    <h3>El Tomb de Reus</h3>
+                    <p>Descobreix el comerç local de Reus</p>
+                    <a href="https://www.reusapp.com" class="footer-app-link" target="_blank">
+                        <strong>🌐 www.reusapp.com</strong>
+                    </a>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Enllaços</h3>
+                    <ul class="footer-links">
+                        <li><a href="#map">Mapa</a></li>
+                        <li><a href="#esdeveniments">Esdeveniments</a></li>
+                        <li><a href="#establiments">Establiments</a></li>
+                        <li><a href="#ofertes">Ofertes</a></li>
+                        <li><a href="#noticies">Notícies</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Xarxes Socials</h3>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/eltombdereus/" target="_blank" class="social-link">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                            Facebook
+                        </a>
+                        <a href="https://www.instagram.com/eltombdereus" target="_blank" class="social-link">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                            Instagram
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 El Tomb de Reus. Tots els drets reservats.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js?v=2025011201"></script>
+</body>
+</html>

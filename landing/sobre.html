@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Què és El Tomb? - El Tomb de Reus</title>
+    <link rel="icon" type="image/png" href="https://eltombdereus.com/wp-content/uploads/2024/07/cropped-logo-tomb.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        .floating-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .menu-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-logo img { height: 50px; }
+        
+        .menu-nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+        
+        .menu-nav a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        
+        .menu-nav a:hover { color: var(--primary-color); }
+        
+        .menu-nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+        }
+        
+        .page-content {
+            margin-top: 90px;
+            padding: 3rem 2rem;
+        }
+        
+        .about-header {
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto 4rem;
+        }
+        
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+        
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .about-section {
+            background: white;
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+        }
+        
+        .about-section h3 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+        
+        .about-section p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .value-card {
+            background: var(--bg-light);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .value-card h4 {
+            font-size: 1.3rem;
+            color: var(--text-dark);
+            margin: 1rem 0;
+        }
+        
+        .value-icon {
+            font-size: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-nav { display: none; }
+            .page-title { font-size: 2rem; }
+            .about-section { padding: 2rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="floating-menu">
+        <div class="menu-content">
+            <div class="menu-logo">
+                <a href="home.html">
+                    <img src="https://eltombdereus.com/wp-content/uploads/2024/07/logo-tomb.png" alt="El Tomb de Reus">
+                </a>
+            </div>
+            <div class="menu-nav">
+                <a href="home.html">Inici</a>
+                <a href="mapa.html">Mapa</a>
+                <a href="sobre.html" class="active">Què és El Tomb?</a>
+                <a href="establiments.html">Establiments</a>
+                <a href="ofertes.html">Ofertes</a>
+                <a href="noticies.html">Notícies</a>
+                <a href="esdeveniments.html">Esdeveniments</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <div class="about-header">
+            <h1 class="page-title">Què és El Tomb de Reus?</h1>
+            <p class="page-subtitle">
+                Una associació que agrupa les botigues del centre de Reus amb l'objectiu de potenciar 
+                i promocionar el comerç i la restauració locals.
+            </p>
+        </div>
+
+        <div class="about-content">
+            <div class="about-section">
+                <h3>La nostra missió</h3>
+                <p>
+                    El Tomb de Reus neix amb la voluntat de crear un espai a Reus on trobaràs petits comerços 
+                    especialitzats, grans firmes, cadenes i franquícies barrejades amb terrasses, bars i restaurants.
+                </p>
+                <p>
+                    Defensem un model de comerç de proximitat, amb una identitat pròpia i distintiva, 
+                    que contribueix a una ciutat més compacta i sostenible.
+                </p>
+            </div>
+
+            <div class="about-section">
+                <h3>Què oferim</h3>
+                <p>
+                    Treballem per mantenir viu el comerç local, oferint avantatges als nostres socis i 
+                    promocionant les seves activitats a través de diferents canals i esdeveniments.
+                </p>
+                <p>
+                    A través de la nostra plataforma digital, els clients poden descobrir tots els establiments 
+                    associats, conèixer les seves ofertes especials i estar al dia de les notícies del comerç local.
+                </p>
+            </div>
+
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">🏪</div>
+                    <h4>Comerç Local</h4>
+                    <p>Promoció dels establiments de proximitat</p>
+                </div>
+                
+                <div class="value-card">
+                    <div class="value-icon">🌱</div>
+                    <h4>Sostenibilitat</h4>
+                    <p>Model de ciutat compacta i sostenible</p>
+                </div>
+                
+                <div class="value-card">
+                    <div class="value-icon">🤝</div>
+                    <h4>Comunitat</h4>
+                    <p>Suport mutu entre comerciants</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

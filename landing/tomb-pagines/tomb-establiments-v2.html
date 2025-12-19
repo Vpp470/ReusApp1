@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Establiments - El Tomb de Reus</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding-bottom: 2rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 8rem 2rem 2rem; }
+        .page-title { font-size: 3rem; font-weight: 800; text-align: center; margin-bottom: 1rem; color: white; }
+        .page-subtitle { font-size: 1.3rem; color: rgba(255,255,255,0.9); text-align: center; margin-bottom: 2rem; }
+        .search-bar { max-width: 600px; margin: 0 auto 3rem; position: relative; }
+        .search-bar input { width: 100%; padding: 1rem 1.5rem; border-radius: 50px; border: none; font-size: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .establishments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
+        .establishment-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s; }
+        .establishment-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+        .establishment-info { padding: 1.5rem; }
+        .establishment-name { font-size: 1.3rem; font-weight: 700; color: #1D3557; margin-bottom: 0.5rem; }
+        .establishment-category { font-size: 0.9rem; color: #E63946; font-weight: 600; margin-bottom: 0.75rem; }
+        .establishment-description { font-size: 0.95rem; color: #6C757D; line-height: 1.5; margin-bottom: 0.75rem; }
+        .establishment-address { font-size: 0.85rem; color: #999; }
+        .loading { text-align: center; font-size: 1.2rem; color: white; padding: 3rem; }
+        @media (max-width: 768px) { 
+            html, body { 
+                will-change: auto !important; 
+                -webkit-overflow-scrolling: touch !important; 
+            }
+            
+            .page-title { font-size: 2rem; } 
+            .establishments-grid { grid-template-columns: 1fr; }
+            .container { padding: 6rem 1rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <a href="/api/landing/tomb-pagines/tomb-inici.html" target="_parent" style="position: fixed; top: 20px; left: 20px; z-index: 1001;">
+        <img src="https://reus-commerce-1.emergent.host/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" style="width: 120px; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; filter: brightness(0) invert(1);" />
+    </a>
+    
+    <div class="container">
+        <h1 class="page-title">Els nostres establiments</h1>
+        <p class="page-subtitle">Descobreix tots els comerços associats a El Tomb de Reus</p>
+        <div class="search-bar"><input type="text" id="search-input" placeholder="Cerca per nom, adreça..."/></div>
+        <div id="establishments-grid" class="establishments-grid"><div class="loading">Carregant establiments...</div></div>
+    </div>
+    <script>
+        const API_BASE_URL = 'https://reus-commerce-1.emergent.host/api';
+        let allEstablishments = [];
+        
+        fetch(API_BASE_URL + '/establishments')
+            .then(r => r.json())
+            .then(data => {
+                allEstablishments = data;
+                displayEstablishments(allEstablishments);
+            })
+            .catch(err => {
+                console.error('Error carregant establiments:', err);
+                document.getElementById('establishments-grid').innerHTML = '<div class="loading">Error carregant establiments. Si us plau, refresca la pagina.</div>';
+            });
+        
+        function displayEstablishments(establishments) {
+            const grid = document.getElementById('establishments-grid');
+            if (establishments.length === 0) {
+                grid.innerHTML = '<div class="loading">No s\'han trobat establiments</div>';
+                return;
+            }
+            
+            grid.innerHTML = establishments.map(est => {
+                let card = '<div class="establishment-card"><div class="establishment-info">';
+                card += '<div class="establishment-name">' + est.name + '</div>';
+                if (est.category) card += '<div class="establishment-category">' + est.category + '</div>';
+                if (est.description) card += '<div class="establishment-description">' + est.description + '</div>';
+                if (est.address) card += '<div class="establishment-address">📍 ' + est.address + '</div>';
+                card += '</div></div>';
+                return card;
+            }).join('');
+        }
+        
+        document.getElementById('search-input').addEventListener('input', function(e) {
+            const search = e.target.value.toLowerCase();
+            const filtered = allEstablishments.filter(est => {
+                return (est.name && est.name.toLowerCase().includes(search)) || 
+                       (est.address && est.address.toLowerCase().includes(search)) ||
+                       (est.category && est.category.toLowerCase().includes(search));
+            });
+            displayEstablishments(filtered);
+        });
+    </script>
+</body>
+</html>

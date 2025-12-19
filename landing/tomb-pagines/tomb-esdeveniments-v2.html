@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Esdeveniments - El Tomb de Reus</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding-bottom: 2rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 8rem 2rem 2rem; }
+        .page-title { font-size: 3rem; font-weight: 800; text-align: center; margin-bottom: 1rem; color: white; }
+        .page-subtitle { font-size: 1.3rem; color: rgba(255,255,255,0.9); text-align: center; margin-bottom: 3rem; }
+        .events-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2.5rem; }
+        .event-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s; }
+        .event-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+        .event-image { width: 100%; height: 220px; object-fit: cover; background: linear-gradient(135deg, #E63946 0%, #457B9D 100%); }
+        .event-info { padding: 2rem; }
+        .event-category { display: inline-block; background: rgba(230,57,70,0.1); color: #E63946; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; }
+        .event-title { font-size: 1.5rem; font-weight: 700; color: #1D3557; margin-bottom: 1rem; }
+        .event-description { font-size: 1rem; color: #6C757D; line-height: 1.6; margin-bottom: 1.5rem; }
+        .event-details { display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: #6C757D; }
+        .loading { text-align: center; font-size: 1.2rem; color: white; padding: 3rem; }
+        @media (max-width: 768px) { 
+            html, body { 
+                will-change: auto !important; 
+                -webkit-overflow-scrolling: touch !important; 
+            }
+            
+            .page-title { font-size: 2rem; } 
+            .events-grid { grid-template-columns: 1fr; }
+            .container { padding: 6rem 1rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <a href="/api/landing/tomb-pagines/tomb-inici.html" target="_parent" style="position: fixed; top: 20px; left: 20px; z-index: 1001;">
+        <img src="https://reus-commerce-1.emergent.host/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" style="width: 120px; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; filter: brightness(0) invert(1);" />
+    </a>
+    
+    <div class="container">
+        <h1 class="page-title">Esdeveniments</h1>
+        <p class="page-subtitle">Descobreix les campanyes i activitats especials del comerç local</p>
+        <div id="events-grid" class="events-grid">
+            <div class="loading">Carregant esdeveniments...</div>
+        </div>
+    </div>
+    <script>
+        const API_BASE_URL = 'https://reus-commerce-1.emergent.host/api';
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ca-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        
+        function loadEvents() {
+            fetch(API_BASE_URL + '/events')
+                .then(r => r.json())
+                .then(data => {
+                    const now = new Date();
+                    const events = data.filter(event => {
+                        const validUntil = new Date(event.valid_until);
+                        // Mostrar esdeveniments futurs i actuals (només ocultar els que ja han acabat)
+                        return now <= validUntil;
+                    });
+                    
+                    const grid = document.getElementById('events-grid');
+                    if (events.length === 0) {
+                        grid.innerHTML = '<div class="loading">No hi ha esdeveniments actius actualment</div>';
+                        return;
+                    }
+                    
+                    grid.innerHTML = events.map(event => {
+                        let card = '<div class="event-card">';
+                        if (event.image_url) {
+                            card += '<img src="' + event.image_url + '" class="event-image" alt="' + event.title + '" loading="lazy" />';
+                        } else {
+                            card += '<div class="event-image"></div>';
+                        }
+                        card += '<div class="event-info">';
+                        if (event.category) {
+                            card += '<div class="event-category">' + event.category + '</div>';
+                        }
+                        card += '<div class="event-title">' + event.title + '</div>';
+                        card += '<div class="event-description">' + (event.description || '') + '</div>';
+                        card += '<div class="event-details">';
+                        if (event.location) {
+                            card += '<div>📍 ' + event.location + '</div>';
+                        }
+                        card += '<div>📅 Fins el ' + formatDate(event.valid_until) + '</div>';
+                        if (event.participating_establishment_ids && event.participating_establishment_ids.length > 0) {
+                            card += '<div>🏪 ' + event.participating_establishment_ids.length + ' establiments participants</div>';
+                        }
+                        
+                        // Afegir enllaç web si existeix
+                        if (event.web_link) {
+                            card += '<div style="margin-top: 8px;"><a href="' + event.web_link + '" target="_blank" style="color: #E63946; text-decoration: none; font-weight: 600;">🌐 Més informació</a></div>';
+                        }
+                        
+                        // Afegir telèfon si existeix
+                        if (event.phone) {
+                            card += '<div style="margin-top: 8px;"><a href="tel:' + event.phone + '" style="color: #E63946; text-decoration: none; font-weight: 600;">📞 ' + event.phone + '</a></div>';
+                        }
+                        
+                        card += '</div></div></div>';
+                        return card;
+                    }).join('');
+                })
+                .catch(err => {
+                    console.error('Error carregant esdeveniments:', err);
+                    document.getElementById('events-grid').innerHTML = '<div class="loading">Error carregant esdeveniments</div>';
+                });
+        }
+        
+        // Carregar esdeveniments inicialment
+        loadEvents();
+        
+        // Auto-actualitzar cada 15 minuts
+        setInterval(loadEvents, 15 * 60 * 1000);
+    </script>
+</body>
+</html>

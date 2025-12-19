@@ -1,0 +1,368 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Image,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import { Colors, Spacing, FontSizes, BorderRadius } from '../../src/constants/colors';
+import { useAuthStore } from '../../src/store/authStore';
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+export default function ScanTicketScreen() {
+  const router = useRouter();
+  const { token } = useAuthStore();
+  const [permission, requestPermission] = useCameraPermissions();
+  const [processing, setProcessing] = useState(false);
+  const [participations, setParticipations] = useState(0);
+
+  const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+
+  useEffect(() => {
+    loadParticipations();
+  }, []);
+
+  const loadParticipations = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/tickets/my-participations`, {
+        headers: { Authorization: token! },
+      });
+      setParticipations(response.data.participations || 0);
+    } catch (error) {
+      console.error('Error carregant participacions:', error);
+    }
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      processTicket(`data:image/jpeg;base64,${result.assets[0].base64}`);
+    }
+  };
+
+  const takePhoto = async () => {
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      processTicket(`data:image/jpeg;base64,${result.assets[0].base64}`);
+    }
+  };
+
+  const processTicket = async (imageBase64: string) => {
+    try {
+      setProcessing(true);
+      
+      const response = await axios.post(
+        `${API_URL}/api/tickets/process`,
+        { ticket_image: imageBase64 },
+        { headers: { Authorization: token! } }
+      );
+
+      if (response.data.success) {
+        Alert.alert(
+          '🎉 Tiquet Validat!',
+          `${response.data.message}\n\nEstabliment: ${response.data.establishment}\nImport: ${response.data.amount}€\n\nTotal participacions: ${participations + response.data.participations}`,
+          [
+            {
+              text: 'Veure Participacions',
+              onPress: () => router.push('/tickets/participations'),
+            },
+            { text: 'Escanejar Altre', onPress: loadParticipations },
+          ]
+        );
+        loadParticipations();
+      }
+    } catch (error: any) {
+      console.error('Error processant tiquet:', error);
+      Alert.alert(
+        'Error',
+        error.response?.data?.detail || 'No s\'ha pogut processar el tiquet. Comprova que sigui llegible i d\'un establiment associat.'
+      );
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  if (!permission) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.permissionContainer}>
+          <MaterialIcons name="camera-alt" size={64} color={Colors.textSecondary} />
+          <Text style={styles.permissionTitle}>Accés a la Càmera</Text>
+          <Text style={styles.permissionText}>
+            Necessitem accés a la càmera per escanejar els teus tiquets
+          </Text>
+          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+            <Text style={styles.permissionButtonText}>Permetre Càmera</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.galleryButton} onPress={pickImage}>
+            <MaterialIcons name="photo-library" size={20} color={Colors.primary} />
+            <Text style={styles.galleryButtonText}>Seleccionar de Galeria</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Escaneja Tiquet</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <View style={styles.participationsBar}>
+        <MaterialIcons name="confirmation-number" size={24} color={Colors.primary} />
+        <Text style={styles.participationsText}>
+          {participations} participació{participations !== 1 ? 'ns' : ''} acumulada{participations !== 1 ? 'es' : ''}
+        </Text>
+      </View>
+
+      <View style={styles.content}>
+        <View style={styles.infoBox}>
+          <MaterialIcons name="info" size={20} color={Colors.primary} />
+          <Text style={styles.infoText}>
+            Per cada 10€ de compra generes 1 participació per al sorteig mensual
+          </Text>
+        </View>
+
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity
+            style={styles.photoButton}
+            onPress={takePhoto}
+            disabled={processing}
+          >
+            <MaterialIcons name="camera-alt" size={48} color={Colors.white} />
+            <Text style={styles.photoButtonText}>Fer Foto</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.galleryButtonLarge}
+            onPress={pickImage}
+            disabled={processing}
+          >
+            <MaterialIcons name="photo-library" size={48} color={Colors.white} />
+            <Text style={styles.photoButtonText}>Galeria</Text>
+          </TouchableOpacity>
+        </View>
+
+        {processing && (
+          <View style={styles.processingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.processingText}>Processant tiquet amb IA...</Text>
+          </View>
+        )}
+
+        <View style={styles.instructions}>
+          <Text style={styles.instructionsTitle}>Com funciona:</Text>
+          <Text style={styles.instructionItem}>📸 Fes una foto clara del tiquet</Text>
+          <Text style={styles.instructionItem}>🔍 El sistema llegirà automàticament les dades</Text>
+          <Text style={styles.instructionItem}>✅ Es validarà que sigui d'un establiment associat</Text>
+          <Text style={styles.instructionItem}>🎯 Generaràs participacions segons l'import</Text>
+          <Text style={styles.instructionItem}>🏆 Participa al sorteig mensual</Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => router.push('/tickets/participations')}
+        >
+          <MaterialIcons name="history" size={20} color={Colors.primary} />
+          <Text style={styles.historyButtonText}>Veure Historial</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    backgroundColor: Colors.primary,
+  },
+  headerTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.white,
+  },
+  participationsBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    backgroundColor: Colors.primaryLight,
+    gap: Spacing.sm,
+  },
+  participationsText: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  content: {
+    flex: 1,
+    padding: Spacing.lg,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: Colors.white,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    color: Colors.text,
+    lineHeight: 20,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  photoButton: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  galleryButtonLarge: {
+    flex: 1,
+    backgroundColor: Colors.secondary,
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  photoButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  processingContainer: {
+    alignItems: 'center',
+    marginVertical: Spacing.xl,
+  },
+  processingText: {
+    marginTop: Spacing.md,
+    fontSize: FontSizes.md,
+    color: Colors.text,
+    fontWeight: '600',
+  },
+  instructions: {
+    backgroundColor: Colors.white,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+  },
+  instructionsTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    marginBottom: Spacing.md,
+    color: Colors.text,
+  },
+  instructionItem: {
+    fontSize: FontSizes.sm,
+    color: Colors.text,
+    marginBottom: Spacing.sm,
+    lineHeight: 22,
+  },
+  historyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    gap: Spacing.sm,
+  },
+  historyButtonText: {
+    fontSize: FontSizes.md,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  permissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.xl,
+  },
+  permissionTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+    color: Colors.text,
+  },
+  permissionText: {
+    fontSize: FontSizes.md,
+    color: Colors.text,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+  },
+  permissionButton: {
+    backgroundColor: Colors.primary,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    minWidth: 200,
+    alignItems: 'center',
+  },
+  permissionButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  galleryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    marginTop: Spacing.md,
+    gap: Spacing.sm,
+  },
+  galleryButtonText: {
+    color: Colors.primary,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+});
