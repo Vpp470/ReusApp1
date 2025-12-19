@@ -243,12 +243,10 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     alignItems: 'center',
   },
-  bannerTitle: {
-    fontSize: FontSizes.xxl,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginTop: Spacing.md,
-    textAlign: 'center',
+  bannerLogo: {
+    width: 200,
+    height: 200,
+    marginBottom: Spacing.md,
   },
   bannerSubtitle: {
     fontSize: FontSizes.md,
