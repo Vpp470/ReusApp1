@@ -332,3 +332,7 @@ model.patch
 *.env.*
 !backend/dist/assets/node_modules/
 !backend/dist/assets/node_modules/**
+-e 
+# Environment files
+*.env
+*.env.*
