@@ -315,6 +315,26 @@ const styles = StyleSheet.create({
   refreshButton: {
     padding: Spacing.xs,
   },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    margin: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    fontSize: FontSizes.md,
+    color: '#212121',
+  },
   content: {
     flex: 1,
   },
