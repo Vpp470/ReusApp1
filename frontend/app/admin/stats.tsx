@@ -83,7 +83,7 @@ export default function StatisticsScreen() {
 
   const loadStatistics = async () => {
     if (!token) {
-      console.error('No token available');
+      console.error('❌ No token available');
       setError('No hi ha sessió activa. Torna a iniciar sessió.');
       setLoading(false);
       return;
@@ -91,10 +91,15 @@ export default function StatisticsScreen() {
     setError(null);
     try {
       console.log('📊 Carregant estadístiques...');
+      console.log('🔑 Token utilitzat:', token ? `${token.substring(0, 10)}...` : 'NULL');
+      
+      // Assegurar que el token té el format correcte
+      const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+      
       const response = await api.get('/admin/statistics', {
-        headers: { Authorization: token },
+        headers: { Authorization: authHeader },
       });
-      console.log('📊 Estadístiques rebudes:', response.data);
+      console.log('📊 Estadístiques rebudes correctament');
       // Validar que la resposta té l'estructura esperada
       if (response.data && response.data.users) {
         setStats(response.data);
@@ -102,8 +107,14 @@ export default function StatisticsScreen() {
         setError('La resposta de l\'API no és vàlida');
       }
     } catch (error: any) {
-      console.error('Error carregant estadístiques:', error?.response?.data || error);
-      setError(error?.response?.data?.detail || 'Error carregant les estadístiques');
+      console.error('❌ Error carregant estadístiques:', error?.response?.data || error);
+      const errorDetail = error?.response?.data?.detail || 'Error carregant les estadístiques';
+      setError(errorDetail);
+      
+      // Si el token és invàlid, suggerir tornar a iniciar sessió
+      if (errorDetail.toLowerCase().includes('token') || error?.response?.status === 401) {
+        setError('Sessió caducada. Torna a iniciar sessió.');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
