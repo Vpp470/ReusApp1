@@ -177,8 +177,13 @@ export default function AdminPromotions() {
       await promotionsService.approve(token!, item._id);
       Alert.alert('Èxit', 'Promoció aprovada correctament');
       loadPromotions();
-    } catch (error) {
-      Alert.alert('Error', 'No s\'ha pogut aprovar la promoció');
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 403 || status === 401) {
+        Alert.alert('Error d\'autenticació', 'La sessió ha caducat. Tanca sessió i torna a entrar.');
+      } else {
+        Alert.alert('Error', error?.response?.data?.detail || 'No s\'ha pogut aprovar la promoció');
+      }
     }
   };
 
