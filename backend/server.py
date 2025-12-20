@@ -1969,7 +1969,25 @@ async def create_promotion(
         promo_dict['status'] = 'pending'
     
     result = await db.promotions.insert_one(promo_dict)
-    promo_dict['_id'] = str(result.inserted_id)
+    promo_id = str(result.inserted_id)
+    promo_dict['_id'] = promo_id
+    
+    # Crear marcador automàticament amb el nom de la promoció
+    tag_name = promo_dict.get('title', 'Promoció')
+    await db.tags.update_one(
+        {"name": tag_name},
+        {
+            "$setOnInsert": {
+                "name": tag_name,
+                "source_type": "promotion",
+                "source_id": promo_id,
+                "description": f"Marcador creat automàticament per la promoció: {tag_name}",
+                "created_at": datetime.utcnow(),
+                "user_count": 0
+            }
+        },
+        upsert=True
+    )
     
     # Si no és admin, enviar notificació push als administradors
     if user.get('role') != 'admin':
