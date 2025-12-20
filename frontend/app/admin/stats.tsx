@@ -70,6 +70,7 @@ export default function StatisticsScreen() {
   const [stats, setStats] = useState<Statistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -82,16 +83,26 @@ export default function StatisticsScreen() {
   const loadStatistics = async () => {
     if (!token) {
       console.error('No token available');
+      setError('No hi ha sessió activa. Torna a iniciar sessió.');
       setLoading(false);
       return;
     }
+    setError(null);
     try {
+      console.log('📊 Carregant estadístiques...');
       const response = await axios.get(`${API_URL}/api/admin/statistics`, {
         headers: { Authorization: token },
       });
-      setStats(response.data);
+      console.log('📊 Estadístiques rebudes:', response.data);
+      // Validar que la resposta té l'estructura esperada
+      if (response.data && response.data.users) {
+        setStats(response.data);
+      } else {
+        setError('La resposta de l\'API no és vàlida');
+      }
     } catch (error: any) {
       console.error('Error carregant estadístiques:', error?.response?.data || error);
+      setError(error?.response?.data?.detail || 'Error carregant les estadístiques');
     } finally {
       setLoading(false);
       setRefreshing(false);
