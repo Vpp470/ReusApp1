@@ -1581,42 +1581,44 @@ async def get_statistics(authorization: str = Header(None)):
     """Obtenir estadístiques generals de l'aplicació"""
     await verify_admin(authorization)
     
-    from datetime import datetime, timedelta
-    from dateutil.relativedelta import relativedelta
-    
-    now = datetime.utcnow()
-    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    start_of_quarter = now.replace(month=((now.month - 1) // 3) * 3 + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
-    start_of_year = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-    last_month = start_of_month - timedelta(days=1)
-    start_of_last_month = last_month.replace(day=1)
-    
-    # Estadístiques d'usuaris
-    total_users = await db.users.count_documents({})
-    users_this_month = await db.users.count_documents({"created_at": {"$gte": start_of_month}})
-    users_last_month = await db.users.count_documents({
-        "created_at": {"$gte": start_of_last_month, "$lt": start_of_month}
-    })
-    users_this_quarter = await db.users.count_documents({"created_at": {"$gte": start_of_quarter}})
-    users_this_year = await db.users.count_documents({"created_at": {"$gte": start_of_year}})
-    
-    # Calcular creixement mensual
-    monthly_growth = 0
-    if users_last_month > 0:
-        monthly_growth = round(((users_this_month - users_last_month) / users_last_month) * 100, 1)
-    
-    # Estadístiques d'establiments
-    total_establishments = await db.establishments.count_documents({})
-    active_establishments = await db.establishments.count_documents({"is_active": True})
-    
-    # Estadístiques d'esdeveniments
-    total_events = await db.events.count_documents({})
-    active_events = await db.events.count_documents({
-        "valid_until": {"$gte": now}
-    })
-    upcoming_events = await db.events.count_documents({
-        "valid_from": {"$gte": now}
-    })
+    try:
+        from datetime import datetime, timedelta
+        from dateutil.relativedelta import relativedelta
+        
+        now = datetime.utcnow()
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        start_of_quarter = now.replace(month=((now.month - 1) // 3) * 3 + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        start_of_year = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        last_month = start_of_month - timedelta(days=1)
+        start_of_last_month = last_month.replace(day=1)
+        
+        # Estadístiques d'usuaris
+        total_users = await db.users.count_documents({})
+        users_this_month = await db.users.count_documents({"created_at": {"$gte": start_of_month}})
+        users_last_month = await db.users.count_documents({
+            "created_at": {"$gte": start_of_last_month, "$lt": start_of_month}
+        })
+        users_this_quarter = await db.users.count_documents({"created_at": {"$gte": start_of_quarter}})
+        users_this_year = await db.users.count_documents({"created_at": {"$gte": start_of_year}})
+        
+        # Calcular creixement mensual
+        monthly_growth = 0
+        if users_last_month > 0:
+            monthly_growth = round(((users_this_month - users_last_month) / users_last_month) * 100, 1)
+        
+        # Estadístiques d'establiments
+        total_establishments = await db.establishments.count_documents({})
+        active_establishments = await db.establishments.count_documents({"is_active": True})
+        
+        # Estadístiques d'esdeveniments
+        total_events = await db.events.count_documents({})
+        active_events = 0
+        upcoming_events = 0
+        try:
+            active_events = await db.events.count_documents({"valid_until": {"$gte": now}})
+            upcoming_events = await db.events.count_documents({"valid_from": {"$gte": now}})
+        except:
+            pass
     
     # Estadístiques de promocions
     total_promotions = await db.promotions.count_documents({})
