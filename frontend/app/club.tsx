@@ -320,12 +320,12 @@ const styles = StyleSheet.create({
   contentTitle: {
     fontSize: FontSizes.lg,
     fontWeight: '600',
-    color: Colors.textDark,
+    color: '#212121',
     marginBottom: Spacing.sm,
   },
   contentDescription: {
     fontSize: FontSizes.md,
-    color: Colors.textSecondary,
+    color: '#666666',
     lineHeight: 22,
     marginBottom: Spacing.sm,
   },
