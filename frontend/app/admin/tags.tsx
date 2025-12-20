@@ -101,28 +101,8 @@ export default function TagsManagementScreen() {
   };
 
   const handleViewUsers = async (tag: string) => {
-    try {
-      const response = await axios.get(
-        `${API_URL}/api/admin/tags/${encodeURIComponent(tag)}/users`,
-        {
-          headers: { Authorization: token! },
-        }
-      );
-
-      const users = response.data.users || [];
-      const stats = response.data.stats || {};
-
-      Alert.alert(
-        `Marcador: ${tag}`,
-        `Usuaris únics: ${stats.unique_users || 0}\n` +
-        `Total participacions: ${stats.total_participations || 0}\n\n` +
-        `Primers usuaris:\n${users.slice(0, 5).map((u: any) => `- ${u.name || u.email || 'Sense nom'}`).join('\n')}`,
-        [{ text: 'Tancar' }]
-      );
-    } catch (error) {
-      console.error('Error carregant usuaris:', error);
-      Alert.alert('Error', 'No s\'han pogut carregar els usuaris');
-    }
+    // Navegar a la pantalla de detall del marcador
+    router.push(`/admin/tag-users?tag=${encodeURIComponent(tag)}`);
   };
 
   const formatDate = (dateString: string) => {
