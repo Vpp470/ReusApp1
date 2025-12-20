@@ -169,18 +169,35 @@ export default function TagsManagementScreen() {
         </Pressable>
       </View>
 
+      {/* Cercador */}
+      <View style={styles.searchContainer}>
+        <MaterialIcons name="search" size={24} color="#666666" />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Cercar marcadors..."
+          placeholderTextColor="#999999"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <Pressable onPress={() => setSearchQuery('')}>
+            <MaterialIcons name="close" size={20} color="#666666" />
+          </Pressable>
+        )}
+      </View>
+
       {/* Contingut */}
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-        {tags.length === 0 ? (
+        {filteredTags.length === 0 ? (
           <View style={styles.emptyState}>
             <MaterialIcons name="label-off" size={80} color={Colors.lightGray} />
-            <Text style={styles.emptyTitle}>Cap marcador disponible</Text>
+            <Text style={styles.emptyTitle}>{searchQuery ? 'Cap resultat' : 'Cap marcador disponible'}</Text>
             <Text style={styles.emptyText}>
-              Els marcadors apareixeran quan creïs promocions o campanyes amb etiquetes.
+              {searchQuery ? 'Prova amb una altra cerca.' : 'Els marcadors apareixeran quan creïs promocions o campanyes amb etiquetes.'}
             </Text>
           </View>
         ) : (
-          tags.map((tag) => (
+          filteredTags.map((tag) => (
             <View key={tag.tag} style={styles.tagCard}>
               {/* Header del Tag */}
               <View style={styles.tagHeader}>
