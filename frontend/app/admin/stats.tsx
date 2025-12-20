@@ -89,7 +89,7 @@ export default function StatisticsScreen() {
     setError(null);
     try {
       console.log('📊 Carregant estadístiques...');
-      const response = await axios.get(`${API_URL}/api/admin/statistics`, {
+      const response = await api.get('/admin/statistics', {
         headers: { Authorization: token },
       });
       console.log('📊 Estadístiques rebudes:', response.data);
