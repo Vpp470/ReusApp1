@@ -115,6 +115,183 @@ export default function StatisticsScreen() {
     loadStatistics();
   };
 
+  // Funció per generar CSV
+  const generateCSV = () => {
+    if (!stats) return '';
+    
+    const lines = [
+      'ESTADÍSTIQUES REUS APP',
+      `Data: ${new Date().toLocaleDateString('ca-ES')}`,
+      '',
+      'USUARIS',
+      `Total Usuaris,${stats.users.total}`,
+      `Nous aquest mes,${stats.users.this_month}`,
+      `Nous mes anterior,${stats.users.last_month}`,
+      `Nous aquest trimestre,${stats.users.this_quarter}`,
+      `Nous aquest any,${stats.users.this_year}`,
+      `Creixement mensual,${stats.users.monthly_growth}%`,
+      `Usuaris actius,${stats.users.active_users}`,
+      `Taxa de participació,${stats.users.participation_rate}%`,
+      '',
+      'ESTABLIMENTS',
+      `Total,${stats.establishments.total}`,
+      `Actius,${stats.establishments.active}`,
+      '',
+      'ESDEVENIMENTS',
+      `Total,${stats.events.total}`,
+      `Actius,${stats.events.active}`,
+      `Propers,${stats.events.upcoming}`,
+      '',
+      'PROMOCIONS',
+      `Total,${stats.promotions.total}`,
+      `Aprovades,${stats.promotions.approved}`,
+      `Pendents,${stats.promotions.pending}`,
+      '',
+      'SORTEJOS',
+      `Total,${stats.raffles.total}`,
+      `Actius,${stats.raffles.active}`,
+      '',
+      'NOTÍCIES',
+      `Total,${stats.news.total}`,
+      `Aquest mes,${stats.news.this_month}`,
+      '',
+      'PARTICIPACIONS',
+      `Total,${stats.participations.total}`,
+      `Aquest mes,${stats.participations.this_month}`,
+      '',
+      'ALTES MENSUALS (últims 6 mesos)',
+      ...stats.trends.monthly_signups.map(m => `${m.month},${m.count}`),
+    ];
+    
+    if (stats.trends.top_tags.length > 0) {
+      lines.push('', 'MARCADORS MÉS POPULARS');
+      stats.trends.top_tags.forEach(t => lines.push(`${t.tag},${t.count}`));
+    }
+    
+    return lines.join('\n');
+  };
+
+  // Descarregar Excel (CSV)
+  const downloadExcel = async () => {
+    try {
+      const csvContent = generateCSV();
+      const fileName = `estadistiques_${new Date().toISOString().split('T')[0]}.csv`;
+      
+      if (Platform.OS === 'web') {
+        // Per web, crear i descarregar directament
+        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        // Per mobile
+        const fileUri = FileSystem.documentDirectory + fileName;
+        await FileSystem.writeAsStringAsync(fileUri, csvContent, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+        await Sharing.shareAsync(fileUri);
+      }
+    } catch (error) {
+      console.error('Error descarregant Excel:', error);
+      Alert.alert('Error', 'No s\'ha pogut descarregar el fitxer');
+    }
+  };
+
+  // Descarregar PDF (format text per simplicitat)
+  const downloadPDF = async () => {
+    try {
+      if (!stats) return;
+      
+      // Generar contingut en format text per al PDF
+      const content = `
+ESTADÍSTIQUES REUS APP
+======================
+Data: ${new Date().toLocaleDateString('ca-ES')}
+
+USUARIS
+-------
+Total Usuaris: ${stats.users.total}
+Nous aquest mes: ${stats.users.this_month}
+Nous mes anterior: ${stats.users.last_month}
+Nous aquest trimestre: ${stats.users.this_quarter}
+Nous aquest any: ${stats.users.this_year}
+Creixement mensual: ${stats.users.monthly_growth}%
+Usuaris actius: ${stats.users.active_users}
+Taxa de participació: ${stats.users.participation_rate}%
+
+ESTABLIMENTS
+------------
+Total: ${stats.establishments.total}
+Actius: ${stats.establishments.active}
+
+ESDEVENIMENTS
+-------------
+Total: ${stats.events.total}
+Actius: ${stats.events.active}
+Propers: ${stats.events.upcoming}
+
+PROMOCIONS
+----------
+Total: ${stats.promotions.total}
+Aprovades: ${stats.promotions.approved}
+Pendents: ${stats.promotions.pending}
+
+SORTEJOS
+--------
+Total: ${stats.raffles.total}
+Actius: ${stats.raffles.active}
+
+NOTÍCIES
+--------
+Total: ${stats.news.total}
+Aquest mes: ${stats.news.this_month}
+
+PARTICIPACIONS
+--------------
+Total: ${stats.participations.total}
+Aquest mes: ${stats.participations.this_month}
+
+ALTES MENSUALS (últims 6 mesos)
+-------------------------------
+${stats.trends.monthly_signups.map(m => `${m.month}: ${m.count}`).join('\n')}
+
+${stats.trends.top_tags.length > 0 ? `
+MARCADORS MÉS POPULARS
+----------------------
+${stats.trends.top_tags.map((t, i) => `${i + 1}. ${t.tag}: ${t.count} participacions`).join('\n')}
+` : ''}
+      `.trim();
+
+      const fileName = `estadistiques_${new Date().toISOString().split('T')[0]}.txt`;
+      
+      if (Platform.OS === 'web') {
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        const fileUri = FileSystem.documentDirectory + fileName;
+        await FileSystem.writeAsStringAsync(fileUri, content, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+        await Sharing.shareAsync(fileUri);
+      }
+    } catch (error) {
+      console.error('Error descarregant PDF:', error);
+      Alert.alert('Error', 'No s\'ha pogut descarregar el fitxer');
+    }
+  };
+
   const StatCard = ({ title, value, subtitle, icon, color, trend }: {
     title: string;
     value: number | string;
