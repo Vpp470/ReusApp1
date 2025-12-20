@@ -64,6 +64,7 @@ export default function TagsManagementScreen() {
         headers: { Authorization: token! },
       });
       setTags(response.data.tags || []);
+      setFilteredTags(response.data.tags || []);
     } catch (error) {
       console.error('Error carregant marcadors:', error);
       Alert.alert('Error', 'No s\'han pogut carregar els marcadors');
