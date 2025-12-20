@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Dimensions,
   RefreshControl,
+  Platform,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -15,6 +17,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
 import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/services/api';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 const { width } = Dimensions.get('window');
 
