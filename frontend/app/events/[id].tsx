@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.xl,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.white,
   },
   loadingContainer: {
     flex: 1,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: Spacing.md,
     fontSize: FontSizes.md,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: '#666666',
   },
   errorContainer: {
     flex: 1,
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: Spacing.md,
     fontSize: FontSizes.lg,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: '#666666',
     textAlign: 'center',
   },
   scrollView: {
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FontSizes.xxl,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: '#212121',
     marginBottom: Spacing.lg,
     lineHeight: 32,
   },
@@ -389,12 +389,12 @@ const styles = StyleSheet.create({
   dateLabel: {
     fontSize: FontSizes.sm,
     fontWeight: '600',
-    color: "rgba(255, 255, 255, 0.7)",
+    color: '#666666',
   },
   dateText: {
     flex: 1,
     fontSize: FontSizes.sm,
-    color: Colors.text,
+    color: '#212121',
   },
   infoRow: {
     flexDirection: 'row',
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: FontSizes.md,
-    color: Colors.text,
+    color: '#212121',
   },
   descriptionSection: {
     backgroundColor: Colors.white,
@@ -419,12 +419,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FontSizes.lg,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: '#212121',
     marginBottom: Spacing.md,
   },
   description: {
     fontSize: FontSizes.md,
-    color: Colors.text,
+    color: '#333333',
     lineHeight: 24,
   },
   contactSection: {
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
   contactText: {
     flex: 1,
     fontSize: FontSizes.md,
-    color: Colors.text,
+    color: '#212121',
   },
   linkButton: {
     flexDirection: 'row',
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
   linkButtonText: {
     fontSize: FontSizes.md,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.white,
   },
   participantsSection: {
     backgroundColor: Colors.white,
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   mapButtonText: {
     fontSize: FontSizes.md,
     fontWeight: '600',
-    color: Colors.text,
+    color: Colors.white,
   },
   participantCard: {
     flexDirection: 'row',
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
   participantName: {
     fontSize: FontSizes.md,
     fontWeight: '600',
-    color: Colors.text,
+    color: '#212121',
     marginBottom: Spacing.xs,
   },
   participantAddress: {
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   },
   participantAddressText: {
     fontSize: FontSizes.sm,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: '#666666',
     flex: 1,
   },
 });
