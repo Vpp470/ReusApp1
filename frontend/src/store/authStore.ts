@@ -92,10 +92,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   
   logout: async () => {
     try {
-      await AsyncStorage.removeItem('user');
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('isAuthenticated');
-      console.log('✅ Auth data removed from AsyncStorage');
+      await storage.removeItem('user');
+      await storage.removeItem('token');
+      await storage.removeItem('isAuthenticated');
+      console.log('✅ Auth data removed from storage');
       set({ user: null, token: null, isAuthenticated: false });
     } catch (error) {
       console.error('❌ Error removing auth data:', error);
@@ -105,10 +105,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   loadStoredAuth: async () => {
     try {
       console.log('🔍 Loading stored auth...');
-      const userStr = await AsyncStorage.getItem('user');
-      const token = await AsyncStorage.getItem('token');
-      const isAuth = await AsyncStorage.getItem('isAuthenticated');
-      const consentStr = await AsyncStorage.getItem('hasConsent');
+      const userStr = await storage.getItem('user');
+      const token = await storage.getItem('token');
+      const isAuth = await storage.getItem('isAuthenticated');
+      const consentStr = await storage.getItem('hasConsent');
       
       console.log('📦 Stored data:', { 
         hasUser: !!userStr, 
