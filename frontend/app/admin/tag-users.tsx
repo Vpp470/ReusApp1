@@ -44,8 +44,11 @@ export default function TagUsersScreen() {
   const { tag } = useLocalSearchParams<{ tag: string }>();
   const { token } = useAuthStore();
   const [users, setUsers] = useState<UserWithTag[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserWithTag[]>([]);
   const [stats, setStats] = useState<TagStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
