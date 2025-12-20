@@ -14,8 +14,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
 import { useAuthStore } from '../../src/store/authStore';
-import axios from 'axios';
-import Constants from 'expo-constants';
+import api from '../../src/services/api';
 
 const { width } = Dimensions.get('window');
 
