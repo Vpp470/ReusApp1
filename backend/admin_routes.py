@@ -1619,11 +1619,11 @@ async def get_statistics(authorization: str = Header(None)):
             upcoming_events = await db.events.count_documents({"valid_from": {"$gte": now}})
         except:
             pass
-    
-    # Estadístiques de promocions
-    total_promotions = await db.promotions.count_documents({})
-    approved_promotions = await db.promotions.count_documents({"status": "approved"})
-    pending_promotions = await db.promotions.count_documents({"status": "pending"})
+        
+        # Estadístiques de promocions
+        total_promotions = await db.promotions.count_documents({})
+        approved_promotions = await db.promotions.count_documents({"status": "approved"})
+        pending_promotions = await db.promotions.count_documents({"status": "pending"})
     
     # Estadístiques de participació
     total_participations = await db.participations.count_documents({})
