@@ -1964,4 +1964,195 @@ const styles = StyleSheet.create({
     color: Colors.darkGray, // Text gris per fons blanc
     marginTop: 4,
   },
+  // Estils per botons d'acció
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    gap: Spacing.md,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.xs,
+  },
+  importButton: {
+    backgroundColor: '#FF9800',
+  },
+  createButton: {
+    backgroundColor: Colors.primary,
+  },
+  actionButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+  },
+  // Estils per modal d'importació
+  importDescription: {
+    fontSize: FontSizes.md,
+    color: Colors.textDark,
+    lineHeight: 22,
+    marginBottom: Spacing.lg,
+  },
+  importInfoBox: {
+    flexDirection: 'row',
+    backgroundColor: Colors.primaryLight,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+    gap: Spacing.sm,
+    alignItems: 'flex-start',
+  },
+  importInfoText: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    color: Colors.textDark,
+    lineHeight: 20,
+  },
+  bold: {
+    fontWeight: '700',
+  },
+  templateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  templateButtonText: {
+    color: Colors.primary,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: Colors.primary,
+  },
+  checkboxLabel: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    color: Colors.textDark,
+  },
+  importNote: {
+    fontSize: FontSizes.sm,
+    color: Colors.warning,
+    backgroundColor: '#FFF3E0',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    lineHeight: 20,
+  },
+  importActionButton: {
+    flex: 2,
+    backgroundColor: '#FF9800',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+  },
+  importActionButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  // Estils per resultat d'importació
+  resultSummary: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: Spacing.xl,
+    paddingBottom: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  resultItem: {
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  resultNumber: {
+    fontSize: FontSizes.xxl,
+    fontWeight: '700',
+    color: Colors.textDark,
+  },
+  resultLabel: {
+    fontSize: FontSizes.sm,
+    color: Colors.gray,
+  },
+  emailResults: {
+    marginBottom: Spacing.lg,
+  },
+  emailResultsTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.textDark,
+    marginBottom: Spacing.md,
+  },
+  emailResultsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  emailResultItem: {
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  emailResultNumber: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+    color: Colors.success,
+  },
+  emailResultLabel: {
+    fontSize: FontSizes.xs,
+    color: Colors.gray,
+  },
+  errorsContainer: {
+    backgroundColor: '#FFEBEE',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  errorsTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.error,
+    marginBottom: Spacing.sm,
+  },
+  errorsList: {
+    maxHeight: 150,
+  },
+  errorItem: {
+    fontSize: FontSizes.sm,
+    color: Colors.error,
+    marginBottom: 4,
+  },
+  primaryButton: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+  },
+  primaryButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
 });
