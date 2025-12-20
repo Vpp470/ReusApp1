@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.lg,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.white,
   },
   scrollContent: {
     paddingBottom: 100,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   bannerSubtitle: {
     fontSize: FontSizes.md,
-    color: Colors.text,
+    color: Colors.white,
     marginTop: Spacing.sm,
     textAlign: 'center',
     opacity: 0.9,
@@ -263,6 +263,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.lg,
     fontWeight: 'bold',
     marginBottom: Spacing.md,
+    color: Colors.textDark,
   },
   socialButtons: {
     flexDirection: 'row',
