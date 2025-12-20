@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: FontSizes.md,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: Colors.textSecondary,
     marginTop: Spacing.md,
   },
   scanProposal: {
