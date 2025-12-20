@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  TextInput,
+  Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -17,6 +19,8 @@ import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/co
 import { useAuthStore } from '../../src/store/authStore';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 interface UserWithTag {
   _id: string;
