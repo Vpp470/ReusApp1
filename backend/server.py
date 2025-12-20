@@ -303,6 +303,22 @@ class Promotion(PromotionBase):
         populate_by_name = True
         json_encoders = {ObjectId: str}
 
+# Model de Marcador (Tag) per classificar usuaris
+class TagBase(BaseModel):
+    name: str  # Nom del marcador (igual que el títol de l'event/promoció/sorteig)
+    source_type: str  # "event", "promotion", "raffle", "manual"
+    source_id: Optional[str] = None  # ID de l'event/promoció/sorteig que l'ha creat
+    description: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class Tag(TagBase):
+    id: str = Field(alias="_id")
+    user_count: int = 0  # Nombre d'usuaris amb aquest marcador
+    
+    class Config:
+        populate_by_name = True
+        json_encoders = {ObjectId: str}
+
 class NewsArticle(BaseModel):
     title: str
     url: str
