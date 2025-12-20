@@ -663,4 +663,16 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     color: '#E65100',
   },
+  retryButton: {
+    marginTop: Spacing.lg,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  retryButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
 });
