@@ -164,15 +164,17 @@ export const promotionsService = {
     return response.data;
   },
   approve: async (token: string, id: string) => {
+    const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
     const response = await api.post(`/promotions/${id}/approve`, {}, {
-      headers: { Authorization: token },
+      headers: { Authorization: authHeader },
     });
     return response.data;
   },
   reject: async (token: string, id: string, reason: string) => {
+    const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
     const response = await api.post(`/promotions/${id}/reject`, null, {
       params: { reason },
-      headers: { Authorization: token },
+      headers: { Authorization: authHeader },
     });
     return response.data;
   },
