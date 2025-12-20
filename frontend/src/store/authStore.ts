@@ -56,7 +56,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   
   setConsent: async (hasConsent) => {
     try {
-      await AsyncStorage.setItem('hasConsent', hasConsent ? 'true' : 'false');
+      await storage.setItem('hasConsent', hasConsent ? 'true' : 'false');
       console.log('✅ Consent saved:', hasConsent);
       set({ hasConsent });
     } catch (error) {
@@ -66,10 +66,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   
   login: async (user, token) => {
     try {
-      await AsyncStorage.setItem('user', JSON.stringify(user));
-      await AsyncStorage.setItem('token', token);
-      await AsyncStorage.setItem('isAuthenticated', 'true');
-      console.log('✅ Auth data saved to AsyncStorage');
+      await storage.setItem('user', JSON.stringify(user));
+      await storage.setItem('token', token);
+      await storage.setItem('isAuthenticated', 'true');
+      console.log('✅ Auth data saved to storage');
       set({ user, token, isAuthenticated: true });
       
       // Registrar push token
