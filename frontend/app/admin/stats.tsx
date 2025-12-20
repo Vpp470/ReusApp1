@@ -164,6 +164,50 @@ export default function StatisticsScreen() {
     );
   }
 
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()} style={styles.backButton}>
+            <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+          </Pressable>
+          <Text style={styles.headerTitle}>📊 Estadístiques</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <MaterialIcons name="error-outline" size={48} color={Colors.error} />
+          <Text style={[styles.loadingText, { color: Colors.error, marginTop: 16 }]}>{error}</Text>
+          <Pressable onPress={loadStatistics} style={styles.retryButton}>
+            <Text style={styles.retryButtonText}>Tornar a intentar</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!stats || !stats.users) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()} style={styles.backButton}>
+            <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+          </Pressable>
+          <Text style={styles.headerTitle}>📊 Estadístiques</Text>
+          <Pressable onPress={onRefresh} style={styles.refreshButton}>
+            <MaterialIcons name="refresh" size={24} color={Colors.white} />
+          </Pressable>
+        </View>
+        <View style={styles.loadingContainer}>
+          <MaterialIcons name="info-outline" size={48} color={Colors.primary} />
+          <Text style={styles.loadingText}>No hi ha dades disponibles</Text>
+          <Pressable onPress={loadStatistics} style={styles.retryButton}>
+            <Text style={styles.retryButtonText}>Recarregar</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
