@@ -1,204 +1,220 @@
 <analysis>
 <original_problem_statement>
-The initial goal was to fix a  error when uploading images for promotions. However, this uncovered a cascade of deeper issues, leading to a series of high-priority requests from the user:
+The user's initial goals were to fix widespread UI/UX issues, implement a new green/gold theme, and resolve critical deployment failures that prevented any changes from reaching the live site ().
 
-1.  **Image/Promotion/Offer System:** The user reported being unable to upload images. This was initially diagnosed as a date serialization issue, then a non-existent endpoint for offers, and finally a conceptual mismatch where the entire offers system was deprecated and should have been promotions. This required a full refactor. The user also requested the creation page be redesigned from scratch to handle web/mobile file uploads correctly.
-2.  **User Management & Roles:**
-    *   The user list on the Assign Establishment screen was incomplete.
-    *   The user requested the ability to assign **multiple roles** to a single user, which was not supported.
-    *   The Save button in the multi-role modal was non-functional.
-3.  **UI/UX Bugs:**
-    *   The Save button in the Assign Establishment modal was not visible on screen.
-    *   Admins could see pending promotions but had no buttons to approve/reject them.
-    *   The date-of-birth picker on the registration screen was difficult to use.
-    *   The Save button on the registration screen was non-functional on iOS.
-4.  **Feature Requests:**
-    *   **Establishment Gallery:** Associated locals need to upload up to 3 gallery photos (9x16 format) with descriptions on their establishment's profile.
-    *   **Redesigned Details Page:** The public-facing establishment detail page should show all information, including the new gallery, with a small map in the top-left corner.
-    *   **Info Screen Content:** The app's Info screen content should be identical to the Qui Som (Who We Are) section of the  landing page.
-    *   **Admin Alerts:** The admin dashboard should show a badge for pending promotions, and admins should receive a push notification when a new promotion is submitted.
-    *   **Consell (Council) Section:** A new, exclusive section in the app, visible only to users with the  role, with a dedicated tab and a page containing several buttons for council-specific functions.
+During this session, the user requested several new major features:
+1.  **Automatic Marker System:** When an event, promotion, or raffle is created, a corresponding marker (tag) should be automatically generated. Users who interact with these items should have the marker added to their profile.
+2.  **Admin Marker Management:** A new section in the admin backoffice to list all markers. This section must include:
+    *   A search bar to find specific markers.
+    *   For each marker, a button to view all associated users.
+    *   A detail page for each marker showing user statistics and a complete list of users with that marker.
+    *   A button to download the list of users for a specific marker as an Excel file.
+3.  **Admin Statistics Dashboard:** A comprehensive dashboard for administrators showing key app metrics, including:
+    *   User statistics (total, new users monthly/quarterly, active users, participation rates).
+    *   A graph of new user sign-ups over the last 6 months.
+    *   Statistics for events, promotions, and raffles.
+    *   Participation data and top 5 most popular markers.
+4.  **PWA (Progressive Web App) Features:**
+    *   **Persistent Login:** Users should remain logged in between sessions on the web app.
+    *   **Installation Prompt:** A non-intrusive prompt should appear for first-time users, encouraging them to add the app to their home screen.
+    *   **App Icon:** The custom RCF logo should be used as the icon for the installed PWA.
+5.  **UI/Branding Fixes:**
+    *   Replace the text Club Reus comerç i futur with the RCF logo on the Club screen.
+    *   Fix all instances of white text on white backgrounds, specifically on the Club screen and the Event Detail screen.
 
 PRODUCT REQUIREMENTS:
-- The promotion creation flow must be fully functional for associated locals on both web and mobile, including image uploads and date selection.
-- The admin panel must allow for comprehensive user management, including the assignment of multiple roles per user.
-- The app must provide a good user experience, with all buttons and interactive elements visible and functional across platforms (especially iOS).
-- Associated locals must be able to manage a gallery of images for their establishment profile.
-- The app's content and features must be consistent with the user's requests (e.g., Info page content, Consell section).
-- Production deployment on Railway must be stable.
+- The deployment pipeline to Railway must be stable and reliable.
+- The web app () must serve the latest, fully-styled version of the frontend.
+- A complete marker/tagging system must be in place for user segmentation.
+- A comprehensive statistics dashboard must be available to administrators.
+- The web app must be installable as a PWA with persistent login and correct branding.
+- All UI text must be high-contrast and readable on all screens.
 </original_problem_statement>
 
 **User's preferred language**: Catalan. The user communicates exclusively in Catalan. The next agent MUST respond in Catalan.
 
 **what currently exists?**
-- A full-stack application with a FastAPI backend and an Expo (React Native) frontend.
-- **Production is DOWN.** A  module error on Railway is preventing the backend from starting, making the live app at  non-functional.
-- The local Emergent environment is functional and contains numerous fixes and new features that are not working in production.
-- **Multi-Role User System:** The backend and frontend admin panel have been updated to support assigning multiple roles to a user. The user model in the DB now has a  array.
-- **New Promotions Page:** A completely new promotion creation page () has been created. It uses platform-specific code ( for web,  for native) to handle image-to-base64 conversion, fixing a major bug. The old  page is now deprecated.
-- **Establishment Gallery:** The establishment edit screen () now includes a section for associated locals to upload/manage a gallery of up to 3 images with descriptions. The public details page () has been redesigned to display this gallery.
-- **Consell Section:** A new Consell tab and corresponding page () have been created, visible only to users with the  role.
-- **Admin UI/UX Improvements:** The admin dashboard now shows a badge for pending promotions, and the link correctly points to the promotions management screen () where approve/reject buttons are visible.
-- **Date Input Standardization:** The date-of-birth input on the registration screen has been simplified to a text input, consistent with the new promotions page.
+A full-stack Expo/FastAPI application. The critical deployment blocker (a Git submodule issue) has been resolved by resetting the GitHub repository. The application is now successfully deploying to Railway, and  serves the compiled frontend web app from the  directory.
+
+The agent has implemented several major new features:
+- A complete **marker/tagging system** (backend and frontend admin UI).
+- A new **statistics dashboard** for admins (backend endpoint and frontend UI).
+- **PWA features** including an installation prompt and improved session persistence using .
+- Numerous **UI fixes**, including replacing text with the new RCF logo and correcting text colors on the Club and Event Detail pages.
+
+However, the newly created statistics dashboard is currently broken.
 
 **Last working item**:
-    - Last item agent was working: Fixing a bug on the user registration screen where the Save button was not functional on iOS devices due to keyboard layout issues. The agent implemented a fix by adding  to the 's content container and ensuring the  was correctly configured.
-    - Status: IN PROGRESS (The agent implemented a fix, but it has not been tested by the user or a testing agent).
+    - Last item agent was working: Debugging the new **Admin Statistics Dashboard**. The user reported that the page was not opening or showing an error. The agent identified the frontend was receiving a Token invalid error from the backend endpoint . The agent was attempting to make the backend endpoint more robust and fix potential authentication or logic errors within the complex database aggregation pipeline.
+    - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? Frontend testing agent (specifically on an iOS profile).
-    - User Testing Done: N
+    - Which testing method agent to use? backend testing agent. The agent should first create a test file to call the  endpoint with a valid admin token to isolate the error (is it an auth issue or a database aggregation issue?).
+    - User Testing Done: Y (User confirmed the page is broken).
 
 **All Pending/In progress Issue list**:
-  - Issue 1: **CRITICAL (P0): Production Backend is crashed on Railway.** The logs show a . This is a platform-specific dependency issue on the Railway environment. The entire production application is down because of this.
-  - Issue 2: The Save button on the registration screen might still not work on iOS. (P1)
-  - Issue 3: The original bug, participants were not being saved when an event was created from the admin panel, remains unaddressed. (P3)
-  - Issue 4: The AI-powered news summarization feature is non-functional due to an invalid . (P3)
-  - Issue 5: The large  on the app home screen is still commented out and replaced with a placeholder. (P3)
-  
+  - Issue 1: **CRITICAL (P0): The new Admin Statistics page is broken.** When the user navigates to , the page fails to load data, showing an error. The backend returns a Token invalid message, but the root cause might be a server-side error in the complex aggregation query within the  endpoint.
+  - Issue 2: **(P1) Widespread, recurring UI color contrast problems.** The agent has been applying ad-hoc fixes to individual screens (like  and ) by hardcoding dark color values (e.g., ). The root cause is that the global color theme file, , defines  as a semi-transparent *white*, which is unreadable on white backgrounds. This needs a global fix.
+  - Issue 3: **(P2) The authentication and consent flow is in a broken/unstable state.** (Carry-over from previous fork). The logic for showing the consent screen only once after the first registration is unreliable.
+  - Issue 4: **(P3) The Hola, admin greeting in the top header is a hardcoded string.** (Carry-over from previous fork).
+  - Issue 5: **(P3) The PDF download functionality relies on a temporary Python HTTP server.** (Carry-over from previous fork).
+
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: The agent correctly identified that this is a Railway-specific environment issue that it cannot fix directly. It called the  to inform the user about the situation and advise them to contact Emergent/Railway support.
+     - Attempted fixes: The agent added a  block to the backend endpoint, which introduced syntax errors. It also added a check on the frontend to ensure the auth token is loaded before making the API call. Neither resolved the issue.
      - Next debug checklist:
-        1.  **This cannot be fixed by the agent.** The agent's next step MUST be to inform the user that this is an external platform issue and that they need to contact Emergent support ( or Discord) for resolution. The agent should explain that it can continue working on features in the local environment, but they cannot be deployed until the platform issue is resolved.
-     - Why fix this issue and what will be achieved with the fix?: The entire production application is down. Fixing this will restore service.
-     - Status:  BLOCKED
-     - Is recurring issue? Y (Part of a larger pattern of deployment/environment issues).
-     - Should Test frontend/backend/both after fix? both
-     - Blocked on other issue: External support from Railway/Emergent.
+        1. **Isolate the backend error:** Create a small Python script to make an authenticated request to  to see the full traceback from the server.
+        2. **Review :** Examine the  function for logical errors in the MongoDB aggregation pipelines. It's a very large function and likely contains a bug.
+        3. **Check for missing collections:** The endpoint queries many collections (, , , , ). A  block should be added around each aggregation to handle cases where a collection might be empty or missing, preventing a total endpoint failure.
+     - Why fix this issue and what will be achieved with the fix?: This is a major feature requested by the user. Fixing it will provide valuable business intelligence to the app administrators.
+     - Status:  IN PROGRESS
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? backend (via curl or script), then frontend (by viewing the page).
+     - Blocked on other issue: None.
 
   - Issue 2: 
-     - Attempted fixes: The agent added  to the 's  in  to prevent the keyboard from covering the button on iOS.
+     - Attempted fixes: The agent has been hardcoding color values like  or  in specific component stylesheets (, ). This is not a scalable solution.
      - Next debug checklist:
-        1.  Ask the user to test the registration form on an iOS device.
-        2.  If it still fails, use the frontend testing agent with an iOS profile to simulate the behavior.
-        3.  Inspect the  properties again. The behavior might need to be changed from  to .
-     - Why fix this issue and what will be achieved with the fix?: New users cannot register on iOS devices.
-     - Status:  USER VERIFICATION PENDING
-     - Is recurring issue? N
+        1. **Edit **.
+        2. Change the definition of  from  to a proper grey color, like .
+        3. Remove the recently hardcoded color values in  and  and revert them to use .
+        4. Recompile the frontend and test to ensure the fix works and has not introduced regressions.
+     - Why fix this issue and what will be achieved with the fix?: To ensure a consistent and readable user interface across the entire application and prevent the same bug from reappearing on new screens.
+     - Status:  NOT STARTED
+     - Is recurring issue? Y
      - Should Test frontend/backend/both after fix? frontend
-     - Blocked on other issue: None
+     - Blocked on other issue: None.
 
 **In progress Task List**:
 - None.
 
 **Upcoming and Future Tasks**
     Upcoming Tasks:
-    - (P1) Create the sub-pages for the new Consell section as requested by the user: actes institucionals, assumptes sobrevinguts, campanyes futures, estat de comptes, campanyes publicitaries, ultima acta del consell.
+    - (P1) **Add download buttons (PDF, Excel) to the new Statistics page.** (Follow-up from user request).
+    - (P2) **Rework the Consent Flow:** (From previous fork) Re-implement the mandatory consent screen to appear only once, immediately after a user's first registration, in a stable way.
+    - (P2) **Dynamic User Greeting:** (From previous fork) Change the hardcoded Hola, admin header to a dynamic greeting.
+    - (P3) **Fix PDF Download Endpoint:** (From previous fork) Create a reliable FastAPI endpoint to download generated PDFs.
+    - (P3) **Delete temporary scripts:** (From previous fork) Remove old, unused scripts from the backend directory.
+
     Future Tasks:
-    - (P3) Investigate and fix the failing OpenAI/Emergent LLM API key for automatic news generation.
-    - (P3) Investigate and fix the bug: participants were not being saved when an event was created from the admin panel.
-    - (P3) Optimize and re-enable the custom icon on the app's home screen.
+    - (From previous fork) Investigate and fix the failing OpenAI/Emergent LLM API key for automatic news generation.
+    - (From previous fork) Investigate and fix the bug: participants were not being saved when an event was created from the admin panel.
 
 **Completed work in this session**
-- List of all completed tasks with file and method name:
-  - **Multi-Role User System:** Implemented full-stack support for assigning multiple roles to users (, ).
-  - **Promotion Page Redesign:** Created a new promotion creation page from scratch () with proper web/mobile image upload support.
-  - **Offers to Promotions Refactor:** Replaced the deprecated offers system with the promotions system for associated locals.
-  - **Establishment Gallery Feature:** Added functionality for locals to manage a 3-image gallery () and redesigned the public detail page to display it ().
-  - **Consell Section Implementation:** Created a new, role-exclusive Consell tab and page (, ).
-  - **Admin Alerts:** Added a pending promotions badge to the admin dashboard and push notifications on submission (, ).
-  - **Info Screen Update:** Replaced the content of the Info page with static content from the landing page ().
-  - **Date Input Fixes:** Standardized and fixed date text inputs on the promotions and registration pages.
-  - **Critical Bug Fixes:** Resolved numerous critical bugs including:
-      - Datetime serialization  error.
-      - Inconsistent authentication token handling in the backend ( errors).
-      - Wrong API parameter order ( error).
-      - Incorrect Python 3.9+ type hint syntax ( vs ).
-      - Modal content overflow hiding buttons.
-      - Incorrect navigation links in the admin dashboard.
-  - **iOS Registration Button Fix:** Addressed the non-functional save button on the iOS registration form.
+- **Deployment Pipeline Resurrection:**
+  - Resolved the critical Git submodule issue that was blocking all backend deployments.
+  - Fixed numerous subsequent Git/GitHub issues (conflicting branches, invalid filenames, merge conflicts) by resetting the remote repository and pushing a clean version of the codebase.
+  - The app is now successfully deploying to Railway from the  branch.
+- **Web App Frontend Serving:**
+  - Configured the project to compile the Expo app for web () into the  directory.
+  - Modified  to correctly serve the static frontend files, making the full app accessible at .
+- **Icon Font Loading Fix (Critical for Web):**
+  - Diagnosed that icon fonts ( files) were being ignored by Git because they were in a  subdirectory inside the  folder.
+  - Corrected the  to ensure font files are committed and deployed, fixing the issue of icons appearing as X or being blank on the live web app.
+- **New Feature: Marker/Tagging System:**
+  - Implemented backend logic to automatically create markers when events or promotions are created.
+  - Built a complete admin UI to list all markers, search them, and view/export the list of users associated with each tag.
+- **New Feature: PWA Functionality:**
+  - Added a custom React component () to prompt users to Add to Home Screen.
+  - Improved session persistence for the web app by using  directly, ensuring users stay logged in.
+- **Branding and UI Overhaul:**
+  - Replaced hardcoded text with the new RCF logo on multiple screens (, , ).
+  - Corrected severe text-on-white-background contrast issues on the Club () and Event Detail () screens.
+  - Updated the app's icon and splash screen to use the new RCF logo.
 
 **Earlier issues found/mentioned but not fixed**
-   - All known unfixed issues are captured in the All Pending/In progress Issue list.
+   - The root cause of UI color contrast problems ( having incorrect definitions) was identified but not fixed globally. The agent applied local patches instead.
 
 **Known issue recurrence from previous fork**
-  - Issue recurrence in previous fork: Deployment instability, environment discrepancies between local and production, and database synchronization issues.
-  - Recurrence count: 5+
-  - Status: BLOCKED. This session ended with the most critical recurrence yet: a full production backend crash due to a platform-specific dependency () issue. This confirms the deployment process is extremely fragile.
+  - Issue recurrence in previous fork: **Deployment instability and environment discrepancies.**
+  - Recurrence count: 1 (This session was a prolonged battle against Git and deployment issues).
+  - Status: RESOLVED (for now). The repo has been reset, and the root causes (submodule, ) have been fixed.
 
 **Code Architecture**
-expo export
+
 
 **Key Technical Concepts**
-- **Platform-Specific Implementation:** Using  to provide different components or logic, especially for file handling ( vs ) and date inputs.
-- **Multi-Role Authorization:** The user model was changed from a single  to a  array. This required changes in the DB, backend models (Pydantic), and frontend UI (checkboxes) and state management (string arrays).
-- **Keyboard Management (iOS):** Using  and  with  to solve issues where the keyboard hides buttons.
-- **Conditional Rendering (Roles):** Showing/hiding UI elements (like the Consell tab) based on the user's roles stored in a Zustand ().
-- **Deployment Instability:** The  crash highlights a critical vulnerability in the deployment process where Python dependencies can differ between the local environment and the Railway production environment.
+- **Expo for Web:** Using  to generate a static, production-ready web version of the mobile app.
+- **FastAPI Static File Serving:** Configuring  to serve the  and static assets from the  directory.
+- **Git  Nuances:** Debugging how  rules can unintentionally exclude necessary build artifacts (like fonts inside a  sub-path of the  folder).
+- **PWA (Progressive Web App):** Implementing an Add to Home Screen prompt and ensuring PWA icons are correctly configured in .
+- **Zustand State Persistence (Web):** Modifying the persistence layer to use  directly for a more reliable experience on the web platform, as  can be less predictable.
+- **MongoDB Aggregation Framework:** Writing complex, multi-stage aggregation pipelines in the backend to generate data for the new statistics dashboard.
+- **File Downloads (CSV/Excel):** Implementing a frontend function to generate and trigger the download of a CSV file from JSON data.
 
 **key DB schema**
-  - tomb_reus_db (Database on Railway MongoDB)
-    - establishments: { ..., **gallery: Optional[List[{url: str, description: str}]]** }
-    - users: { ..., **role: str, roles: Optional[List[str]]** } //  is likely legacy but kept for compatibility.
-    - promotions: { ... }
+  - tomb_reus_db (MongoDB)
+    - **users**:  // Holds the markers/tags a user has acquired.
+    - **events**:  // A tag is created and associated with each event.
+    - **promotions**:  // A tag is created and associated with each promotion.
+    - **tags**:  // **New collection** to store all created markers and their origin.
+    - **participations**:  // Tracks user interactions, linking them to a tag.
 
 **changes in tech stack**
-- No changes, but a clear pattern of platform-specific code has been established as necessary for web compatibility.
+- None.
 
 **All files of reference**
-- : Major changes to authentication, date parsing, and adding new endpoints/features.
-- : Major changes to user role management.
-- : Rewritten for multi-role management.
-- : New file, core of the promotion fix.
-- : Heavily modified to add the image gallery.
-- : Completely rewritten for the new detail view.
-- : Modified for date input and iOS keyboard fix.
-- : Modified for the conditional Consell tab.
+- : Contains the new (and broken)  endpoint and the new marker management endpoints.
+- : The new, non-functional statistics dashboard page.
+- : The source of the recurring color contrast bugs.
+- : Was modified to stop ignoring font files inside . This is a critical fix.
+- : The new root layout that loads fonts and the PWA prompt.
+- : Was modified to use  for web persistence.
 
 **Areas that need refactoring**:
-- The file  is now deprecated and was replaced by . It should be deleted to avoid confusion.
-- The  field in the  schema is now redundant next to . A migration should be planned to consolidate them into just the  array to avoid future bugs.
+- The  file needs a proper fix to prevent future UI bugs.
+- The  function in  is very large and complex. It should be broken down into smaller, more manageable helper functions.
+- Ad-hoc color fixes in  and  should be removed and replaced with the global theme colors once  is corrected.
 
 **key api endpoints**
-- : New endpoint to save the establishment image gallery.
-- : Updated to accept a  array.
-- All  endpoints: Authentication logic was fixed.
-- : Now handles push notifications to admins.
+- : **NEW & BROKEN.** Gathers and returns comprehensive app statistics.
+- : **MODIFIED.** Lists all markers/tags.
+- : **MODIFIED.** Gets users associated with a specific tag.
+- : **NEW.** An endpoint for exporting user data (though the current implementation does this on the client side).
 
 **Critical Info for New Agent**
-- **PRODUCTION IS DOWN.** The absolute top priority is communicating to the user that the  error on Railway is a platform issue that you **cannot** fix. You must guide them to contact Emergent support. Do not attempt to fix it by changing code, as it's a dependency/environment problem on Railway's side.
-- **The user is extremely frustrated.** Be empathetic, clear, and manage expectations. Acknowledge the production outage but focus on what you *can* do in the local environment while they await a fix from support.
-- **Do not deploy.** Until the  issue is resolved by platform support, do not attempt to  any changes, as it will just trigger another failed deployment on Railway.
-- **Verify all fixes locally.** The session was plagued by fixes that worked locally but failed in production due to environment differences. Assume nothing about production.
+- **The user is extremely frustrated** with the amount of time spent on debugging Git and deployment issues. You must prioritize delivering working features and avoid getting stuck.
+- **Your first task is to fix the broken Statistics Dashboard.** This is the last thing the previous agent worked on and is the user's highest priority. Isolate the error in the  backend endpoint. It's likely a bug in one of the many database queries.
+- **The web app is now live.** Changes to the frontend require running , committing the updated  directory, and pushing to the  branch for Railway to deploy.
+- **Be prepared to fix UI color issues.** The global color theme file () has a major flaw. If you create or edit a screen with a white background, text using  will be invisible. You should propose a global fix for this.
+- **Verify user actions.** The previous session had many issues where the user did not push changes correctly. After asking the user to push to GitHub, always verify the new deployment on Railway has started and completed successfully.
 
 **documents created in this job**
 - None.
 
 **Last 10 User Messages and any pending user messages**
-1.  **User**: I need a new Consell (Council) screen with multiple buttons, visible only to council members. **Status**: Implemented.
-2.  **User**: The save button for multiple roles isn't working. **Status**: Investigated.
-3.  **User**: (Sends screenshot of a 422 error after agent's fix). **Status**: Bug found ( vs  in Python model). Fixed.
-4.  **User**: It's still failing. (Sends screenshot of a 400 error). **Status**: Bug found (wrong API parameter order). Fixed.
-5.  **User**: On iOS phones, the save button for new user registration doesn't work. **Status**: Investigated and fixed.
-6.  **User**: (Sends screenshot of  error on Railway) We have errors. **Status**: Escalated to user to contact support.
-7.  **User**: (Sends screenshot of a crash on the redesigned establishment page). **Status**: Bug found (missing placeholder image). Fixed.
-8.  **User**: Users need to have more than one role. **Status**: Implemented.
-9.  **User**: I can't access the assign establishment screen because the save button isn't visible. **Status**: Fixed (modal layout).
-10. **User**: I see the pending promotion, but I don't have a button to approve or discard it. **Status**: Fixed (navigation link was wrong).
+1.  **User (Msg 702-717):** Reports the statistics page is broken. The agent debugs the backend endpoint, finds a Token Invalid error, and gets stuck in a loop trying to fix syntax/indentation errors in the  function.
+2.  **User (Msg 718):** Asks for download (PDF/Excel) buttons on the new stats page. **Status:** Pending.
+3.  **User (Msg 724):** Complains that event cards on the Club screen have white text on a white background. **Status:** Resolved with a local fix.
+4.  **User (Msg 740):** Reports the description text is still not visible after the first fix. **Status:** Resolved after identifying  was white.
+5.  **User (Msg 750):** Reports that clicking an event leads to a detail page that is also all white. **Status:** Resolved with another local fix.
+6.  **User (Msg 570):** Requests the full marker/tagging system feature. **Status:** Implemented.
+7.  **User (Msg 616):** Requests a search bar and download button for the marker system. **Status:** Implemented.
+8.  **User (Msg 648):** Requests the full statistics dashboard feature. **Status:** Implemented but is currently broken.
+9.  **User (Msg 664):** Reports the new statistics page doesn't open. **Status:** Resolved by renaming the file.
+10. **PENDING: User (Msg 674):** Reports an error on the statistics page and requests download buttons. This is the current, active issue.
 
 **Project Health Check:**
 - Broken:
-    - **The entire production backend on Railway.** It is crashed and will not start due to a  .
+  - **Admin Statistics Feature:** The entire feature is non-functional due to a backend error in the  endpoint.
 - Mocked:
-    - The  on the app's home screen is still replaced with a placeholder icon.
+  - **PDF Download:** (From previous fork) Still relies on a temporary, non-production-ready solution.
 
 **3rd Party Integrations**
-- **OpenAI**: Used for news generation. Currently failing due to an invalid .
-- **Railway**: Hosts the FastAPI backend and MongoDB database. **Currently in a failed state.**
-- **GitHub**: Source control. Pushing to  triggers Railway deployments.
+- **Railway:** Production hosting for the backend and web app.
+- **GitHub:** Source control. The repository was recently reset to resolve corruption and submodule issues.
 
 **Testing status**
-  - Testing agent used after significant changes: YES (for the initial promotion image and user list fixes).
-  - Troubleshoot agent used after agent stuck in loop: YES (multiple times, successfully identified several root causes).
+  - Testing agent used after significant changes: NO
+  - Troubleshoot agent used after agent stuck in loop: YES (Generated a report on user frustration).
   - Test files created: []
-  - Known regressions: None, but the entire production environment is down.
+  - Known regressions: None known, but the global color theme issue makes regressions highly likely on any screen with a white background.
 
 **Credentials to test flow:**
 - Admin:  / 
 - Test User:  / 
 
 **What agent forgot to execute**
-- The agent did not delete the deprecated  file after replacing its functionality.
-- The agent has not addressed the original pending tasks from the first handover (participants not being saved, LLM key issue, large icon).
-
+- A global fix for the flawed color theme in . The agent opted for repeated local fixes, which is inefficient and leaves the app prone to the same bug reappearing.
+- The agent did not address several major pending tasks from the previous fork: fixing the consent flow, the hardcoded admin greeting, and the temporary PDF download solution.
+- The user's request to add download buttons to the statistics page (Msg 674) was not addressed as the agent got stuck debugging the page itself.
 </analysis>
