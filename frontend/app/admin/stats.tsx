@@ -399,6 +399,18 @@ ${stats.trends.top_tags.map((t, i) => `${i + 1}. ${t.tag}: ${t.count} participac
         </Pressable>
       </View>
 
+      {/* Botons de descàrrega */}
+      <View style={styles.downloadButtonsContainer}>
+        <Pressable style={styles.downloadButton} onPress={downloadExcel}>
+          <MaterialIcons name="table-chart" size={20} color={Colors.white} />
+          <Text style={styles.downloadButtonText}>Excel</Text>
+        </Pressable>
+        <Pressable style={[styles.downloadButton, styles.downloadButtonPDF]} onPress={downloadPDF}>
+          <MaterialIcons name="picture-as-pdf" size={20} color={Colors.white} />
+          <Text style={styles.downloadButtonText}>PDF</Text>
+        </Pressable>
+      </View>
+
       <ScrollView 
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
