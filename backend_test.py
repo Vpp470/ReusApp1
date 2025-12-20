@@ -11,7 +11,7 @@ import sys
 from datetime import datetime, timezone
 
 # Configuration
-BACKEND_URL = "https://tomb-redesign-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://admin-stats-hub.preview.emergentagent.com/api"
 LOCAL_ASSOCIAT_EMAIL = "flapsreus@gmail.com"
 LOCAL_ASSOCIAT_PASSWORD = "flaps123"
 

@@ -1581,104 +1581,137 @@ async def get_statistics(authorization: str = Header(None)):
     """Obtenir estadístiques generals de l'aplicació"""
     await verify_admin(authorization)
     
+    from datetime import datetime, timedelta
+    from dateutil.relativedelta import relativedelta
+    
+    now = datetime.utcnow()
+    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    start_of_quarter = now.replace(month=((now.month - 1) // 3) * 3 + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    start_of_year = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_month = start_of_month - timedelta(days=1)
+    start_of_last_month = last_month.replace(day=1)
+    
+    # Estadístiques d'usuaris
+    total_users = await db.users.count_documents({})
+    users_this_month = await db.users.count_documents({"created_at": {"$gte": start_of_month}})
+    users_last_month = await db.users.count_documents({
+        "created_at": {"$gte": start_of_last_month, "$lt": start_of_month}
+    })
+    users_this_quarter = await db.users.count_documents({"created_at": {"$gte": start_of_quarter}})
+    users_this_year = await db.users.count_documents({"created_at": {"$gte": start_of_year}})
+    
+    # Calcular creixement mensual
+    monthly_growth = 0
+    if users_last_month > 0:
+        monthly_growth = round(((users_this_month - users_last_month) / users_last_month) * 100, 1)
+    
+    # Estadístiques d'establiments
+    total_establishments = await db.establishments.count_documents({})
+    active_establishments = await db.establishments.count_documents({"is_active": True})
+    
+    # Estadístiques d'esdeveniments
+    total_events = await db.events.count_documents({})
+    active_events = 0
+    upcoming_events = 0
     try:
-        from datetime import datetime, timedelta
-        from dateutil.relativedelta import relativedelta
-        
-        now = datetime.utcnow()
-        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        start_of_quarter = now.replace(month=((now.month - 1) // 3) * 3 + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
-        start_of_year = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-        last_month = start_of_month - timedelta(days=1)
-        start_of_last_month = last_month.replace(day=1)
-        
-        # Estadístiques d'usuaris
-        total_users = await db.users.count_documents({})
-        users_this_month = await db.users.count_documents({"created_at": {"$gte": start_of_month}})
-        users_last_month = await db.users.count_documents({
-            "created_at": {"$gte": start_of_last_month, "$lt": start_of_month}
-        })
-        users_this_quarter = await db.users.count_documents({"created_at": {"$gte": start_of_quarter}})
-        users_this_year = await db.users.count_documents({"created_at": {"$gte": start_of_year}})
-        
-        # Calcular creixement mensual
-        monthly_growth = 0
-        if users_last_month > 0:
-            monthly_growth = round(((users_this_month - users_last_month) / users_last_month) * 100, 1)
-        
-        # Estadístiques d'establiments
-        total_establishments = await db.establishments.count_documents({})
-        active_establishments = await db.establishments.count_documents({"is_active": True})
-        
-        # Estadístiques d'esdeveniments
-        total_events = await db.events.count_documents({})
-        active_events = 0
-        upcoming_events = 0
-        try:
-            active_events = await db.events.count_documents({"valid_until": {"$gte": now}})
-            upcoming_events = await db.events.count_documents({"valid_from": {"$gte": now}})
-        except:
-            pass
-        
-        # Estadístiques de promocions
+        active_events = await db.events.count_documents({"valid_until": {"$gte": now}})
+        upcoming_events = await db.events.count_documents({"valid_from": {"$gte": now}})
+    except Exception:
+        pass
+    
+    # Estadístiques de promocions (amb gestió d'errors si la col·lecció no existeix)
+    total_promotions = 0
+    approved_promotions = 0
+    pending_promotions = 0
+    try:
         total_promotions = await db.promotions.count_documents({})
         approved_promotions = await db.promotions.count_documents({"status": "approved"})
         pending_promotions = await db.promotions.count_documents({"status": "pending"})
+    except Exception:
+        pass
     
-    # Estadístiques de participació
-    total_participations = await db.participations.count_documents({})
-    participations_this_month = await db.participations.count_documents({
-        "created_at": {"$gte": start_of_month}
-    })
+    # Estadístiques de participació (amb gestió d'errors si la col·lecció no existeix)
+    total_participations = 0
+    participations_this_month = 0
+    active_users = 0
+    top_events = []
+    top_tags = []
+    participation_by_type = {}
     
-    # Usuaris actius (amb almenys una participació)
-    active_users_pipeline = [
-        {"$group": {"_id": "$user_id"}},
-        {"$count": "total"}
-    ]
-    active_users_result = await db.participations.aggregate(active_users_pipeline).to_list(length=1)
-    active_users = active_users_result[0]["total"] if active_users_result else 0
+    try:
+        total_participations = await db.participations.count_documents({})
+        participations_this_month = await db.participations.count_documents({
+            "created_at": {"$gte": start_of_month}
+        })
+        
+        # Usuaris actius (amb almenys una participació)
+        active_users_pipeline = [
+            {"$group": {"_id": "$user_id"}},
+            {"$count": "total"}
+        ]
+        active_users_result = await db.participations.aggregate(active_users_pipeline).to_list(length=1)
+        active_users = active_users_result[0]["total"] if active_users_result else 0
+        
+        # Top 5 esdeveniments per participació
+        top_events_pipeline = [
+            {"$match": {"activity_type": "event"}},
+            {"$group": {"_id": "$activity_id", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 5}
+        ]
+        top_events_data = await db.participations.aggregate(top_events_pipeline).to_list(length=5)
+        
+        for item in top_events_data:
+            if item.get("_id"):
+                try:
+                    event = await db.events.find_one({"_id": ObjectId(item["_id"])})
+                    if event:
+                        top_events.append({
+                            "name": event.get("title", "Desconegut"),
+                            "participations": item["count"]
+                        })
+                except Exception:
+                    pass
+        
+        # Marcadors més populars
+        top_tags_pipeline = [
+            {"$match": {"tag": {"$exists": True, "$ne": None}}},
+            {"$group": {"_id": "$tag", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 5}
+        ]
+        top_tags_data = await db.participations.aggregate(top_tags_pipeline).to_list(length=5)
+        top_tags = [{"tag": item["_id"], "count": item["count"]} for item in top_tags_data if item.get("_id")]
+        
+        # Participacions per tipus d'activitat
+        activity_types_pipeline = [
+            {"$match": {"activity_type": {"$exists": True, "$ne": None}}},
+            {"$group": {"_id": "$activity_type", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        activity_types_data = await db.participations.aggregate(activity_types_pipeline).to_list(length=10)
+        participation_by_type = {item["_id"]: item["count"] for item in activity_types_data if item.get("_id")}
+    except Exception:
+        pass
     
     # Percentatge de participació
     participation_rate = round((active_users / total_users * 100), 1) if total_users > 0 else 0
     
-    # Top 5 esdeveniments per participació
-    top_events_pipeline = [
-        {"$match": {"activity_type": "event"}},
-        {"$group": {"_id": "$activity_id", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 5}
-    ]
-    top_events_data = await db.participations.aggregate(top_events_pipeline).to_list(length=5)
-    
-    top_events = []
-    for item in top_events_data:
-        event = await db.events.find_one({"_id": ObjectId(item["_id"])}) if item["_id"] else None
-        if event:
-            top_events.append({
-                "name": event.get("title", "Desconegut"),
-                "participations": item["count"]
-            })
-    
-    # Estadístiques de sortejos
-    total_raffles = await db.raffles.count_documents({})
-    active_raffles = await db.raffles.count_documents({
-        "end_date": {"$gte": now},
-        "status": "active"
-    })
+    # Estadístiques de sortejos (amb gestió d'errors si la col·lecció no existeix)
+    total_raffles = 0
+    active_raffles = 0
+    try:
+        total_raffles = await db.raffles.count_documents({})
+        active_raffles = await db.raffles.count_documents({
+            "end_date": {"$gte": now},
+            "status": "active"
+        })
+    except Exception:
+        pass
     
     # Estadístiques de notícies
     total_news = await db.news.count_documents({})
     news_this_month = await db.news.count_documents({"created_at": {"$gte": start_of_month}})
-    
-    # Marcadors més populars
-    top_tags_pipeline = [
-        {"$group": {"_id": "$tag", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 5}
-    ]
-    top_tags_data = await db.participations.aggregate(top_tags_pipeline).to_list(length=5)
-    top_tags = [{"tag": item["_id"], "count": item["count"]} for item in top_tags_data if item["_id"]]
     
     # Altes mensuals dels últims 6 mesos
     monthly_signups = []
@@ -1692,14 +1725,6 @@ async def get_statistics(authorization: str = Header(None)):
             "month": month_start.strftime("%b %Y"),
             "count": count
         })
-    
-    # Participacions per tipus d'activitat
-    activity_types_pipeline = [
-        {"$group": {"_id": "$activity_type", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}}
-    ]
-    activity_types_data = await db.participations.aggregate(activity_types_pipeline).to_list(length=10)
-    participation_by_type = {item["_id"]: item["count"] for item in activity_types_data if item["_id"]}
     
     return {
         "users": {
