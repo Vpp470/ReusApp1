@@ -366,6 +366,78 @@ export default function AdminUsers() {
     setCreateModalVisible(true);
   };
 
+  // Funcions per importació massiva
+  const handleImportUsers = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-excel',
+          'text/csv',
+        ],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      const file = result.assets[0];
+      setImporting(true);
+
+      // Crear FormData
+      const formData = new FormData();
+      
+      if (Platform.OS === 'web') {
+        // Per web, obtenim el fitxer directament
+        const response = await fetch(file.uri);
+        const blob = await response.blob();
+        formData.append('file', blob, file.name);
+      } else {
+        // Per mobile
+        formData.append('file', {
+          uri: file.uri,
+          type: file.mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          name: file.name,
+        } as any);
+      }
+      
+      formData.append('send_emails', sendEmails ? 'true' : 'false');
+
+      const apiResponse = await api.post('/admin/users/import', formData, {
+        headers: {
+          'Authorization': token || '',
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setImportResult(apiResponse.data);
+      setImportModalVisible(false);
+      setShowImportResultModal(true);
+      loadUsers();
+
+    } catch (error: any) {
+      console.error('Error importació:', error);
+      Alert.alert('Error', error.response?.data?.detail || error.message || 'Error important usuaris');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const downloadTemplate = async () => {
+    try {
+      if (Platform.OS === 'web') {
+        // Per web, obrim directament l'URL de descàrrega
+        const baseUrl = api.defaults.baseURL || '/api';
+        window.open(`${baseUrl}/admin/users/import/template`, '_blank');
+      } else {
+        Alert.alert('Info', 'La plantilla es descarregarà al navegador');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'No s\'ha pogut descarregar la plantilla');
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
