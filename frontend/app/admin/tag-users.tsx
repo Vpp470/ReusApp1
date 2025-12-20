@@ -234,21 +234,58 @@ export default function TagUsersScreen() {
         </View>
       )}
 
+      {/* Botó descarregar */}
+      <View style={styles.actionsContainer}>
+        <Pressable 
+          style={[styles.exportButton, exporting && styles.exportButtonDisabled]}
+          onPress={handleExportExcel}
+          disabled={exporting}
+        >
+          {exporting ? (
+            <ActivityIndicator size="small" color={Colors.white} />
+          ) : (
+            <>
+              <MaterialIcons name="file-download" size={20} color={Colors.white} />
+              <Text style={styles.exportButtonText}>Descarregar Excel</Text>
+            </>
+          )}
+        </Pressable>
+      </View>
+
+      {/* Cercador */}
+      <View style={styles.searchContainer}>
+        <MaterialIcons name="search" size={24} color={Colors.textSecondary} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Cercar per nom, email o telèfon..."
+          placeholderTextColor="#999999"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <Pressable onPress={() => setSearchQuery('')}>
+            <MaterialIcons name="close" size={20} color={Colors.textSecondary} />
+          </Pressable>
+        )}
+      </View>
+
       {/* Llistat d'usuaris */}
       <View style={styles.listContainer}>
-        <Text style={styles.listTitle}>Usuaris amb aquest marcador</Text>
+        <Text style={styles.listTitle}>
+          {filteredUsers.length} usuari{filteredUsers.length !== 1 ? 's' : ''} trobat{filteredUsers.length !== 1 ? 's' : ''}
+        </Text>
         
-        {users.length === 0 ? (
+        {filteredUsers.length === 0 ? (
           <View style={styles.emptyState}>
             <MaterialIcons name="person-off" size={60} color={Colors.lightGray} />
             <Text style={styles.emptyTitle}>Cap usuari trobat</Text>
             <Text style={styles.emptyText}>
-              Encara no hi ha usuaris amb aquest marcador.
+              {searchQuery ? 'Prova amb una altra cerca.' : 'Encara no hi ha usuaris amb aquest marcador.'}
             </Text>
           </View>
         ) : (
           <FlatList
-            data={users}
+            data={filteredUsers}
             renderItem={renderUserItem}
             keyExtractor={(item) => item._id}
             contentContainerStyle={styles.listContent}
