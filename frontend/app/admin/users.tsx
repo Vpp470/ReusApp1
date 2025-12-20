@@ -1097,6 +1097,163 @@ export default function AdminUsers() {
         </Modal>
       )}
 
+      {/* Modal Importació Massiva */}
+      <Modal
+        visible={importModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setImportModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>📥 Importar Usuaris</Text>
+              <Pressable onPress={() => setImportModalVisible(false)}>
+                <MaterialIcons name="close" size={24} color={Colors.gray} />
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.importDescription}>
+                Importa usuaris des d'un fitxer Excel (.xlsx) o CSV amb les dades de l'antiga app El Tomb de Reus.
+              </Text>
+
+              <View style={styles.importInfoBox}>
+                <MaterialIcons name="info" size={24} color={Colors.primary} />
+                <Text style={styles.importInfoText}>
+                  El fitxer ha de tenir com a mínim la columna <Text style={styles.bold}>email</Text>.{'\n'}
+                  Columnes opcionals: nom, cognoms, telefon, adreca
+                </Text>
+              </View>
+
+              <Pressable style={styles.templateButton} onPress={downloadTemplate}>
+                <MaterialIcons name="download" size={20} color={Colors.primary} />
+                <Text style={styles.templateButtonText}>Descarregar Plantilla Excel</Text>
+              </Pressable>
+
+              <View style={styles.checkboxContainer}>
+                <Pressable 
+                  style={[styles.checkbox, sendEmails && styles.checkboxChecked]}
+                  onPress={() => setSendEmails(!sendEmails)}
+                >
+                  {sendEmails && <MaterialIcons name="check" size={18} color={Colors.white} />}
+                </Pressable>
+                <Text style={styles.checkboxLabel}>
+                  Enviar email de benvinguda als nous usuaris
+                </Text>
+              </View>
+
+              <Text style={styles.importNote}>
+                ⚠️ Cada usuari importat rebrà una contrasenya temporal d'un sol ús i un email amb les instruccions per completar el registre.
+              </Text>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <Pressable
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setImportModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel·lar</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.importActionButton]}
+                onPress={handleImportUsers}
+                disabled={importing}
+              >
+                {importing ? (
+                  <ActivityIndicator size="small" color={Colors.white} />
+                ) : (
+                  <>
+                    <MaterialIcons name="upload-file" size={20} color={Colors.white} />
+                    <Text style={styles.importActionButtonText}>Seleccionar Fitxer</Text>
+                  </>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Resultat Importació */}
+      <Modal
+        visible={showImportResultModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowImportResultModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>📊 Resultat Importació</Text>
+              <Pressable onPress={() => setShowImportResultModal(false)}>
+                <MaterialIcons name="close" size={24} color={Colors.gray} />
+              </Pressable>
+            </View>
+
+            {importResult && (
+              <ScrollView style={styles.modalBody}>
+                <View style={styles.resultSummary}>
+                  <View style={styles.resultItem}>
+                    <MaterialIcons name="people" size={28} color={Colors.gray} />
+                    <Text style={styles.resultNumber}>{importResult.total}</Text>
+                    <Text style={styles.resultLabel}>Total processats</Text>
+                  </View>
+                  <View style={styles.resultItem}>
+                    <MaterialIcons name="check-circle" size={28} color={Colors.success} />
+                    <Text style={[styles.resultNumber, { color: Colors.success }]}>{importResult.created}</Text>
+                    <Text style={styles.resultLabel}>Creats</Text>
+                  </View>
+                  <View style={styles.resultItem}>
+                    <MaterialIcons name="skip-next" size={28} color={Colors.warning} />
+                    <Text style={[styles.resultNumber, { color: Colors.warning }]}>{importResult.skipped}</Text>
+                    <Text style={styles.resultLabel}>Omesos</Text>
+                  </View>
+                </View>
+
+                <View style={styles.emailResults}>
+                  <Text style={styles.emailResultsTitle}>📧 Emails enviats</Text>
+                  <View style={styles.emailResultsRow}>
+                    <View style={styles.emailResultItem}>
+                      <MaterialIcons name="mark-email-read" size={24} color={Colors.success} />
+                      <Text style={styles.emailResultNumber}>{importResult.emails_sent}</Text>
+                      <Text style={styles.emailResultLabel}>Enviats</Text>
+                    </View>
+                    <View style={styles.emailResultItem}>
+                      <MaterialIcons name="mark-email-unread" size={24} color={Colors.error} />
+                      <Text style={[styles.emailResultNumber, { color: Colors.error }]}>{importResult.emails_failed}</Text>
+                      <Text style={styles.emailResultLabel}>Fallits</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {importResult.errors.length > 0 && (
+                  <View style={styles.errorsContainer}>
+                    <Text style={styles.errorsTitle}>⚠️ Errors ({importResult.errors.length})</Text>
+                    <ScrollView style={styles.errorsList} nestedScrollEnabled>
+                      {importResult.errors.slice(0, 10).map((error, index) => (
+                        <Text key={index} style={styles.errorItem}>• {error}</Text>
+                      ))}
+                      {importResult.errors.length > 10 && (
+                        <Text style={styles.errorItem}>... i {importResult.errors.length - 10} més</Text>
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
+              </ScrollView>
+            )}
+
+            <View style={styles.modalFooter}>
+              <Pressable
+                style={[styles.modalButton, styles.primaryButton]}
+                onPress={() => setShowImportResultModal(false)}
+              >
+                <Text style={styles.primaryButtonText}>Tancar</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Botó flotant per crear usuari */}
       <Pressable
         style={styles.fabButton}
