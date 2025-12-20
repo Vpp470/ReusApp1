@@ -1770,3 +1770,352 @@ async def get_statistics(authorization: str = Header(None)):
             "top_tags": top_tags
         }
     }
+
+
+# ============================================================================
+# IMPORTACIÓ MASSIVA D'USUARIS
+# ============================================================================
+
+import secrets
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Configuració SMTP (s'haurà de configurar al .env)
+SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
+SMTP_USER = os.environ.get('SMTP_USER', '')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+SMTP_FROM_EMAIL = os.environ.get('SMTP_FROM_EMAIL', 'noreply@reusapp.com')
+SMTP_FROM_NAME = os.environ.get('SMTP_FROM_NAME', 'Reus Comerç i Futur')
+
+def generate_temp_password(length=12):
+    """Genera una contrasenya temporal segura"""
+    return secrets.token_urlsafe(length)[:length]
+
+def send_welcome_email(to_email: str, name: str, temp_password: str, app_url: str = "https://reusapp.com"):
+    """Envia email de benvinguda amb instruccions"""
+    
+    # Personalitzar salutació
+    greeting = f"Hola {name}," if name else f"Hola,"
+    
+    subject = "🎉 Benvingut/da a la nova App de Reus Comerç i Futur"
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background-color: #1B5E20; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+            .content {{ background-color: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+            .password-box {{ background-color: #E8F5E9; border: 2px solid #1B5E20; padding: 15px; margin: 20px 0; text-align: center; border-radius: 8px; }}
+            .password {{ font-size: 24px; font-weight: bold; color: #1B5E20; letter-spacing: 2px; }}
+            .button {{ display: inline-block; background-color: #1B5E20; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin: 20px 0; }}
+            .steps {{ background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }}
+            .step {{ margin: 10px 0; padding: 10px; border-left: 3px solid #1B5E20; padding-left: 15px; }}
+            .footer {{ text-align: center; color: #666; font-size: 12px; margin-top: 20px; }}
+            .important {{ color: #D32F2F; font-weight: bold; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🛍️ Reus Comerç i Futur</h1>
+                <p>La teva nova app de comerç local</p>
+            </div>
+            <div class="content">
+                <p>{greeting}</p>
+                
+                <p>T'informem que <strong>la nova aplicació de Reus Comerç i Futur</strong> ja està disponible i substituirà l'antiga app de <strong>El Tomb de Reus</strong>.</p>
+                
+                <p>Hem migrat el teu compte automàticament. Per accedir per primera vegada, utilitza aquesta <strong>contrasenya temporal</strong>:</p>
+                
+                <div class="password-box">
+                    <p>La teva contrasenya temporal:</p>
+                    <p class="password">{temp_password}</p>
+                </div>
+                
+                <p class="important">⚠️ Aquesta contrasenya és d'un sol ús. Un cop accedeixis, hauràs de canviar-la.</p>
+                
+                <div class="steps">
+                    <h3>📱 Passos per completar el registre:</h3>
+                    <div class="step"><strong>1.</strong> Descarrega la nova app o accedeix a <a href="{app_url}">{app_url}</a></div>
+                    <div class="step"><strong>2.</strong> Inicia sessió amb el teu email: <strong>{to_email}</strong></div>
+                    <div class="step"><strong>3.</strong> Utilitza la contrasenya temporal que t'hem proporcionat</div>
+                    <div class="step"><strong>4.</strong> Actualitza el teu perfil i crea una nova contrasenya segura</div>
+                    <div class="step"><strong>5.</strong> Ja pots gaudir de totes les ofertes i promocions del comerç local!</div>
+                </div>
+                
+                <center>
+                    <a href="{app_url}" class="button">Accedir a l'App</a>
+                </center>
+                
+                <h3>🎁 Què trobaràs a la nova app?</h3>
+                <ul>
+                    <li>✅ Ofertes exclusives del comerç local</li>
+                    <li>✅ Promocions i descomptes especials</li>
+                    <li>✅ Esdeveniments i activitats de Reus</li>
+                    <li>✅ Sortejos i premis</li>
+                    <li>✅ Notícies del comerç local</li>
+                </ul>
+                
+                <p>Si tens qualsevol dubte, pots contactar-nos responent a aquest correu.</p>
+                
+                <p>Gràcies per formar part de la comunitat de comerç local de Reus! 💚</p>
+                
+                <p>Salutacions cordials,<br>
+                <strong>L'equip de Reus Comerç i Futur</strong></p>
+            </div>
+            <div class="footer">
+                <p>Aquest és un correu automàtic. Si no has sol·licitat aquest accés, pots ignorar aquest missatge.</p>
+                <p>© 2025 Reus Comerç i Futur - Tots els drets reservats</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    text_content = f"""
+{greeting}
+
+T'informem que la nova aplicació de Reus Comerç i Futur ja està disponible i substituirà l'antiga app de El Tomb de Reus.
+
+Hem migrat el teu compte automàticament. Per accedir per primera vegada, utilitza aquesta contrasenya temporal:
+
+CONTRASENYA TEMPORAL: {temp_password}
+
+⚠️ IMPORTANT: Aquesta contrasenya és d'un sol ús. Un cop accedeixis, hauràs de canviar-la.
+
+PASSOS PER COMPLETAR EL REGISTRE:
+1. Descarrega la nova app o accedeix a {app_url}
+2. Inicia sessió amb el teu email: {to_email}
+3. Utilitza la contrasenya temporal
+4. Actualitza el teu perfil i crea una nova contrasenya segura
+5. Ja pots gaudir de totes les ofertes i promocions!
+
+Si tens qualsevol dubte, pots contactar-nos responent a aquest correu.
+
+Gràcies per formar part de la comunitat de comerç local de Reus!
+
+Salutacions cordials,
+L'equip de Reus Comerç i Futur
+    """
+    
+    # Si no hi ha configuració SMTP, només retornem True (mode test)
+    if not SMTP_USER or not SMTP_PASSWORD:
+        print(f"[EMAIL SIMULAT] To: {to_email}, Password: {temp_password}")
+        return True
+    
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = f"{SMTP_FROM_NAME} <{SMTP_FROM_EMAIL}>"
+        msg['To'] = to_email
+        
+        msg.attach(MIMEText(text_content, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html_content, 'html', 'utf-8'))
+        
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+        
+        return True
+    except Exception as e:
+        print(f"Error enviant email a {to_email}: {str(e)}")
+        return False
+
+
+class ImportResult(BaseModel):
+    total: int
+    created: int
+    skipped: int
+    errors: List[str]
+    emails_sent: int
+    emails_failed: int
+
+
+@admin_router.post("/users/import", response_model=ImportResult)
+async def import_users_bulk(
+    file: UploadFile = File(...),
+    send_emails: bool = Form(True),
+    authorization: str = Header(None)
+):
+    """
+    Importar usuaris massivament des d'un fitxer Excel/CSV.
+    
+    El fitxer ha de tenir com a mínim la columna 'email'.
+    Columnes opcionals: name, nom, cognoms, telefon, phone, address, adreca
+    """
+    await verify_admin(authorization)
+    
+    result = ImportResult(
+        total=0,
+        created=0,
+        skipped=0,
+        errors=[],
+        emails_sent=0,
+        emails_failed=0
+    )
+    
+    # Llegir el fitxer
+    try:
+        content = await file.read()
+        
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(io.BytesIO(content))
+        elif file.filename.endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(io.BytesIO(content))
+        else:
+            raise HTTPException(status_code=400, detail="Format no suportat. Utilitza CSV o Excel (.xlsx)")
+        
+        # Normalitzar noms de columnes
+        df.columns = df.columns.str.lower().str.strip()
+        
+        # Verificar que existeix la columna email
+        email_col = None
+        for col in ['email', 'correu', 'e-mail', 'mail']:
+            if col in df.columns:
+                email_col = col
+                break
+        
+        if not email_col:
+            raise HTTPException(status_code=400, detail="El fitxer ha de tenir una columna 'email' o 'correu'")
+        
+        result.total = len(df)
+        
+        for index, row in df.iterrows():
+            email = str(row[email_col]).strip().lower()
+            
+            # Validar email
+            if not email or '@' not in email or pd.isna(row[email_col]):
+                result.errors.append(f"Fila {index + 2}: Email invàlid o buit")
+                result.skipped += 1
+                continue
+            
+            # Verificar si l'usuari ja existeix
+            existing_user = await db.users.find_one({"email": email})
+            if existing_user:
+                result.errors.append(f"Fila {index + 2}: L'usuari {email} ja existeix")
+                result.skipped += 1
+                continue
+            
+            # Obtenir nom
+            name = ""
+            for col in ['name', 'nom', 'nombre']:
+                if col in df.columns and pd.notna(row.get(col)):
+                    name = str(row[col]).strip()
+                    break
+            
+            # Obtenir cognoms
+            surname = ""
+            for col in ['cognoms', 'apellidos', 'surname', 'lastname']:
+                if col in df.columns and pd.notna(row.get(col)):
+                    surname = str(row[col]).strip()
+                    break
+            
+            # Combinar nom i cognoms
+            full_name = f"{name} {surname}".strip() if name or surname else email.split('@')[0]
+            
+            # Obtenir telèfon
+            phone = ""
+            for col in ['telefon', 'phone', 'tel', 'mobil', 'telefono']:
+                if col in df.columns and pd.notna(row.get(col)):
+                    phone = str(row[col]).strip()
+                    break
+            
+            # Obtenir adreça
+            address = ""
+            for col in ['adreca', 'address', 'direccion', 'direcció']:
+                if col in df.columns and pd.notna(row.get(col)):
+                    address = str(row[col]).strip()
+                    break
+            
+            # Generar contrasenya temporal
+            temp_password = generate_temp_password()
+            hashed_password = pwd_context.hash(temp_password)
+            
+            # Crear usuari
+            new_user = {
+                "email": email,
+                "name": full_name,
+                "password": hashed_password,
+                "phone": phone,
+                "address": address,
+                "role": "user",
+                "is_imported": True,
+                "must_change_password": True,
+                "temp_password_created": datetime.utcnow(),
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "token": secrets.token_urlsafe(32),
+                "source": "import_el_tomb_de_reus"
+            }
+            
+            try:
+                await db.users.insert_one(new_user)
+                result.created += 1
+                
+                # Enviar email de benvinguda
+                if send_emails:
+                    email_sent = send_welcome_email(email, full_name, temp_password)
+                    if email_sent:
+                        result.emails_sent += 1
+                    else:
+                        result.emails_failed += 1
+                        
+            except Exception as e:
+                result.errors.append(f"Fila {index + 2}: Error creant usuari - {str(e)}")
+                result.skipped += 1
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processant el fitxer: {str(e)}")
+    
+    return result
+
+
+@admin_router.get("/users/import/template")
+async def download_import_template(authorization: str = Header(None)):
+    """Descarregar plantilla Excel per importar usuaris"""
+    await verify_admin(authorization)
+    
+    # Crear plantilla Excel
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Usuaris"
+    
+    # Capçaleres
+    headers = ['email', 'nom', 'cognoms', 'telefon', 'adreca']
+    for col, header in enumerate(headers, 1):
+        ws.cell(row=1, column=col, value=header)
+    
+    # Exemple
+    example_data = ['exemple@email.com', 'Joan', 'García López', '666123456', 'Carrer Major 1, Reus']
+    for col, value in enumerate(example_data, 1):
+        ws.cell(row=2, column=col, value=value)
+    
+    # Ajustar amplada columnes
+    ws.column_dimensions['A'].width = 30
+    ws.column_dimensions['B'].width = 15
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 15
+    ws.column_dimensions['E'].width = 35
+    
+    # Guardar a buffer
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=plantilla_importacio_usuaris.xlsx"}
+    )
