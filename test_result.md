@@ -2742,4 +2742,54 @@ agent_communication:
       
       🎉 CONCLUSION: The Excel export functionality is fully operational and ready for production use!
       All requirements have been met and verified through comprehensive testing.
+  - agent: "testing"
+    message: |
+      ✅ ADMIN STATISTICS ENDPOINT TESTING COMPLETED - WORKING PERFECTLY
+      
+      Comprehensive testing performed on the admin statistics endpoint as specifically requested:
+      
+      🎯 ENDPOINT TESTED:
+      - URL: GET https://admin-stats-hub.preview.emergentagent.com/api/admin/statistics
+      - Admin Token: i_yKBfolFbGsik3rMzPNVA5O6TyK5uzzAc-7YRQod-w
+      - Authorization Header: Bearer i_yKBfolFbGsik3rMzPNVA5O6TyK5uzzAc-7YRQod-w
+      
+      📊 TEST RESULTS:
+      ✅ Status Code: 200 (SUCCESS)
+      ✅ Valid JSON Response: Confirmed
+      ✅ All Required Sections Present: Verified
+      
+      📄 COMPLETE RESPONSE STRUCTURE VERIFIED:
+      
+      1. ✅ users: {total: 9, this_month: 0, last_month: 9, this_quarter: 9, this_year: 9, monthly_growth: -100.0, active_users: 0, participation_rate: 0.0}
+      
+      2. ✅ establishments: {total: 347, active: 0}
+      
+      3. ✅ events: {total: 5, active: 3, upcoming: 0, top_events: []}
+      
+      4. ✅ promotions: {total: 5, approved: 3, pending: 1}
+      
+      5. ✅ raffles: {total: 0, active: 0}
+      
+      6. ✅ news: {total: 125, this_month: 85}
+      
+      7. ✅ participations: {total: 0, this_month: 0, by_type: {}}
+      
+      8. ✅ trends: {monthly_signups: [6 months of data from Jul 2025 to Dec 2025], top_tags: []}
+      
+      🔍 VERIFICATION RESULTS:
+      - All 8 required sections (users, establishments, events, promotions, raffles, news, participations, trends) are present ✅
+      - JSON structure is valid and properly formatted ✅
+      - Admin authentication working with provided token ✅
+      - Response contains comprehensive statistical data ✅
+      - Trends section includes monthly signup data for 6 months ✅
+      
+      📈 KEY STATISTICS FOUND:
+      - 9 total users registered
+      - 347 establishments in database
+      - 5 events (3 active)
+      - 5 promotions (3 approved, 1 pending)
+      - 125 news articles (85 this month)
+      - Monthly trends data available
+      
+      🎉 CONCLUSION: The admin statistics endpoint is fully functional and returns all required data sections as specified in the request.
 
