@@ -10,6 +10,7 @@ import {
   Alert,
   ActivityIndicator,
   Modal,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -20,6 +21,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { adminService } from '../../src/services/api';
 import api from '../../src/services/api';
 import type { User } from '../../src/types';
+import * as DocumentPicker from 'expo-document-picker';
 
 export default function AdminUsers() {
   const router = useRouter();
@@ -50,6 +52,20 @@ export default function AdminUsers() {
   const [creating, setCreating] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  // Estats per importació massiva
+  const [importModalVisible, setImportModalVisible] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [sendEmails, setSendEmails] = useState(true);
+  const [importResult, setImportResult] = useState<{
+    total: number;
+    created: number;
+    skipped: number;
+    errors: string[];
+    emails_sent: number;
+    emails_failed: number;
+  } | null>(null);
+  const [showImportResultModal, setShowImportResultModal] = useState(false);
 
   useEffect(() => {
     loadUsers();
