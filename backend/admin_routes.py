@@ -634,7 +634,25 @@ async def create_event(
                 event_dict['valid_until'] = parser.parse(event_dict['valid_until'])
     
     result = await db.events.insert_one(event_dict)
-    event_dict['_id'] = str(result.inserted_id)
+    event_id = str(result.inserted_id)
+    event_dict['_id'] = event_id
+    
+    # Crear marcador automàticament amb el nom de l'esdeveniment
+    tag_name = event_dict.get('title', 'Esdeveniment')
+    await db.tags.update_one(
+        {"name": tag_name},
+        {
+            "$setOnInsert": {
+                "name": tag_name,
+                "source_type": "event",
+                "source_id": event_id,
+                "description": f"Marcador creat automàticament per l'esdeveniment: {tag_name}",
+                "created_at": datetime.utcnow(),
+                "user_count": 0
+            }
+        },
+        upsert=True
+    )
     
     return event_dict
 
