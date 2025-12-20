@@ -58,6 +58,20 @@ export default function TagUsersScreen() {
     }
   }, [tag]);
 
+  useEffect(() => {
+    // Filtrar usuaris quan canvia la cerca
+    if (searchQuery.trim() === '') {
+      setFilteredUsers(users);
+    } else {
+      const query = searchQuery.toLowerCase();
+      setFilteredUsers(users.filter(user => 
+        (user.name && user.name.toLowerCase().includes(query)) ||
+        (user.email && user.email.toLowerCase().includes(query)) ||
+        (user.phone && user.phone.includes(query))
+      ));
+    }
+  }, [searchQuery, users]);
+
   const loadUsers = async () => {
     try {
       setLoading(true);
@@ -67,13 +81,77 @@ export default function TagUsersScreen() {
           headers: { Authorization: token! },
         }
       );
-      setUsers(response.data.users || []);
+      const loadedUsers = response.data.users || [];
+      setUsers(loadedUsers);
+      setFilteredUsers(loadedUsers);
       setStats(response.data.stats || null);
     } catch (error) {
       console.error('Error carregant usuaris:', error);
       Alert.alert('Error', 'No s\'han pogut carregar els usuaris');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      setExporting(true);
+      
+      if (Platform.OS === 'web') {
+        // Per web, descarregar directament
+        const response = await axios.get(
+          `${API_URL}/api/admin/tags/${encodeURIComponent(tag!)}/export`,
+          {
+            headers: { Authorization: token! },
+            responseType: 'blob',
+          }
+        );
+        
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `usuaris_${tag}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        
+        Alert.alert('Èxit', 'Fitxer descarregat correctament');
+      } else {
+        // Per mòbil
+        const response = await axios.get(
+          `${API_URL}/api/admin/tags/${encodeURIComponent(tag!)}/export`,
+          {
+            headers: { Authorization: token! },
+            responseType: 'arraybuffer',
+          }
+        );
+
+        const filename = `usuaris_${tag}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        const fileUri = FileSystem.documentDirectory + filename;
+        
+        const base64 = btoa(
+          new Uint8Array(response.data).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ''
+          )
+        );
+
+        await FileSystem.writeAsStringAsync(fileUri, base64, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(fileUri);
+        } else {
+          Alert.alert('Èxit', `Fitxer guardat a: ${fileUri}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error exportant Excel:', error);
+      Alert.alert('Error', 'No s\'ha pogut exportar l\'Excel');
+    } finally {
+      setExporting(false);
     }
   };
 
