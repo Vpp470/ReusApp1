@@ -474,6 +474,24 @@ export default function AdminUsers() {
         )}
       </View>
 
+      {/* Botons d'acció */}
+      <View style={styles.actionButtonsContainer}>
+        <Pressable 
+          style={[styles.actionButton, styles.importButton]} 
+          onPress={() => setImportModalVisible(true)}
+        >
+          <MaterialIcons name="upload-file" size={20} color={Colors.white} />
+          <Text style={styles.actionButtonText}>Importar Usuaris</Text>
+        </Pressable>
+        <Pressable 
+          style={[styles.actionButton, styles.createButton]} 
+          onPress={openCreateModal}
+        >
+          <MaterialIcons name="person-add" size={20} color={Colors.white} />
+          <Text style={styles.actionButtonText}>Nou Usuari</Text>
+        </Pressable>
+      </View>
+
       {/* Stats */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScrollView}>
         <View style={styles.statsContainer}>
