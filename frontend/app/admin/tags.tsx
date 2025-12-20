@@ -8,6 +8,7 @@ import {
   Pressable,
   ActivityIndicator,
   Alert,
+  TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -33,14 +34,28 @@ export default function TagsManagementScreen() {
   const router = useRouter();
   const { token } = useAuthStore();
   const [tags, setTags] = useState<Tag[]>([]);
+  const [filteredTags, setFilteredTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [exportingTag, setExportingTag] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
   useEffect(() => {
     loadTags();
   }, []);
+
+  useEffect(() => {
+    // Filtrar marcadors quan canvia la cerca
+    if (searchQuery.trim() === '') {
+      setFilteredTags(tags);
+    } else {
+      const query = searchQuery.toLowerCase();
+      setFilteredTags(tags.filter(tag => 
+        tag.tag.toLowerCase().includes(query)
+      ));
+    }
+  }, [searchQuery, tags]);
 
   const loadTags = async () => {
     try {
