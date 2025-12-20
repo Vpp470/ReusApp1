@@ -354,6 +354,7 @@ ${stats.trends.top_tags.map((t, i) => `${i + 1}. ${t.tag}: ${t.count} participac
   }
 
   if (error) {
+    const isTokenError = error.toLowerCase().includes('sessió') || error.toLowerCase().includes('token');
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
@@ -366,9 +367,15 @@ ${stats.trends.top_tags.map((t, i) => `${i + 1}. ${t.tag}: ${t.count} participac
         <View style={styles.loadingContainer}>
           <MaterialIcons name="error-outline" size={48} color={Colors.error} />
           <Text style={[styles.loadingText, { color: Colors.error, marginTop: 16 }]}>{error}</Text>
-          <Pressable onPress={loadStatistics} style={styles.retryButton}>
-            <Text style={styles.retryButtonText}>Tornar a intentar</Text>
-          </Pressable>
+          {isTokenError ? (
+            <Pressable onPress={() => router.replace('/auth/login')} style={[styles.retryButton, { backgroundColor: Colors.error }]}>
+              <Text style={styles.retryButtonText}>Iniciar sessió</Text>
+            </Pressable>
+          ) : (
+            <Pressable onPress={loadStatistics} style={styles.retryButton}>
+              <Text style={styles.retryButtonText}>Tornar a intentar</Text>
+            </Pressable>
+          )}
         </View>
       </SafeAreaView>
     );
