@@ -74,17 +74,24 @@ export default function StatisticsScreen() {
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
   useEffect(() => {
-    loadStatistics();
-  }, []);
+    if (token) {
+      loadStatistics();
+    }
+  }, [token]);
 
   const loadStatistics = async () => {
+    if (!token) {
+      console.error('No token available');
+      setLoading(false);
+      return;
+    }
     try {
       const response = await axios.get(`${API_URL}/api/admin/statistics`, {
-        headers: { Authorization: token! },
+        headers: { Authorization: token },
       });
       setStats(response.data);
-    } catch (error) {
-      console.error('Error carregant estadístiques:', error);
+    } catch (error: any) {
+      console.error('Error carregant estadístiques:', error?.response?.data || error);
     } finally {
       setLoading(false);
       setRefreshing(false);
