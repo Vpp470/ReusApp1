@@ -589,14 +589,17 @@ async def login(email: str, password: str):
         logger.error(f"Password verification error: {e}")
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    # Generar i guardar token a la base de dades
+    # Utilitzar el token existent o generar-ne un de nou si no en té
     import secrets
-    token = secrets.token_urlsafe(32)
+    token = user.get('token')
     
-    await db.users.update_one(
-        {"_id": user['_id']},
-        {"$set": {"token": token}}
-    )
+    if not token:
+        # Només generar token nou si l'usuari no en té cap
+        token = secrets.token_urlsafe(32)
+        await db.users.update_one(
+            {"_id": user['_id']},
+            {"$set": {"token": token}}
+        )
     
     user['_id'] = str(user['_id'])
     user['token'] = token
