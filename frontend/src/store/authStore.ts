@@ -95,10 +95,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   
   login: async (user, token) => {
     try {
-      await storage.setItem('user', JSON.stringify(user));
-      await storage.setItem('token', token);
-      await storage.setItem('isAuthenticated', 'true');
-      console.log('✅ Auth data saved to storage');
+      console.log('🔐 Guardant sessió per a:', user.email);
+      await storage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+      await storage.setItem(STORAGE_KEYS.TOKEN, token);
+      await storage.setItem(STORAGE_KEYS.IS_AUTH, 'true');
+      console.log('✅ Sessió guardada correctament');
       set({ user, token, isAuthenticated: true });
       
       // Registrar push token
@@ -115,31 +116,34 @@ export const useAuthStore = create<AuthState>((set) => ({
         console.error('Error registering push token:', error);
       }
     } catch (error) {
-      console.error('❌ Error saving auth data:', error);
+      console.error('❌ Error guardant sessió:', error);
     }
   },
   
   logout: async () => {
     try {
-      await storage.removeItem('user');
-      await storage.removeItem('token');
-      await storage.removeItem('isAuthenticated');
-      console.log('✅ Auth data removed from storage');
+      console.log('🚪 Tancant sessió...');
+      await storage.removeItem(STORAGE_KEYS.USER);
+      await storage.removeItem(STORAGE_KEYS.TOKEN);
+      await storage.removeItem(STORAGE_KEYS.IS_AUTH);
+      console.log('✅ Sessió tancada correctament');
       set({ user: null, token: null, isAuthenticated: false });
     } catch (error) {
-      console.error('❌ Error removing auth data:', error);
+      console.error('❌ Error tancant sessió:', error);
     }
   },
   
   loadStoredAuth: async () => {
     try {
-      console.log('🔍 Loading stored auth...');
-      const userStr = await storage.getItem('user');
-      const token = await storage.getItem('token');
-      const isAuth = await storage.getItem('isAuthenticated');
-      const consentStr = await storage.getItem('hasConsent');
+      console.log('🔍 Carregant sessió guardada...');
+      console.log('📱 Plataforma:', Platform.OS);
       
-      console.log('📦 Stored data:', { 
+      const userStr = await storage.getItem(STORAGE_KEYS.USER);
+      const token = await storage.getItem(STORAGE_KEYS.TOKEN);
+      const isAuth = await storage.getItem(STORAGE_KEYS.IS_AUTH);
+      const consentStr = await storage.getItem(STORAGE_KEYS.CONSENT);
+      
+      console.log('📦 Dades trobades:', { 
         hasUser: !!userStr, 
         hasToken: !!token, 
         isAuth,
@@ -150,14 +154,14 @@ export const useAuthStore = create<AuthState>((set) => ({
       
       if (userStr && token && isAuth === 'true') {
         const user = JSON.parse(userStr);
-        console.log('✅ Auth restored for user:', user.email);
+        console.log('✅ Sessió restaurada per a:', user.email);
         set({ user, token, isAuthenticated: true, hasConsent, isLoading: false });
       } else {
-        console.log('ℹ️ No stored auth found');
+        console.log('ℹ️ No hi ha sessió guardada');
         set({ hasConsent, isLoading: false });
       }
     } catch (error) {
-      console.error('❌ Error loading stored auth:', error);
+      console.error('❌ Error carregant sessió:', error);
       set({ isLoading: false });
     }
   },
