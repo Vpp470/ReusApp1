@@ -5,27 +5,56 @@ import { User } from '../types';
 import { registerForPushNotificationsAsync } from '../services/notifications';
 import api from '../services/api';
 
+// Claus d'emmagatzematge
+const STORAGE_KEYS = {
+  USER: '@reusapp_user',
+  TOKEN: '@reusapp_token',
+  IS_AUTH: '@reusapp_isAuthenticated',
+  CONSENT: '@reusapp_hasConsent',
+};
+
 // Helper per storage que funciona tant a web com a native
 const storage = {
   getItem: async (key: string): Promise<string | null> => {
-    if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
-      return localStorage.getItem(key);
+    try {
+      if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
+        const value = localStorage.getItem(key);
+        console.log(`📖 [WEB] getItem(${key}):`, value ? 'found' : 'null');
+        return value;
+      }
+      const value = await AsyncStorage.getItem(key);
+      console.log(`📖 [NATIVE] getItem(${key}):`, value ? 'found' : 'null');
+      return value;
+    } catch (error) {
+      console.error(`❌ Error getItem(${key}):`, error);
+      return null;
     }
-    return AsyncStorage.getItem(key);
   },
   setItem: async (key: string, value: string): Promise<void> => {
-    if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
-      localStorage.setItem(key, value);
-      return;
+    try {
+      if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
+        localStorage.setItem(key, value);
+        console.log(`💾 [WEB] setItem(${key}): saved`);
+        return;
+      }
+      await AsyncStorage.setItem(key, value);
+      console.log(`💾 [NATIVE] setItem(${key}): saved`);
+    } catch (error) {
+      console.error(`❌ Error setItem(${key}):`, error);
     }
-    return AsyncStorage.setItem(key, value);
   },
   removeItem: async (key: string): Promise<void> => {
-    if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
-      localStorage.removeItem(key);
-      return;
+    try {
+      if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
+        localStorage.removeItem(key);
+        console.log(`🗑️ [WEB] removeItem(${key}): removed`);
+        return;
+      }
+      await AsyncStorage.removeItem(key);
+      console.log(`🗑️ [NATIVE] removeItem(${key}): removed`);
+    } catch (error) {
+      console.error(`❌ Error removeItem(${key}):`, error);
     }
-    return AsyncStorage.removeItem(key);
   }
 };
 
