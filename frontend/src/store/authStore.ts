@@ -85,7 +85,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   
   setConsent: async (hasConsent) => {
     try {
-      await storage.setItem('hasConsent', hasConsent ? 'true' : 'false');
+      await storage.setItem(STORAGE_KEYS.CONSENT, hasConsent ? 'true' : 'false');
       console.log('✅ Consent saved:', hasConsent);
       set({ hasConsent });
     } catch (error) {
