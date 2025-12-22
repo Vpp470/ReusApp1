@@ -12,16 +12,22 @@ import {
   Modal,
   Image,
   Switch,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
 import { useAuthStore } from '../../src/store/authStore';
 import axios from 'axios';
 import Constants from 'expo-constants';
+
+// Importar DateTimePicker només per plataformes natives
+let DateTimePicker: any = null;
+if (Platform.OS !== 'web') {
+  DateTimePicker = require('@react-native-community/datetimepicker').default;
+}
 
 interface Campaign {
   id: string;
