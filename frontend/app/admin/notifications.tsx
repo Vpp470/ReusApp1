@@ -77,7 +77,8 @@ export default function AdminNotificationsScreen() {
       const response = await api.get('/api/admin/notifications/history?limit=10', {
         headers: { Authorization: token }
       });
-      setHistory(response.data);
+      // Assegurar que sempre és un array
+      setHistory(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error carregant historial:', error);
     }
