@@ -4,6 +4,7 @@ export const Colors = {
   primary: '#7EB89E',      // Verde metálico suave y claro
   primaryDark: '#2D4A40',  // Verde oscuro suave (background principal)
   primaryMedium: '#6AA88A', // Verde medio metálico suave
+  primaryLight: '#E8F5E9', // Verde molt clar per backgrounds
   secondary: '#8FC9A9',    // Verde claro secundario
   accent: '#D4AF37',       // Dorado elegante
   
@@ -14,7 +15,7 @@ export const Colors = {
   black: '#000000',
   
   // Colores neutros
-  gray: '#9E9E9E',
+  gray: '#757575',         // Gris més fosc per millor contrast
   lightGray: '#E0E0E0',
   darkGray: '#424242',
   
@@ -26,9 +27,10 @@ export const Colors = {
   
   // Colores de texto según fondo
   text: '#FFFFFF',         // Texto blanco para fondos oscuros (por defecto)
-  textSecondary: 'rgba(255, 255, 255, 0.7)', // Blanco semi-transparente para texto secundario
+  textSecondary: '#757575', // Gris per text secundari (CANVIAT - abans era blanc semi-transparent)
   textLight: '#FFFFFF',    // Blanco para fondos oscuros
   textDark: '#212121',     // Negro para fondos claros
+  textOnLight: '#333333',  // Text fosc per fons clars (NOU)
   border: 'rgba(61, 122, 95, 0.3)',
   shadow: '#000000',
   
