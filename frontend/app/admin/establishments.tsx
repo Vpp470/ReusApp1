@@ -221,63 +221,161 @@ export default function AdminEstablishments() {
         return;
       }
 
-      // HTML per al PDF amb suport per múltiples pàgines
-      const htmlContent = `
+      // HTML simplificat per a mòbil (expo-print)
+      const mobileHtmlContent = `
         <!DOCTYPE html>
         <html>
           <head>
             <meta charset="utf-8">
-            <title>Llistat d'Establiments - REUS COMERÇ i FUTUR</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { font-family: Helvetica, Arial, sans-serif; padding: 15px; font-size: 10px; }
+              h1 { color: #C8102E; text-align: center; font-size: 18px; margin-bottom: 10px; }
+              .info { text-align: center; color: #666; margin-bottom: 15px; font-size: 11px; }
+              table { width: 100%; border-collapse: collapse; font-size: 9px; }
+              th { background-color: #C8102E; color: white; padding: 6px 4px; text-align: left; }
+              td { border: 1px solid #ddd; padding: 5px 4px; }
+              tr:nth-child(even) { background-color: #f5f5f5; }
+              .footer { margin-top: 20px; text-align: center; font-size: 8px; color: #999; }
+            </style>
+          </head>
+          <body>
+            <h1>Llistat d'Establiments</h1>
+            <div class="info">
+              <p><strong>REUS COMERÇ i FUTUR</strong></p>
+              <p>Total: ${dataToExport.length} establiments</p>
+              <p>${new Date().toLocaleDateString('ca-ES')}</p>
+              ${searchQuery ? `<p>Filtrat: "${searchQuery}"</p>` : ''}
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Categoria</th>
+                  <th>Adreça</th>
+                  <th>Telèfon</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${dataToExport.map(est => `
+                  <tr>
+                    <td>${(est.name || '-').substring(0, 30)}</td>
+                    <td>${(est.category || '-').substring(0, 15)}</td>
+                    <td>${(est.address || '-').substring(0, 35)}</td>
+                    <td>${est.phone || '-'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} REUS COMERÇ i FUTUR</p>
+            </div>
+          </body>
+        </html>
+      `;
+
+      // HTML complet per a web (amb botons d'impressió)
+      const webHtmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Llistat d'Establiments</title>
             <style>
               @media print {
-                @page {
-                  size: A4 portrait;
-                  margin: 10mm;
-                }
-                body {
-                  -webkit-print-color-adjust: exact !important;
-                  print-color-adjust: exact !important;
-                }
-                thead {
-                  display: table-header-group !important;
-                }
-                tfoot {
-                  display: table-footer-group !important;
-                }
-                tr {
-                  page-break-inside: avoid !important;
-                }
+                @page { size: A4 portrait; margin: 10mm; }
+                body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                thead { display: table-header-group !important; }
+                tr { page-break-inside: avoid !important; }
+                .no-print { display: none !important; }
               }
-              * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-              }
-              body {
-                font-family: Arial, Helvetica, sans-serif;
-                padding: 10px;
-                font-size: 9px;
-                line-height: 1.2;
-                color: #333;
-              }
-              h1 {
-                color: #C8102E;
-                text-align: center;
-                margin-bottom: 10px;
-                font-size: 16px;
-              }
-              .header-info {
-                text-align: center;
-                margin-bottom: 10px;
-                color: #666;
-                font-size: 10px;
-              }
-              .header-info p {
-                margin: 2px 0;
-              }
-              table {
-                width: 100%;
-                border-collapse: collapse;
+              * { box-sizing: border-box; margin: 0; padding: 0; }
+              body { font-family: Arial, sans-serif; padding: 10px; font-size: 9px; color: #333; }
+              h1 { color: #C8102E; text-align: center; margin-bottom: 10px; font-size: 16px; }
+              .header-info { text-align: center; margin-bottom: 10px; color: #666; font-size: 10px; }
+              .header-info p { margin: 2px 0; }
+              table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 8px; }
+              thead { display: table-header-group; }
+              th { background-color: #C8102E !important; color: white !important; padding: 4px 3px; text-align: left; font-size: 8px; border: 1px solid #C8102E; }
+              td { border: 1px solid #ccc; padding: 3px; font-size: 8px; word-wrap: break-word; overflow: hidden; }
+              tr:nth-child(even) { background-color: #f5f5f5 !important; }
+              th:nth-child(1), td:nth-child(1) { width: 20%; }
+              th:nth-child(2), td:nth-child(2) { width: 11%; }
+              th:nth-child(3), td:nth-child(3) { width: 13%; }
+              th:nth-child(4), td:nth-child(4) { width: 23%; }
+              th:nth-child(5), td:nth-child(5) { width: 11%; }
+              th:nth-child(6), td:nth-child(6) { width: 22%; }
+              .footer { margin-top: 15px; text-align: center; font-size: 7px; color: #999; }
+              .no-print { position: fixed; top: 10px; right: 10px; z-index: 1000; }
+              .no-print button { background: #C8102E; color: white; border: none; padding: 10px 20px; font-size: 14px; cursor: pointer; border-radius: 5px; margin-left: 10px; }
+              .no-print button:hover { background: #a00d24; }
+            </style>
+          </head>
+          <body>
+            <div class="no-print">
+              <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+              <button onclick="window.close()">✕ Tancar</button>
+            </div>
+            <h1>Llistat d'Establiments</h1>
+            <div class="header-info">
+              <p><strong>REUS COMERÇ i FUTUR</strong></p>
+              <p>Total d'establiments: ${dataToExport.length}</p>
+              <p>Data: ${new Date().toLocaleDateString('ca-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              ${searchQuery ? `<p>Filtrat per: "${searchQuery}"</p>` : ''}
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>NIF</th>
+                  <th>Categoria</th>
+                  <th>Adreça</th>
+                  <th>Telèfon</th>
+                  <th>Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${dataToExport.map(est => `
+                  <tr>
+                    <td>${(est.name || '-').substring(0, 35)}</td>
+                    <td>${est.nif || '-'}</td>
+                    <td>${(est.category || '-').substring(0, 18)}</td>
+                    <td>${(est.address || '-').substring(0, 45)}</td>
+                    <td>${est.phone || '-'}</td>
+                    <td>${(est.email || '-').substring(0, 35)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            <div class="footer">
+              <p>Document generat per l'aplicació REUS COMERÇ i FUTUR</p>
+              <p>© ${new Date().getFullYear()} REUS COMERÇ i FUTUR - Tots els drets reservats</p>
+            </div>
+          </body>
+        </html>
+      `;
+
+      // A web, obrir una nova finestra amb el contingut per imprimir
+      if (Platform.OS === 'web') {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(webHtmlContent);
+          printWindow.document.close();
+          setTimeout(() => {
+            printWindow.focus();
+          }, 500);
+        } else {
+          Alert.alert('Error', 'No s\'ha pogut obrir la finestra d\'impressió. Comprova que el navegador permet pop-ups.');
+        }
+        return;
+      }
+
+      // Per a mòbil, utilitzar expo-print amb l'HTML simplificat
+      console.log('📄 Generant PDF per a mòbil...');
+      const { uri } = await Print.printToFileAsync({
+        html: mobileHtmlContent,
+      });
+      console.log('✅ PDF generat:', uri);
                 table-layout: fixed;
                 font-size: 8px;
               }
