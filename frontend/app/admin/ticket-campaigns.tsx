@@ -315,43 +315,91 @@ export default function AdminTicketCampaignsScreen() {
             </Pressable>
 
             <Text style={styles.label}>Data d'Inici *</Text>
-            <Pressable
-              style={styles.dateButton}
-              onPress={() => setShowStartDatePicker(true)}
-            >
-              <Text>{formData.start_date.toLocaleDateString('ca-ES')}</Text>
-              <MaterialIcons name="calendar-today" size={20} color={Colors.textDark} />
-            </Pressable>
-
-            {showStartDatePicker && (
-              <DateTimePicker
-                value={formData.start_date}
-                mode="date"
-                onChange={(event, date) => {
-                  setShowStartDatePicker(false);
-                  if (date) setFormData({ ...formData, start_date: date });
+            {Platform.OS === 'web' ? (
+              <input
+                type="date"
+                value={formData.start_date.toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const date = new Date(e.target.value);
+                  if (!isNaN(date.getTime())) {
+                    setFormData({ ...formData, start_date: date });
+                  }
+                }}
+                style={{
+                  padding: 12,
+                  fontSize: 16,
+                  borderRadius: 8,
+                  border: '1px solid #E5E5E5',
+                  backgroundColor: '#F5F5F5',
+                  width: '100%',
+                  marginBottom: 16,
                 }}
               />
+            ) : (
+              <>
+                <Pressable
+                  style={styles.dateButton}
+                  onPress={() => setShowStartDatePicker(true)}
+                >
+                  <Text style={styles.dateButtonText}>{formData.start_date.toLocaleDateString('ca-ES')}</Text>
+                  <MaterialIcons name="calendar-today" size={20} color={Colors.textDark} />
+                </Pressable>
+                {showStartDatePicker && DateTimePicker && (
+                  <DateTimePicker
+                    value={formData.start_date}
+                    mode="date"
+                    display="default"
+                    onChange={(event: any, date?: Date) => {
+                      setShowStartDatePicker(false);
+                      if (date) setFormData({ ...formData, start_date: date });
+                    }}
+                  />
+                )}
+              </>
             )}
 
             <Text style={styles.label}>Data de Fi *</Text>
-            <Pressable
-              style={styles.dateButton}
-              onPress={() => setShowEndDatePicker(true)}
-            >
-              <Text>{formData.end_date.toLocaleDateString('ca-ES')}</Text>
-              <MaterialIcons name="event" size={20} color={Colors.textDark} />
-            </Pressable>
-
-            {showEndDatePicker && (
-              <DateTimePicker
-                value={formData.end_date}
-                mode="date"
-                onChange={(event, date) => {
-                  setShowEndDatePicker(false);
-                  if (date) setFormData({ ...formData, end_date: date });
+            {Platform.OS === 'web' ? (
+              <input
+                type="date"
+                value={formData.end_date.toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const date = new Date(e.target.value);
+                  if (!isNaN(date.getTime())) {
+                    setFormData({ ...formData, end_date: date });
+                  }
+                }}
+                style={{
+                  padding: 12,
+                  fontSize: 16,
+                  borderRadius: 8,
+                  border: '1px solid #E5E5E5',
+                  backgroundColor: '#F5F5F5',
+                  width: '100%',
+                  marginBottom: 16,
                 }}
               />
+            ) : (
+              <>
+                <Pressable
+                  style={styles.dateButton}
+                  onPress={() => setShowEndDatePicker(true)}
+                >
+                  <Text style={styles.dateButtonText}>{formData.end_date.toLocaleDateString('ca-ES')}</Text>
+                  <MaterialIcons name="event" size={20} color={Colors.textDark} />
+                </Pressable>
+                {showEndDatePicker && DateTimePicker && (
+                  <DateTimePicker
+                    value={formData.end_date}
+                    mode="date"
+                    display="default"
+                    onChange={(event: any, date?: Date) => {
+                      setShowEndDatePicker(false);
+                      if (date) setFormData({ ...formData, end_date: date });
+                    }}
+                  />
+                )}
+              </>
             )}
 
             <Text style={styles.label}>Descripció del Premi *</Text>
