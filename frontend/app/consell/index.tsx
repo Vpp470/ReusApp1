@@ -65,7 +65,7 @@ export default function ConsellDashboard() {
       <View style={styles.header}>
         <Pressable 
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => router.replace('/(tabs)/home')}
         >
           <MaterialIcons name="arrow-back" size={28} color={Colors.white} />
         </Pressable>
