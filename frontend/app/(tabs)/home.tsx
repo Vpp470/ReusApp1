@@ -85,8 +85,8 @@ export default function HomeScreen() {
     >
       <View style={styles.header}>
         <Image 
-          source={require('../../assets/logo-rcf.png')} 
-          style={styles.logo}
+          source={require('../../assets/images/logo-rcf-horizontal.png')} 
+          style={styles.logoHorizontal}
           resizeMode="contain"
         />
       </View>
