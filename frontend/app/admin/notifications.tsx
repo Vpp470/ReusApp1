@@ -120,7 +120,7 @@ export default function AdminNotificationsScreen() {
           onPress: async () => {
             try {
               setBroadcastLoading(true);
-              const response = await api.post('/api/admin/notifications/send', {
+              const response = await api.post('/admin/notifications/send', {
                 title: broadcastTitle,
                 body: broadcastBody,
                 target: broadcastTarget,
