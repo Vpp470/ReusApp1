@@ -376,128 +376,32 @@ export default function AdminEstablishments() {
         html: mobileHtmlContent,
       });
       console.log('✅ PDF generat:', uri);
-                table-layout: fixed;
-                font-size: 8px;
-              }
-              thead {
-                display: table-header-group;
-              }
-              tbody {
-                display: table-row-group;
-              }
-              tr {
-                page-break-inside: avoid;
-              }
-              th {
-                background-color: #C8102E !important;
-                color: white !important;
-                padding: 4px 3px;
-                text-align: left;
-                font-weight: bold;
-                font-size: 8px;
-                border: 1px solid #C8102E;
-              }
-              td {
-                border: 1px solid #ccc;
-                padding: 3px;
-                font-size: 8px;
-                word-wrap: break-word;
-                overflow: hidden;
-                vertical-align: top;
-              }
-              tr:nth-child(even) {
-                background-color: #f5f5f5 !important;
-              }
-              th:nth-child(1), td:nth-child(1) { width: 20%; }
-              th:nth-child(2), td:nth-child(2) { width: 11%; }
-              th:nth-child(3), td:nth-child(3) { width: 13%; }
-              th:nth-child(4), td:nth-child(4) { width: 23%; }
-              th:nth-child(5), td:nth-child(5) { width: 11%; }
-              th:nth-child(6), td:nth-child(6) { width: 22%; }
-              .footer {
-                margin-top: 15px;
-                text-align: center;
-                font-size: 7px;
-                color: #999;
-                page-break-inside: avoid;
-              }
-              .no-print {
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                z-index: 1000;
-              }
-              .no-print button {
-                background: #C8102E;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                font-size: 14px;
-                cursor: pointer;
-                border-radius: 5px;
-                margin-left: 10px;
-              }
-              .no-print button:hover {
-                background: #a00d24;
-              }
-              @media print {
-                .no-print {
-                  display: none !important;
-                }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="no-print">
-              <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
-              <button onclick="window.close()">✕ Tancar</button>
-            </div>
-            <h1>Llistat d'Establiments</h1>
-            <div class="header-info">
-              <p><strong>REUS COMERÇ i FUTUR</strong></p>
-              <p>Total d'establiments: ${dataToExport.length}</p>
-              <p>Data: ${new Date().toLocaleDateString('ca-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              ${searchQuery ? `<p>Filtrat per: "${searchQuery}"</p>` : ''}
-            </div>
-            
-            <table>
-              <thead>
-                <tr>
-                  <th>Nom</th>
-                  <th>NIF</th>
-                  <th>Categoria</th>
-                  <th>Adreça</th>
-                  <th>Telèfon</th>
-                  <th>Email</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${dataToExport.map(est => `
-                  <tr>
-                    <td>${(est.name || '-').substring(0, 35)}</td>
-                    <td>${est.nif || '-'}</td>
-                    <td>${(est.category || '-').substring(0, 18)}</td>
-                    <td>${(est.address || '-').substring(0, 45)}</td>
-                    <td>${est.phone || '-'}</td>
-                    <td>${(est.email || '-').substring(0, 35)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-            
-            <div class="footer">
-              <p>Document generat per l'aplicació REUS COMERÇ i FUTUR</p>
-              <p>© ${new Date().getFullYear()} REUS COMERÇ i FUTUR - Tots els drets reservats</p>
-            </div>
-          </body>
-        </html>
-      `;
 
-      // A web, obrir una nova finestra amb el contingut per imprimir
-      if (Platform.OS === 'web') {
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-          printWindow.document.write(htmlContent);
+      Alert.alert(
+        'PDF Generat',
+        'El PDF s\'ha generat correctament. Vols compartir-lo?',
+        [
+          {
+            text: 'Cancel·lar',
+            style: 'cancel',
+          },
+          {
+            text: 'Compartir',
+            onPress: async () => {
+              if (await Sharing.isAvailableAsync()) {
+                await Sharing.shareAsync(uri);
+              } else {
+                Alert.alert('Error', 'No es pot compartir el fitxer en aquest dispositiu');
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Alert.alert('Error', 'No s\'ha pogut generar el PDF. Error: ' + (error as Error).message);
+    }
+  };
           printWindow.document.close();
           // Donar temps a carregar els estils
           setTimeout(() => {
