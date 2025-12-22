@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FontSizes.xl,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.textDark,
   },
   infoCard: {
     flexDirection: 'row',
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: FontSizes.sm,
-    color: Colors.text,
+    color: Colors.textDark,
     marginLeft: Spacing.md,
     lineHeight: 20,
   },
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FontSizes.lg,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.textDark,
     marginBottom: Spacing.md,
   },
   amountGrid: {
@@ -313,10 +313,10 @@ const styles = StyleSheet.create({
   amountText: {
     fontSize: FontSizes.lg,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.textDark,
   },
   amountTextSelected: {
-    color: Colors.text,
+    color: Colors.white,
   },
   selectedAmountCard: {
     backgroundColor: Colors.white,
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   },
   selectedAmountLabel: {
     fontSize: FontSizes.md,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: Colors.gray,
   },
   selectedAmountValue: {
     fontSize: FontSizes.xxl,
@@ -376,11 +376,11 @@ const styles = StyleSheet.create({
   paymentButtonTitle: {
     fontSize: FontSizes.md,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.white,
   },
   paymentButtonSubtitle: {
     fontSize: FontSizes.sm,
-    color: Colors.text,
+    color: Colors.white,
     opacity: 0.9,
     marginTop: 2,
   },
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   termsText: {
     flex: 1,
     fontSize: FontSizes.xs,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: Colors.gray,
     marginLeft: Spacing.sm,
     lineHeight: 16,
   },
