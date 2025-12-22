@@ -220,7 +220,7 @@ export default function AdminEstablishments() {
         return;
       }
 
-      // HTML per al PDF
+      // HTML per al PDF amb suport per múltiples pàgines
       const htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -228,44 +228,87 @@ export default function AdminEstablishments() {
             <meta charset="utf-8">
             <title>Llistat d'Establiments - REUS COMERÇ i FUTUR</title>
             <style>
+              @page {
+                size: A4;
+                margin: 15mm;
+              }
+              * {
+                box-sizing: border-box;
+              }
               body {
                 font-family: Arial, sans-serif;
-                padding: 20px;
-                font-size: 12px;
+                padding: 0;
+                margin: 0;
+                font-size: 10px;
+                line-height: 1.3;
               }
               h1 {
                 color: #C8102E;
                 text-align: center;
-                margin-bottom: 30px;
+                margin-bottom: 15px;
+                font-size: 18px;
               }
               .header-info {
                 text-align: center;
-                margin-bottom: 20px;
+                margin-bottom: 15px;
                 color: #666;
+                font-size: 11px;
+              }
+              .header-info p {
+                margin: 3px 0;
               }
               table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-top: 20px;
+                table-layout: fixed;
+              }
+              thead {
+                display: table-header-group;
+              }
+              tbody {
+                display: table-row-group;
+              }
+              tr {
+                page-break-inside: avoid;
               }
               th {
                 background-color: #C8102E;
                 color: white;
-                padding: 10px;
+                padding: 6px 4px;
                 text-align: left;
                 font-weight: bold;
+                font-size: 9px;
+                border: 1px solid #C8102E;
               }
               td {
                 border: 1px solid #ddd;
-                padding: 8px;
+                padding: 5px 4px;
+                font-size: 9px;
+                word-wrap: break-word;
+                overflow: hidden;
               }
               tr:nth-child(even) {
                 background-color: #f9f9f9;
               }
+              /* Amplades de columnes fixes */
+              th:nth-child(1), td:nth-child(1) { width: 22%; } /* Nom */
+              th:nth-child(2), td:nth-child(2) { width: 12%; } /* NIF */
+              th:nth-child(3), td:nth-child(3) { width: 14%; } /* Categoria */
+              th:nth-child(4), td:nth-child(4) { width: 24%; } /* Adreça */
+              th:nth-child(5), td:nth-child(5) { width: 12%; } /* Telèfon */
+              th:nth-child(6), td:nth-child(6) { width: 16%; } /* Email */
               .footer {
-                margin-top: 30px;
+                margin-top: 20px;
                 text-align: center;
-                font-size: 10px;
+                font-size: 8px;
+                color: #999;
+                page-break-inside: avoid;
+              }
+              .page-number {
+                position: fixed;
+                bottom: 5mm;
+                right: 5mm;
+                font-size: 8px;
                 color: #999;
               }
             </style>
@@ -293,12 +336,12 @@ export default function AdminEstablishments() {
               <tbody>
                 ${dataToExport.map(est => `
                   <tr>
-                    <td>${est.name || '-'}</td>
+                    <td>${(est.name || '-').substring(0, 40)}</td>
                     <td>${est.nif || '-'}</td>
-                    <td>${est.category || '-'}</td>
-                    <td>${est.address || '-'}</td>
+                    <td>${(est.category || '-').substring(0, 20)}</td>
+                    <td>${(est.address || '-').substring(0, 50)}</td>
                     <td>${est.phone || '-'}</td>
-                    <td>${est.email || '-'}</td>
+                    <td>${(est.email || '-').substring(0, 30)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -312,9 +355,10 @@ export default function AdminEstablishments() {
         </html>
       `;
 
-      // Generar PDF
+      // Generar PDF amb opcions per múltiples pàgines
       const { uri } = await Print.printToFileAsync({
         html: htmlContent,
+        base64: false,
       });
 
       Alert.alert(
