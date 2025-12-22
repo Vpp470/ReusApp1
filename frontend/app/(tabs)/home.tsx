@@ -191,8 +191,8 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: Colors.white,
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.md,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
     borderBottomLeftRadius: BorderRadius.xl,
@@ -204,8 +204,8 @@ const styles = StyleSheet.create({
     height: screenHeight * 0.18,
   },
   logoHorizontal: {
-    width: screenWidth * 0.8,
-    height: 80,
+    width: screenWidth * 0.9,
+    height: 120,
   },
   headerTop: {
     flexDirection: 'row',
