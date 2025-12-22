@@ -21,6 +21,7 @@ from participation_tracker import (
     get_users_by_tag,
     get_participation_stats
 )
+from push_notifications import send_push_notification
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -31,6 +32,19 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 admin_router = APIRouter(prefix="/admin", tags=["Admin"])
+
+# Models per Notificacions
+class NotificationRequest(BaseModel):
+    title: str
+    body: str
+    target: str = "all"  # "all", "users", "admins", "role:local_associat", "tag:xxx"
+    data: Optional[dict] = None
+
+class NotificationResponse(BaseModel):
+    success: bool
+    sent_count: int
+    failed_count: int
+    message: str
 
 # Models de Rols
 class RoleBase(BaseModel):
