@@ -377,7 +377,7 @@ export default function LocalAssociatPromotionsScreen() {
                 {editingPromotion ? 'Editar Promoció' : 'Nova Promoció'}
               </Text>
               <TouchableOpacity onPress={() => setShowForm(false)}>
-                <MaterialIcons name="close" size={24} color={Colors.text} />
+                <MaterialIcons name="close" size={24} color={Colors.textDark} />
               </TouchableOpacity>
             </View>
 

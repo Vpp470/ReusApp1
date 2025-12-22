@@ -359,7 +359,7 @@ export default function OwnershipManagement() {
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={Colors.text} />
+            <MaterialIcons name="arrow-back" size={24} color={Colors.textDark} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Assignar Establiments</Text>
           <View style={styles.placeholder} />
@@ -375,7 +375,7 @@ export default function OwnershipManagement() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color={Colors.text} />
+          <MaterialIcons name="arrow-back" size={24} color={Colors.textDark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Assignar Establiments</Text>
         <View style={styles.placeholder} />
@@ -478,7 +478,7 @@ export default function OwnershipManagement() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Assignar Propietari</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <MaterialIcons name="close" size={24} color={Colors.text} />
+                <MaterialIcons name="close" size={24} color={Colors.textDark} />
               </TouchableOpacity>
             </View>
 

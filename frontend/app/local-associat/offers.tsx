@@ -344,7 +344,7 @@ export default function LocalAssociatOffersScreen() {
               style={styles.dateButton}
               onPress={() => setShowStartDatePicker(true)}
             >
-              <MaterialIcons name="calendar-today" size={20} color={Colors.text} />
+              <MaterialIcons name="calendar-today" size={20} color={Colors.textDark} />
               <Text style={styles.dateButtonText}>
                 {formData.valid_from.toLocaleDateString('ca-ES')}
               </Text>
@@ -369,7 +369,7 @@ export default function LocalAssociatOffersScreen() {
               style={styles.dateButton}
               onPress={() => setShowEndDatePicker(true)}
             >
-              <MaterialIcons name="calendar-today" size={20} color={Colors.text} />
+              <MaterialIcons name="calendar-today" size={20} color={Colors.textDark} />
               <Text style={styles.dateButtonText}>
                 {formData.valid_until.toLocaleDateString('ca-ES')}
               </Text>

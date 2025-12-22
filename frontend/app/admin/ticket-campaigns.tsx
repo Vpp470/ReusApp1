@@ -269,7 +269,7 @@ export default function AdminTicketCampaignsScreen() {
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Pressable onPress={() => { setModalVisible(false); resetForm(); }}>
-              <MaterialIcons name="close" size={24} color={Colors.text} />
+              <MaterialIcons name="close" size={24} color={Colors.textDark} />
             </Pressable>
             <Text style={styles.modalTitle}>{editingCampaign ? 'Editar' : 'Nova'} Campanya</Text>
             <Pressable onPress={handleSave}>
@@ -314,7 +314,7 @@ export default function AdminTicketCampaignsScreen() {
               onPress={() => setShowStartDatePicker(true)}
             >
               <Text>{formData.start_date.toLocaleDateString('ca-ES')}</Text>
-              <MaterialIcons name="calendar-today" size={20} color={Colors.text} />
+              <MaterialIcons name="calendar-today" size={20} color={Colors.textDark} />
             </Pressable>
 
             {showStartDatePicker && (
@@ -334,7 +334,7 @@ export default function AdminTicketCampaignsScreen() {
               onPress={() => setShowEndDatePicker(true)}
             >
               <Text>{formData.end_date.toLocaleDateString('ca-ES')}</Text>
-              <MaterialIcons name="event" size={20} color={Colors.text} />
+              <MaterialIcons name="event" size={20} color={Colors.textDark} />
             </Pressable>
 
             {showEndDatePicker && (

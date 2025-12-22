@@ -342,7 +342,7 @@ export default function AdminPromotions() {
                 {editingItem ? 'Editar Promoció' : 'Nova Promoció'}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <MaterialIcons name="close" size={24} color={Colors.text} />
+                <MaterialIcons name="close" size={24} color={Colors.textDark} />
               </TouchableOpacity>
             </View>
 
@@ -468,7 +468,7 @@ export default function AdminPromotions() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Motiu del Rebuig</Text>
               <TouchableOpacity onPress={() => setRejectModalVisible(false)}>
-                <MaterialIcons name="close" size={24} color={Colors.text} />
+                <MaterialIcons name="close" size={24} color={Colors.textDark} />
               </TouchableOpacity>
             </View>
             <View style={styles.modalBody}>

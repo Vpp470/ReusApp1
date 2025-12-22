@@ -1029,7 +1029,7 @@ export default function AdminEstablishments() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Tipus d'Establiment</Text>
               <Pressable onPress={() => setManagementModalVisible(false)}>
-                <MaterialIcons name="close" size={24} color={Colors.text} />
+                <MaterialIcons name="close" size={24} color={Colors.textDark} />
               </Pressable>
             </View>
             
@@ -1127,7 +1127,7 @@ export default function AdminEstablishments() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Tipus de Col·laboració</Text>
               <Pressable onPress={() => setCollaborationModalVisible(false)}>
-                <MaterialIcons name="close" size={24} color={Colors.text} />
+                <MaterialIcons name="close" size={24} color={Colors.textDark} />
               </Pressable>
             </View>
             
@@ -1190,7 +1190,7 @@ export default function AdminEstablishments() {
                 {editingItem ? 'Editar Establiment' : 'Nou Establiment'}
               </Text>
               <Pressable onPress={() => setModalVisible(false)}>
-                <MaterialIcons name="close" size={24} color={Colors.text} />
+                <MaterialIcons name="close" size={24} color={Colors.textDark} />
               </Pressable>
             </View>
 

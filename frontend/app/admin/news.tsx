@@ -256,7 +256,7 @@ export default function AdminNewsScreen() {
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Pressable onPress={() => { setModalVisible(false); resetForm(); }}>
-              <MaterialIcons name="close" size={24} color={Colors.text} />
+              <MaterialIcons name="close" size={24} color={Colors.textDark} />
             </Pressable>
             <Text style={styles.modalTitle}>{editingNews ? 'Editar' : 'Nova'} Notícia</Text>
             <Pressable onPress={handleSave}>
@@ -318,7 +318,7 @@ export default function AdminNewsScreen() {
               onPress={() => setShowPublishDatePicker(true)}
             >
               <Text>{formData.publish_date.toLocaleDateString('ca-ES')}</Text>
-              <MaterialIcons name="calendar-today" size={20} color={Colors.text} />
+              <MaterialIcons name="calendar-today" size={20} color={Colors.textDark} />
             </Pressable>
 
             {showPublishDatePicker && (
@@ -338,7 +338,7 @@ export default function AdminNewsScreen() {
               onPress={() => setShowExpiryDatePicker(true)}
             >
               <Text>{formData.expiry_date.toLocaleDateString('ca-ES')}</Text>
-              <MaterialIcons name="event" size={20} color={Colors.text} />
+              <MaterialIcons name="event" size={20} color={Colors.textDark} />
             </Pressable>
 
             {showExpiryDatePicker && (

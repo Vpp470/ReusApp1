@@ -621,7 +621,7 @@ export default function AdminUsers() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Canviar Rol d'Usuari</Text>
               <Pressable onPress={() => setModalVisible(false)}>
-                <MaterialIcons name="close" size={24} color={Colors.text} />
+                <MaterialIcons name="close" size={24} color={Colors.textDark} />
               </Pressable>
             </View>
 
@@ -784,7 +784,7 @@ export default function AdminUsers() {
                     <MaterialIcons 
                       name={showEstablishmentPicker ? "expand-less" : "expand-more"} 
                       size={24} 
-                      color={Colors.text} 
+                      color={Colors.textDark} 
                     />
                   </Pressable>
                   
@@ -901,7 +901,7 @@ export default function AdminUsers() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Crear Nou Usuari</Text>
               <Pressable onPress={() => setCreateModalVisible(false)}>
-                <MaterialIcons name="close" size={24} color={Colors.text} />
+                <MaterialIcons name="close" size={24} color={Colors.textDark} />
               </Pressable>
             </View>
 
@@ -959,7 +959,7 @@ export default function AdminUsers() {
                         ? establishments.find((e) => e._id === newUserEstablishmentId)?.name || 'Seleccionar establiment'
                         : 'Seleccionar establiment'}
                     </Text>
-                    <MaterialIcons name="arrow-drop-down" size={24} color={Colors.text} />
+                    <MaterialIcons name="arrow-drop-down" size={24} color={Colors.textDark} />
                   </Pressable>
                 </>
               )}
@@ -1061,7 +1061,7 @@ export default function AdminUsers() {
               <View style={styles.pickerHeader}>
                 <Text style={styles.pickerTitle}>Seleccionar Establiment</Text>
                 <Pressable onPress={() => setShowEstablishmentPicker(false)}>
-                  <MaterialIcons name="close" size={24} color={Colors.text} />
+                  <MaterialIcons name="close" size={24} color={Colors.textDark} />
                 </Pressable>
               </View>
 

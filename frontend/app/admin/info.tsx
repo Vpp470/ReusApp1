@@ -210,7 +210,7 @@ export default function AdminInfoScreen() {
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Pressable onPress={() => { setModalVisible(false); resetForm(); }}>
-              <MaterialIcons name="close" size={24} color={Colors.text} />
+              <MaterialIcons name="close" size={24} color={Colors.textDark} />
             </Pressable>
             <Text style={styles.modalTitle}>{editingItem ? 'Editar' : 'Nova'} Informació</Text>
             <Pressable onPress={handleSave}>
