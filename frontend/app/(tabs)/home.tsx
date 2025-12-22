@@ -56,7 +56,7 @@ export default function HomeScreen() {
   };
 
   const menuItems = [
-    { id: 'scan', icon: 'qr-code-scanner', title: i18n.t('scanner.title'), route: '/(tabs)/scanner', color: Colors.primary },
+    { id: 'scan', icon: 'qr-code-scanner', title: i18n.t('scanner.title'), route: '/tickets/scan', color: Colors.primary },
     { id: 'directory', icon: 'store', title: 'Directori', route: '/establishments', color: Colors.secondary },
     { id: 'club', icon: 'stars', title: 'Club El Tomb', route: '/club', color: Colors.accent },
     { id: 'territory', icon: 'article', title: 'Reus i Territori', route: '/(tabs)/news', color: Colors.primary },
