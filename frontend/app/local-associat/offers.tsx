@@ -284,25 +284,10 @@ export default function LocalAssociatOffersScreen() {
               numberOfLines={4}
             />
 
+            <Text style={styles.label}>Web o Xarxes Socials</Text>
             <TextInput
               style={styles.input}
-              placeholder="Descompte"
-              value={formData.discount}
-              onChangeText={(text) => setFormData({ ...formData, discount: text })}
-            />
-
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Termes i condicions"
-              value={formData.terms}
-              onChangeText={(text) => setFormData({ ...formData, terms: text })}
-              multiline
-              numberOfLines={3}
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Enllaç web"
+              placeholder="https://www.exemple.com o @instagram"
               value={formData.web_link}
               onChangeText={(text) => setFormData({ ...formData, web_link: text })}
               keyboardType="url"
@@ -311,13 +296,29 @@ export default function LocalAssociatOffersScreen() {
 
             <TextInput
               style={styles.input}
-              placeholder="Telèfon"
+              placeholder="Descompte (opcional)"
+              value={formData.discount}
+              onChangeText={(text) => setFormData({ ...formData, discount: text })}
+            />
+
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Termes i condicions (opcional)"
+              value={formData.terms}
+              onChangeText={(text) => setFormData({ ...formData, terms: text })}
+              multiline
+              numberOfLines={3}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Telèfon (opcional)"
               value={formData.phone}
               onChangeText={(text) => setFormData({ ...formData, phone: text })}
               keyboardType="phone-pad"
             />
 
-            <Text style={styles.label}>Imatge Campanya (9:16 - Vertical)</Text>
+            <Text style={styles.label}>Imatge Campanya *</Text>
             <Pressable style={styles.imagePickerButton} onPress={pickImage}>
               <MaterialIcons name="add-photo-alternate" size={32} color={Colors.primary} />
               <Text style={styles.imagePickerText}>
