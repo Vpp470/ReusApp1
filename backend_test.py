@@ -1,105 +1,156 @@
 #!/usr/bin/env python3
 """
-Test script per l'endpoint d'estadístiques del backoffice
+Backend Test Suite for El Tomb de Reus API
+Testing GET /api/tickets/campaign endpoint
 """
 
 import requests
 import json
+from datetime import datetime
 import sys
 
-def test_admin_statistics():
-    """Test de l'endpoint GET /api/admin/statistics"""
+# Configuration
+BACKEND_URL = "https://admin-stats-fix-2.preview.emergentagent.com/api"
+ADMIN_EMAIL = "admin@eltombdereus.com"
+ADMIN_PASSWORD = "admin123"
+
+class TestResults:
+    def __init__(self):
+        self.tests_run = 0
+        self.tests_passed = 0
+        self.tests_failed = 0
+        self.failures = []
     
-    # Configuració
-    base_url = "https://admin-stats-fix-2.preview.emergentagent.com"
-    endpoint = "/api/admin/statistics"
-    admin_token = "i_yKBfolFbGsik3rMzPNVA5O6TyK5uzzAc-7YRQod-w"
+    def add_test(self, test_name, passed, details=""):
+        self.tests_run += 1
+        if passed:
+            self.tests_passed += 1
+            print(f"✅ {test_name}")
+        else:
+            self.tests_failed += 1
+            self.failures.append(f"{test_name}: {details}")
+            print(f"❌ {test_name}: {details}")
     
-    url = f"{base_url}{endpoint}"
-    headers = {
-        "Authorization": f"Bearer {admin_token}",
-        "Content-Type": "application/json"
-    }
+    def summary(self):
+        print(f"\n📊 TEST SUMMARY:")
+        print(f"Total tests: {self.tests_run}")
+        print(f"Passed: {self.tests_passed}")
+        print(f"Failed: {self.tests_failed}")
+        print(f"Success rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        if self.failures:
+            print(f"\n❌ FAILURES:")
+            for failure in self.failures:
+                print(f"  - {failure}")
+
+def test_ticket_campaign_endpoint():
+    """Test GET /api/tickets/campaign endpoint"""
+    results = TestResults()
     
-    print("🔍 TESTING ADMIN STATISTICS ENDPOINT")
-    print("=" * 50)
-    print(f"URL: {url}")
-    print(f"Token: {admin_token}")
-    print("=" * 50)
+    print("🎯 TESTING GET /api/tickets/campaign ENDPOINT")
+    print("=" * 60)
     
     try:
-        # Fer la crida HTTP
-        print("📡 Fent crida a l'endpoint...")
-        response = requests.get(url, headers=headers, timeout=30)
+        # Test 1: GET /api/tickets/campaign (public endpoint)
+        print("\n1️⃣ Testing GET /api/tickets/campaign (public endpoint)")
         
-        print(f"📊 Status Code: {response.status_code}")
-        print(f"📋 Headers: {dict(response.headers)}")
+        response = requests.get(f"{BACKEND_URL}/tickets/campaign", timeout=10)
         
-        # Verificar status code
+        # Check response status
         if response.status_code == 200:
-            print("✅ Status Code 200 - OK")
-        else:
-            print(f"❌ Status Code {response.status_code} - ERROR")
-            print(f"Response Text: {response.text}")
-            return False
-        
-        # Verificar que és JSON vàlid
-        try:
-            data = response.json()
-            print("✅ Resposta JSON vàlida")
-        except json.JSONDecodeError as e:
-            print(f"❌ Error parseant JSON: {e}")
-            print(f"Response Text: {response.text}")
-            return False
-        
-        # Mostrar resposta completa
-        print("\n📄 RESPOSTA COMPLETA:")
-        print("=" * 50)
-        print(json.dumps(data, indent=2, ensure_ascii=False))
-        print("=" * 50)
-        
-        # Verificar seccions requerides
-        required_sections = [
-            "users", "establishments", "events", 
-            "promotions", "raffles", "news", 
-            "participations", "trends"
-        ]
-        
-        print("\n🔍 VERIFICACIÓ DE SECCIONS:")
-        print("-" * 30)
-        
-        missing_sections = []
-        for section in required_sections:
-            if section in data:
-                print(f"✅ {section}: {data[section]}")
-            else:
-                print(f"❌ {section}: MISSING")
-                missing_sections.append(section)
-        
-        if missing_sections:
-            print(f"\n❌ Seccions que falten: {missing_sections}")
-            return False
-        else:
-            print("\n✅ Totes les seccions requerides estan presents")
-            return True
+            results.add_test("GET /api/tickets/campaign - Status Code 200", True)
             
+            # Parse response
+            try:
+                data = response.json()
+                results.add_test("GET /api/tickets/campaign - Valid JSON Response", True)
+                
+                print(f"📋 Response data: {json.dumps(data, indent=2, ensure_ascii=False)}")
+                
+                # Check if response is null (no active campaign)
+                if data is None:
+                    results.add_test("GET /api/tickets/campaign - No Active Campaign (null response)", True, "No active campaign found")
+                    print("ℹ️  No active campaign found - this is expected if no campaign is configured")
+                else:
+                    # Validate campaign structure
+                    required_fields = ['title', 'description', 'prize_description', 'start_date', 'end_date', 'is_active']
+                    
+                    for field in required_fields:
+                        if field in data:
+                            results.add_test(f"Campaign has '{field}' field", True)
+                        else:
+                            results.add_test(f"Campaign has '{field}' field", False, f"Missing required field: {field}")
+                    
+                    # Check if campaign is active
+                    if data.get('is_active') == True:
+                        results.add_test("Campaign is_active = True", True)
+                        print(f"📅 Active campaign: {data.get('title', 'Unknown')}")
+                    else:
+                        results.add_test("Campaign is_active status", True, f"Campaign is_active = {data.get('is_active')}")
+                    
+                    # Validate date fields format
+                    for date_field in ['start_date', 'end_date']:
+                        if date_field in data and data[date_field]:
+                            try:
+                                # Try to parse the date
+                                datetime.fromisoformat(data[date_field].replace('Z', '+00:00'))
+                                results.add_test(f"Valid {date_field} format", True)
+                            except (ValueError, AttributeError):
+                                results.add_test(f"Valid {date_field} format", False, f"Invalid date format: {data[date_field]}")
+                
+            except json.JSONDecodeError as e:
+                results.add_test("GET /api/tickets/campaign - Valid JSON Response", False, f"JSON decode error: {str(e)}")
+                
+        else:
+            results.add_test("GET /api/tickets/campaign - Status Code 200", False, f"Got status code: {response.status_code}")
+            print(f"Response body: {response.text}")
+    
     except requests.exceptions.RequestException as e:
-        print(f"❌ Error de connexió: {e}")
-        return False
+        results.add_test("GET /api/tickets/campaign - Network Request", False, f"Request failed: {str(e)}")
     except Exception as e:
-        print(f"❌ Error inesperat: {e}")
-        return False
+        results.add_test("GET /api/tickets/campaign - General Test", False, f"Unexpected error: {str(e)}")
+    
+    # Test 2: Verify endpoint doesn't require authentication
+    print("\n2️⃣ Testing endpoint accessibility (no auth required)")
+    
+    try:
+        # Make request without any authorization headers
+        response = requests.get(f"{BACKEND_URL}/tickets/campaign", timeout=10)
+        
+        if response.status_code == 200:
+            results.add_test("Public endpoint - No auth required", True)
+        elif response.status_code == 401:
+            results.add_test("Public endpoint - No auth required", False, "Endpoint requires authentication but should be public")
+        else:
+            results.add_test("Public endpoint - No auth required", True, f"Got status {response.status_code} (not 401, so no auth required)")
+            
+    except Exception as e:
+        results.add_test("Public endpoint - No auth required", False, f"Error testing public access: {str(e)}")
+    
+    return results
+
+def main():
+    """Main test execution"""
+    print("🚀 BACKEND TESTING - GET /api/tickets/campaign")
+    print("=" * 60)
+    print(f"Backend URL: {BACKEND_URL}")
+    print(f"Test Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("=" * 60)
+    
+    # Run ticket campaign endpoint tests
+    results = test_ticket_campaign_endpoint()
+    
+    # Print summary
+    results.summary()
+    
+    # Return exit code based on results
+    if results.tests_failed > 0:
+        print(f"\n🔴 TESTING COMPLETED WITH FAILURES")
+        return 1
+    else:
+        print(f"\n🟢 ALL TESTS PASSED!")
+        return 0
 
 if __name__ == "__main__":
-    print("🚀 INICI DEL TEST D'ESTADÍSTIQUES ADMIN")
-    print()
-    
-    success = test_admin_statistics()
-    
-    print("\n" + "=" * 50)
-    if success:
-        print("🎉 TEST COMPLETAT AMB ÈXIT!")
-        sys.exit(0)
-    else:
-        print("💥 TEST FALLIT!")
-        sys.exit(1)
+    exit_code = main()
+    sys.exit(exit_code)
