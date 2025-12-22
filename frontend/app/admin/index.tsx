@@ -38,6 +38,35 @@ export default function AdminDashboard() {
     }
   };
 
+  const fixHosteleriaSpelling = async () => {
+    setFixingSpelling(true);
+    try {
+      const authHeader = token?.startsWith('Bearer ') ? token : `Bearer ${token}`;
+      const response = await api.post('/admin/fix-hosteleria-spelling', {}, {
+        headers: { Authorization: authHeader },
+      });
+      const data = response.data;
+      if (data.corrected_count > 0) {
+        Alert.alert(
+          '✅ Correcció completada',
+          `S'han corregit ${data.corrected_count} establiments.\n\n"Hostalería" → "Hostelería"`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'ℹ️ Cap canvi necessari',
+          'Tots els establiments ja tenen l\'ortografia correcta.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error: any) {
+      console.error('Error fixing spelling:', error);
+      Alert.alert('Error', error?.response?.data?.detail || 'No s\'ha pogut fer la correcció');
+    } finally {
+      setFixingSpelling(false);
+    }
+  };
+
   const adminSections = [
     {
       title: 'Gestió de Continguts',
