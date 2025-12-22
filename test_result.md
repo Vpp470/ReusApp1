@@ -2793,3 +2793,47 @@ agent_communication:
       
       🎉 CONCLUSION: The admin statistics endpoint is fully functional and returns all required data sections as specified in the request.
 
+backend:
+  - task: "Endpoint GET /api/tickets/campaign per verificar campanya activa"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          ✅ TESTED: GET /api/tickets/campaign endpoint WORKING PERFECTLY (12/12 tests passed - 100% success rate)
+          
+          COMPREHENSIVE TESTING COMPLETED:
+          1. ✅ GET /api/tickets/campaign - Status Code 200: Working correctly
+          2. ✅ Valid JSON Response: Confirmed
+          3. ✅ Active Campaign Found: "Nadal 2024 - Escaneja i Guanya!"
+          
+          📋 CAMPAIGN DATA VERIFIED:
+          - Title: "Nadal 2024 - Escaneja i Guanya!" ✅
+          - Description: "Participa al sorteig de Nadal escanejant els teus tiquets dels comerços associats de El Tomb de Reus" ✅
+          - Prize Description: "Targeta regal de 500€ + Cistella de Nadal" ✅
+          - Start Date: "2025-12-21T02:41:38.977000" ✅ Valid ISO format
+          - End Date: "2026-01-21T02:41:38.977000" ✅ Valid ISO format
+          - Is Active: true ✅
+          - Tag: "nadal2024" ✅
+          - Campaign ID: "6948afe26fe9c5271c1a2282" ✅
+          
+          🔍 FIELD VALIDATION RESULTS:
+          ✅ All required fields present: title, description, prize_description, start_date, end_date, is_active
+          ✅ Campaign is currently active (is_active = true)
+          ✅ Date formats are valid ISO datetime strings
+          ✅ Public endpoint - No authentication required
+          ✅ Proper response structure with all expected data
+          
+          🎯 ENDPOINT SPECIFICATIONS VERIFIED:
+          - Public endpoint (no authentication required) ✅
+          - Returns active campaign with all required fields ✅
+          - Would return null if no active campaign (tested logic confirmed) ✅
+          - Test campaign "Nadal 2024 - Escaneja i Guanya!" found in database ✅
+          
+          The GET /api/tickets/campaign endpoint is fully functional and meets all requirements specified in the test request.
+
