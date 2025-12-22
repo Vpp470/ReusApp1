@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     width: SCREEN_WIDTH * 0.9,
-    height: SCREEN_HEIGHT * 0.30,
+    height: SCREEN_HEIGHT * 0.20,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.md,
@@ -179,6 +179,10 @@ const styles = StyleSheet.create({
   logo: {
     width: '100%',
     height: '100%',
+  },
+  logoHorizontal: {
+    width: '90%',
+    height: '80%',
   },
   subtitle: {
     fontSize: FontSizes.md,
