@@ -116,8 +116,8 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xxl,
   },
   logoContainer: {
-    width: 200,
-    height: 200,
+    width: '100%',
+    height: 120,
     marginTop: Spacing.xl,
     marginBottom: Spacing.xl,
     justifyContent: 'center',
@@ -125,6 +125,10 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: '100%',
+    height: '100%',
+  },
+  logoHorizontal: {
+    width: '90%',
     height: '100%',
   },
   textContainer: {
