@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
   },
   backButtonText: {
-    color: Colors.text,
+    color: Colors.textDark,
     fontSize: FontSizes.md,
     fontWeight: '600',
   },
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FontSizes.xxl,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.textDark,
     marginRight: Spacing.md,
   },
   activeBadge: {
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.sm,
   },
   activeBadgeText: {
-    color: Colors.text,
+    color: Colors.textDark,
     fontSize: FontSizes.xs,
     fontWeight: 'bold',
   },
@@ -318,12 +318,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FontSizes.lg,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.textDark,
     marginBottom: Spacing.sm,
   },
   description: {
     fontSize: FontSizes.md,
-    color: Colors.text,
+    color: Colors.textDark,
     lineHeight: 24,
   },
   dateRow: {
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: FontSizes.md,
-    color: Colors.text,
+    color: Colors.textDark,
     marginLeft: Spacing.sm,
   },
   actionButton: {
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.success,
   },
   actionButtonText: {
-    color: Colors.text,
+    color: Colors.textDark,
     fontSize: FontSizes.md,
     fontWeight: '600',
     marginLeft: Spacing.sm,
