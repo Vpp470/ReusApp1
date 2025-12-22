@@ -61,7 +61,7 @@ export default function AdminNotificationsScreen() {
 
   const loadStats = async () => {
     try {
-      const response = await api.get('/api/admin/notifications/stats', {
+      const response = await api.get('/admin/notifications/stats', {
         headers: { Authorization: token }
       });
       setStats(response.data);
@@ -74,7 +74,7 @@ export default function AdminNotificationsScreen() {
 
   const loadHistory = async () => {
     try {
-      const response = await api.get('/api/admin/notifications/history?limit=10', {
+      const response = await api.get('/admin/notifications/history?limit=10', {
         headers: { Authorization: token }
       });
       // Assegurar que sempre és un array
