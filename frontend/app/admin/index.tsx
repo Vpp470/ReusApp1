@@ -213,6 +213,31 @@ export default function AdminDashboard() {
             </View>
           </View>
         ))}
+
+        {/* Secció de Manteniment */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🔧 Manteniment</Text>
+          <Pressable
+            style={[styles.maintenanceCard, fixingSpelling && styles.maintenanceCardDisabled]}
+            onPress={fixHosteleriaSpelling}
+            disabled={fixingSpelling}
+          >
+            <View style={styles.maintenanceContent}>
+              <MaterialIcons name="spellcheck" size={32} color="#FF9800" />
+              <View style={styles.maintenanceText}>
+                <Text style={styles.maintenanceTitle}>Corregir "Hostalería"</Text>
+                <Text style={styles.maintenanceSubtitle}>
+                  Canvia "Hostalería" per "Hostelería" a tots els establiments
+                </Text>
+              </View>
+            </View>
+            {fixingSpelling ? (
+              <ActivityIndicator size="small" color="#FF9800" />
+            ) : (
+              <MaterialIcons name="play-arrow" size={24} color="#FF9800" />
+            )}
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
