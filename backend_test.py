@@ -90,12 +90,12 @@ class PushNotificationTester:
     async def login_user(self):
         """Login as regular user and get token"""
         try:
-            data = {
+            params = {
                 "email": USER_CREDENTIALS["email"],
                 "password": USER_CREDENTIALS["password"]
             }
             
-            async with self.session.post(f"{BACKEND_URL}/auth/login", data=data) as response:
+            async with self.session.post(f"{BACKEND_URL}/auth/login", params=params) as response:
                 if response.status == 200:
                     result = await response.json()
                     self.user_token = result.get("token")
