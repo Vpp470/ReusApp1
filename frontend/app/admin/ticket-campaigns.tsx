@@ -648,6 +648,11 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     borderColor: Colors.lightGray,
+    marginBottom: Spacing.md,
+  },
+  dateButtonText: {
+    fontSize: FontSizes.md,
+    color: Colors.textDark,
   },
   switchRow: {
     flexDirection: 'row',
