@@ -2133,3 +2133,168 @@ async def download_import_template(authorization: str = Header(None)):
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment; filename=plantilla_importacio_usuaris.xlsx"}
     )
+
+
+# ============================================================================
+# NOTIFICACIONS PUSH
+# ============================================================================
+
+@admin_router.post("/notifications/send", response_model=NotificationResponse)
+async def send_notification_to_users(
+    notification: NotificationRequest,
+    authorization: str = Header(None)
+):
+    """
+    Enviar notificació push a usuaris
+    
+    Targets disponibles:
+    - "all": Tots els usuaris amb push token
+    - "admins": Només administradors
+    - "users": Només usuaris normals
+    - "role:local_associat": Usuaris amb un rol específic
+    - "tag:nadal2024": Usuaris amb un marcador específic
+    """
+    await verify_admin(authorization)
+    
+    try:
+        # Construir la consulta segons el target
+        query = {"push_token": {"$exists": True, "$ne": None, "$ne": ""}}
+        
+        if notification.target == "admins":
+            query["role"] = "admin"
+        elif notification.target == "users":
+            query["role"] = "user"
+        elif notification.target.startswith("role:"):
+            role = notification.target.split(":", 1)[1]
+            query["role"] = role
+        elif notification.target.startswith("tag:"):
+            tag = notification.target.split(":", 1)[1]
+            query["tags"] = tag
+        # "all" no afegeix cap filtre addicional
+        
+        # Obtenir usuaris
+        users = await db.users.find(query).to_list(10000)
+        
+        if not users:
+            return NotificationResponse(
+                success=True,
+                sent_count=0,
+                failed_count=0,
+                message="No hi ha usuaris amb push token registrat per aquest filtre"
+            )
+        
+        # Extreure tokens vàlids
+        push_tokens = [
+            user.get("push_token") 
+            for user in users 
+            if user.get("push_token") and user.get("push_token").startswith("ExponentPushToken")
+        ]
+        
+        if not push_tokens:
+            return NotificationResponse(
+                success=True,
+                sent_count=0,
+                failed_count=0,
+                message="No hi ha tokens Expo vàlids"
+            )
+        
+        # Enviar notificacions
+        result = send_push_notification(
+            push_tokens=push_tokens,
+            title=notification.title,
+            body=notification.body,
+            data=notification.data
+        )
+        
+        # Guardar historial de notificació
+        notification_log = {
+            "title": notification.title,
+            "body": notification.body,
+            "target": notification.target,
+            "data": notification.data,
+            "tokens_count": len(push_tokens),
+            "result": result,
+            "sent_at": datetime.utcnow(),
+            "sent_by": authorization
+        }
+        await db.notification_history.insert_one(notification_log)
+        
+        # Analitzar resultats
+        sent_count = 0
+        failed_count = 0
+        
+        if isinstance(result, dict):
+            if "data" in result:
+                for item in result.get("data", []):
+                    if item.get("status") == "ok":
+                        sent_count += 1
+                    else:
+                        failed_count += 1
+            elif "error" in result:
+                failed_count = len(push_tokens)
+        
+        return NotificationResponse(
+            success=True,
+            sent_count=sent_count if sent_count > 0 else len(push_tokens),
+            failed_count=failed_count,
+            message=f"Notificació enviada a {len(push_tokens)} dispositius"
+        )
+        
+    except Exception as e:
+        return NotificationResponse(
+            success=False,
+            sent_count=0,
+            failed_count=0,
+            message=f"Error enviant notificació: {str(e)}"
+        )
+
+
+@admin_router.get("/notifications/history")
+async def get_notification_history(
+    authorization: str = Header(None),
+    limit: int = 50
+):
+    """Obtenir historial de notificacions enviades"""
+    await verify_admin(authorization)
+    
+    history = await db.notification_history.find().sort("sent_at", -1).limit(limit).to_list(limit)
+    
+    for item in history:
+        item["_id"] = str(item["_id"])
+        item["id"] = str(item["_id"])
+    
+    return history
+
+
+@admin_router.get("/notifications/stats")
+async def get_notification_stats(authorization: str = Header(None)):
+    """Obtenir estadístiques de notificacions"""
+    await verify_admin(authorization)
+    
+    # Comptar usuaris amb push token
+    total_with_token = await db.users.count_documents({
+        "push_token": {"$exists": True, "$ne": None, "$ne": ""}
+    })
+    
+    # Comptar per rol
+    stats_by_role = {}
+    for role in ["user", "admin", "local_associat", "entitat_colaboradora", "membre_consell"]:
+        count = await db.users.count_documents({
+            "push_token": {"$exists": True, "$ne": None, "$ne": ""},
+            "role": role
+        })
+        stats_by_role[role] = count
+    
+    # Comptar notificacions enviades (últims 30 dies)
+    from datetime import timedelta
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    notifications_sent = await db.notification_history.count_documents({
+        "sent_at": {"$gte": thirty_days_ago}
+    })
+    
+    return {
+        "total_users_with_token": total_with_token,
+        "by_role": stats_by_role,
+        "notifications_last_30_days": notifications_sent
+    }
+
