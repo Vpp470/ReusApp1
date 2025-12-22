@@ -407,6 +407,82 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.textDark, // Text fosc per fons blanc
   },
+  // Estils per la campanya activa
+  campaignLoadingContainer: {
+    padding: Spacing.md,
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+  },
+  campaignContainer: {
+    backgroundColor: Colors.white,
+    marginHorizontal: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border || '#E5E5E5',
+  },
+  campaignImage: {
+    width: '100%',
+    height: 120,
+  },
+  campaignContent: {
+    padding: Spacing.md,
+  },
+  campaignBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.success || '#28A745',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm || 4,
+    gap: 4,
+    marginBottom: Spacing.sm,
+  },
+  campaignBadgeText: {
+    color: Colors.white,
+    fontSize: FontSizes.xs || 10,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+  },
+  campaignTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.textDark,
+    marginBottom: 4,
+  },
+  campaignDescription: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary || '#666',
+    marginBottom: Spacing.sm,
+    lineHeight: 20,
+  },
+  campaignPrizeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  campaignPrize: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.secondary || '#FFC107',
+  },
+  campaignDates: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary || '#666',
+    fontStyle: 'italic',
+  },
+  noCampaignContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    backgroundColor: Colors.background,
+    gap: Spacing.sm,
+  },
+  noCampaignText: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary || '#666',
+  },
   participationsBar: {
     flexDirection: 'row',
     alignItems: 'center',
