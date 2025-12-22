@@ -156,8 +156,7 @@ export default function AdminNotificationsScreen() {
           { text: 'Enviar', onPress: confirmSend }
         ]
       );
-      ]
-    );
+    }
   };
 
   const getTargetLabel = (target: string): string => {
