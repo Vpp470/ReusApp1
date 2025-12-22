@@ -134,7 +134,7 @@ Status: 200 OK
 
 ### ❌ INCORRECTE (NO hauries de veure):
 ```
-POST https://admin-stats-hub.preview.emergentagent.com/api/auth/login
+POST https://admin-stats-fix-2.preview.emergentagent.com/api/auth/login
 Status: ERR_FAILED
 ```
 

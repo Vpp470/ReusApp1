@@ -19,6 +19,20 @@ import { useAuthStore } from '../../src/store/authStore';
 import axios from 'axios';
 import Constants from 'expo-constants';
 
+// Tipus per la campanya de tiquets
+interface TicketCampaign {
+  _id: string;
+  id: string;
+  title: string;
+  description?: string;
+  image?: string;
+  start_date: string;
+  end_date: string;
+  prize_description: string;
+  is_active: boolean;
+  tag?: string;
+}
+
 export default function ScanTicketScreen() {
   const router = useRouter();
   const { token } = useAuthStore();
@@ -27,12 +41,28 @@ export default function ScanTicketScreen() {
   const [participations, setParticipations] = useState(0);
   const [scanMode, setScanMode] = useState<'menu' | 'qr' | 'photo'>('menu'); // menu, qr, photo
   const [scanned, setScanned] = useState(false);
+  const [activeCampaign, setActiveCampaign] = useState<TicketCampaign | null>(null);
+  const [loadingCampaign, setLoadingCampaign] = useState(true);
 
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
   useEffect(() => {
     loadParticipations();
+    loadActiveCampaign();
   }, []);
+
+  const loadActiveCampaign = async () => {
+    try {
+      setLoadingCampaign(true);
+      const response = await axios.get(`${API_URL}/api/tickets/campaign`);
+      setActiveCampaign(response.data);
+    } catch (error) {
+      console.error('Error carregant campanya activa:', error);
+      setActiveCampaign(null);
+    } finally {
+      setLoadingCampaign(false);
+    }
+  };
 
   const loadParticipations = async () => {
     try {

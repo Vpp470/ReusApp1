@@ -11,7 +11,7 @@ def test_admin_statistics():
     """Test de l'endpoint GET /api/admin/statistics"""
     
     # Configuració
-    base_url = "https://admin-stats-hub.preview.emergentagent.com"
+    base_url = "https://admin-stats-fix-2.preview.emergentagent.com"
     endpoint = "/api/admin/statistics"
     admin_token = "i_yKBfolFbGsik3rMzPNVA5O6TyK5uzzAc-7YRQod-w"
     

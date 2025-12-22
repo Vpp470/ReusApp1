@@ -1,7 +1,7 @@
 # ✅ URLs Correctes per WordPress - FORK
 
 ## Nova URL del Fork
-**Domini:** `https://admin-stats-hub.preview.emergentagent.com`
+**Domini:** `https://admin-stats-fix-2.preview.emergentagent.com`
 
 ---
 
@@ -9,49 +9,49 @@
 
 ### 1. Pàgina d'Inici
 ```html
-<iframe src="https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-inici.html" 
+<iframe src="https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-inici.html" 
         style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" 
         frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 2. Pàgina d'Establiments
 ```html
-<iframe src="https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-establiments.html" 
+<iframe src="https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-establiments.html" 
         style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" 
         frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 3. Pàgina d'Ofertes / Promocions
 ```html
-<iframe src="https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-ofertes.html" 
+<iframe src="https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-ofertes.html" 
         style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" 
         frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 4. Pàgina d'Esdeveniments
 ```html
-<iframe src="https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-esdeveniments.html" 
+<iframe src="https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-esdeveniments.html" 
         style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" 
         frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 5. Mapa d'Establiments
 ```html
-<iframe src="https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-mapa.html" 
+<iframe src="https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-mapa.html" 
         style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" 
         frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 6. Pàgina de Notícies
 ```html
-<iframe src="https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-noticies.html" 
+<iframe src="https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-noticies.html" 
         style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" 
         frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 7. Pàgina Sobre Nosaltres
 ```html
-<iframe src="https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-sobre.html" 
+<iframe src="https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-sobre.html" 
         style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" 
         frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
@@ -75,11 +75,11 @@ He verificat que totes les pàgines funcionen correctament:
 
 Pots provar aquestes URLs al navegador per verificar:
 
-- **Establiments:** https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-establiments.html
-- **Mapa:** https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-mapa.html
-- **Ofertes:** https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-ofertes.html
-- **Esdeveniments:** https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-esdeveniments.html
-- **Notícies:** https://admin-stats-hub.preview.emergentagent.com/api/landing/tomb-pagines/tomb-noticies.html
+- **Establiments:** https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-establiments.html
+- **Mapa:** https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-mapa.html
+- **Ofertes:** https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-ofertes.html
+- **Esdeveniments:** https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-esdeveniments.html
+- **Notícies:** https://admin-stats-fix-2.preview.emergentagent.com/api/landing/tomb-pagines/tomb-noticies.html
 
 ---
 
