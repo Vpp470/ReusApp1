@@ -6,6 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Pressable,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -18,6 +20,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { token } = useAuthStore();
   const [pendingPromotions, setPendingPromotions] = useState(0);
+  const [fixingSpelling, setFixingSpelling] = useState(false);
 
   useEffect(() => {
     loadPendingPromotions();
