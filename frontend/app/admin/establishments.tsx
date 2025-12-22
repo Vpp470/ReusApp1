@@ -229,39 +229,57 @@ export default function AdminEstablishments() {
             <meta charset="utf-8">
             <title>Llistat d'Establiments - REUS COMERÇ i FUTUR</title>
             <style>
-              @page {
-                size: A4;
-                margin: 15mm;
+              @media print {
+                @page {
+                  size: A4 portrait;
+                  margin: 10mm;
+                }
+                body {
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                thead {
+                  display: table-header-group !important;
+                }
+                tfoot {
+                  display: table-footer-group !important;
+                }
+                tr {
+                  page-break-inside: avoid !important;
+                }
               }
               * {
                 box-sizing: border-box;
+                margin: 0;
+                padding: 0;
               }
               body {
-                font-family: Arial, sans-serif;
-                padding: 0;
-                margin: 0;
-                font-size: 10px;
-                line-height: 1.3;
+                font-family: Arial, Helvetica, sans-serif;
+                padding: 10px;
+                font-size: 9px;
+                line-height: 1.2;
+                color: #333;
               }
               h1 {
                 color: #C8102E;
                 text-align: center;
-                margin-bottom: 15px;
-                font-size: 18px;
+                margin-bottom: 10px;
+                font-size: 16px;
               }
               .header-info {
                 text-align: center;
-                margin-bottom: 15px;
+                margin-bottom: 10px;
                 color: #666;
-                font-size: 11px;
+                font-size: 10px;
               }
               .header-info p {
-                margin: 3px 0;
+                margin: 2px 0;
               }
               table {
                 width: 100%;
                 border-collapse: collapse;
                 table-layout: fixed;
+                font-size: 8px;
               }
               thead {
                 display: table-header-group;
@@ -273,48 +291,69 @@ export default function AdminEstablishments() {
                 page-break-inside: avoid;
               }
               th {
-                background-color: #C8102E;
-                color: white;
-                padding: 6px 4px;
+                background-color: #C8102E !important;
+                color: white !important;
+                padding: 4px 3px;
                 text-align: left;
                 font-weight: bold;
-                font-size: 9px;
+                font-size: 8px;
                 border: 1px solid #C8102E;
               }
               td {
-                border: 1px solid #ddd;
-                padding: 5px 4px;
-                font-size: 9px;
+                border: 1px solid #ccc;
+                padding: 3px;
+                font-size: 8px;
                 word-wrap: break-word;
                 overflow: hidden;
+                vertical-align: top;
               }
               tr:nth-child(even) {
-                background-color: #f9f9f9;
+                background-color: #f5f5f5 !important;
               }
-              /* Amplades de columnes fixes */
-              th:nth-child(1), td:nth-child(1) { width: 22%; } /* Nom */
-              th:nth-child(2), td:nth-child(2) { width: 12%; } /* NIF */
-              th:nth-child(3), td:nth-child(3) { width: 14%; } /* Categoria */
-              th:nth-child(4), td:nth-child(4) { width: 24%; } /* Adreça */
-              th:nth-child(5), td:nth-child(5) { width: 12%; } /* Telèfon */
-              th:nth-child(6), td:nth-child(6) { width: 16%; } /* Email */
+              th:nth-child(1), td:nth-child(1) { width: 20%; }
+              th:nth-child(2), td:nth-child(2) { width: 11%; }
+              th:nth-child(3), td:nth-child(3) { width: 13%; }
+              th:nth-child(4), td:nth-child(4) { width: 23%; }
+              th:nth-child(5), td:nth-child(5) { width: 11%; }
+              th:nth-child(6), td:nth-child(6) { width: 22%; }
               .footer {
-                margin-top: 20px;
+                margin-top: 15px;
                 text-align: center;
-                font-size: 8px;
+                font-size: 7px;
                 color: #999;
                 page-break-inside: avoid;
               }
-              .page-number {
+              .no-print {
                 position: fixed;
-                bottom: 5mm;
-                right: 5mm;
-                font-size: 8px;
-                color: #999;
+                top: 10px;
+                right: 10px;
+                z-index: 1000;
+              }
+              .no-print button {
+                background: #C8102E;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                font-size: 14px;
+                cursor: pointer;
+                border-radius: 5px;
+                margin-left: 10px;
+              }
+              .no-print button:hover {
+                background: #a00d24;
+              }
+              @media print {
+                .no-print {
+                  display: none !important;
+                }
               }
             </style>
           </head>
           <body>
+            <div class="no-print">
+              <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+              <button onclick="window.close()">✕ Tancar</button>
+            </div>
             <h1>Llistat d'Establiments</h1>
             <div class="header-info">
               <p><strong>REUS COMERÇ i FUTUR</strong></p>
@@ -337,12 +376,12 @@ export default function AdminEstablishments() {
               <tbody>
                 ${dataToExport.map(est => `
                   <tr>
-                    <td>${(est.name || '-').substring(0, 40)}</td>
+                    <td>${(est.name || '-').substring(0, 35)}</td>
                     <td>${est.nif || '-'}</td>
-                    <td>${(est.category || '-').substring(0, 20)}</td>
-                    <td>${(est.address || '-').substring(0, 50)}</td>
+                    <td>${(est.category || '-').substring(0, 18)}</td>
+                    <td>${(est.address || '-').substring(0, 45)}</td>
                     <td>${est.phone || '-'}</td>
-                    <td>${(est.email || '-').substring(0, 30)}</td>
+                    <td>${(est.email || '-').substring(0, 35)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -356,7 +395,23 @@ export default function AdminEstablishments() {
         </html>
       `;
 
-      // Generar PDF amb opcions per múltiples pàgines
+      // A web, obrir una nova finestra amb el contingut per imprimir
+      if (Platform.OS === 'web') {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(htmlContent);
+          printWindow.document.close();
+          // Donar temps a carregar els estils
+          setTimeout(() => {
+            printWindow.focus();
+          }, 500);
+        } else {
+          Alert.alert('Error', 'No s\'ha pogut obrir la finestra d\'impressió. Comprova que el navegador permet pop-ups.');
+        }
+        return;
+      }
+
+      // Per a mòbil, utilitzar expo-print
       const { uri } = await Print.printToFileAsync({
         html: htmlContent,
         base64: false,
