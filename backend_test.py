@@ -62,12 +62,12 @@ class PushNotificationTester:
     async def login_admin(self):
         """Login as admin and get token"""
         try:
-            data = {
+            params = {
                 "email": ADMIN_CREDENTIALS["email"],
                 "password": ADMIN_CREDENTIALS["password"]
             }
             
-            async with self.session.post(f"{BACKEND_URL}/auth/login", data=data) as response:
+            async with self.session.post(f"{BACKEND_URL}/auth/login", params=params) as response:
                 if response.status == 200:
                     result = await response.json()
                     self.admin_token = result.get("token")
