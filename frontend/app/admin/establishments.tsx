@@ -402,48 +402,6 @@ export default function AdminEstablishments() {
       Alert.alert('Error', 'No s\'ha pogut generar el PDF. Error: ' + (error as Error).message);
     }
   };
-          printWindow.document.close();
-          // Donar temps a carregar els estils
-          setTimeout(() => {
-            printWindow.focus();
-          }, 500);
-        } else {
-          Alert.alert('Error', 'No s\'ha pogut obrir la finestra d\'impressió. Comprova que el navegador permet pop-ups.');
-        }
-        return;
-      }
-
-      // Per a mòbil, utilitzar expo-print
-      const { uri } = await Print.printToFileAsync({
-        html: htmlContent,
-        base64: false,
-      });
-
-      Alert.alert(
-        'PDF Generat',
-        'El PDF s\'ha generat correctament. Vols compartir-lo?',
-        [
-          {
-            text: 'Cancel·lar',
-            style: 'cancel',
-          },
-          {
-            text: 'Compartir',
-            onPress: async () => {
-              if (await Sharing.isAvailableAsync()) {
-                await Sharing.shareAsync(uri);
-              } else {
-                Alert.alert('Error', 'No es pot compartir el fitxer en aquest dispositiu');
-              }
-            },
-          },
-        ]
-      );
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      Alert.alert('Error', 'No s\'ha pogut generar el PDF');
-    }
-  };
 
   const handleCreate = () => {
     setEditingItem(null);
