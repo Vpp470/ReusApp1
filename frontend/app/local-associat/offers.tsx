@@ -682,7 +682,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   buttonText: {
-    color: Colors.textDark, // Text fosc per fons blanc
+    color: Colors.white,
     fontSize: FontSizes.md,
     fontWeight: 'bold',
   },
