@@ -531,6 +531,14 @@ async def update_push_token(
         raise HTTPException(status_code=401, detail="Invalid token")
     
     # Actualitzar el push token
+    await db.users.update_one(
+        {"_id": user['_id']},
+        {"$set": {"push_token": token_data.push_token}}
+    )
+    
+    logger.info(f"Push token actualitzat per usuari {user.get('email')}: {token_data.push_token[:30]}...")
+    
+    return {"success": True, "message": "Push token actualitzat correctament"}
 
 
 @api_router.put("/users/language")
