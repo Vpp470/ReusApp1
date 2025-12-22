@@ -167,22 +167,22 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   logoContainer: {
-    width: SCREEN_WIDTH * 0.9,
-    height: SCREEN_HEIGHT * 0.20,
+    width: SCREEN_WIDTH * 0.95,
+    height: SCREEN_HEIGHT * 0.18,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.md,
     backgroundColor: '#FFFFFF', // Fons blanc per al logo
     borderRadius: BorderRadius.xl,
-    padding: Spacing.md,
+    padding: Spacing.sm,
   },
   logo: {
     width: '100%',
     height: '100%',
   },
   logoHorizontal: {
-    width: '90%',
-    height: '80%',
+    width: '95%',
+    height: '90%',
   },
   subtitle: {
     fontSize: FontSizes.md,
