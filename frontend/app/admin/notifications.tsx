@@ -109,44 +109,53 @@ export default function AdminNotificationsScreen() {
       return;
     }
 
-    // Confirmació
-    Alert.alert(
-      'Confirmar enviament',
-      `Estàs segur que vols enviar aquesta notificació a ${getTargetLabel(broadcastTarget)}?`,
-      [
-        { text: 'Cancel·lar', style: 'cancel' },
-        { 
-          text: 'Enviar', 
-          onPress: async () => {
-            try {
-              setBroadcastLoading(true);
-              const response = await api.post('/admin/notifications/send', {
-                title: broadcastTitle,
-                body: broadcastBody,
-                target: broadcastTarget,
-              }, {
-                headers: { Authorization: token }
-              });
-              
-              if (response.data.success) {
-                Alert.alert(
-                  'Èxit!', 
-                  `${response.data.message}\n\nEnviats: ${response.data.sent_count}`
-                );
-                setBroadcastTitle('');
-                setBroadcastBody('');
-                loadHistory();
-                loadStats();
-              } else {
-                Alert.alert('Error', response.data.message);
-              }
-            } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.message || 'No s\'ha pogut enviar la notificació');
-            } finally {
-              setBroadcastLoading(false);
-            }
-          }
+    // Per a web, usar window.confirm; per a mòbil, usar Alert.alert
+    const confirmSend = async () => {
+      try {
+        setBroadcastLoading(true);
+        const response = await api.post('/admin/notifications/send', {
+          title: broadcastTitle,
+          body: broadcastBody,
+          target: broadcastTarget,
+        }, {
+          headers: { Authorization: token }
+        });
+        
+        if (response.data.success) {
+          Alert.alert(
+            'Èxit!', 
+            `${response.data.message}\n\nEnviats: ${response.data.sent_count}`
+          );
+          setBroadcastTitle('');
+          setBroadcastBody('');
+          loadHistory();
+          loadStats();
+        } else {
+          Alert.alert('Error', response.data.message);
         }
+      } catch (error: any) {
+        console.error('Error enviant notificació:', error);
+        Alert.alert('Error', error.response?.data?.message || error.response?.data?.detail || 'No s\'ha pogut enviar la notificació');
+      } finally {
+        setBroadcastLoading(false);
+      }
+    };
+
+    // Confirmació segons plataforma
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`Estàs segur que vols enviar aquesta notificació a ${getTargetLabel(broadcastTarget)}?`);
+      if (confirmed) {
+        await confirmSend();
+      }
+    } else {
+      Alert.alert(
+        'Confirmar enviament',
+        `Estàs segur que vols enviar aquesta notificació a ${getTargetLabel(broadcastTarget)}?`,
+        [
+          { text: 'Cancel·lar', style: 'cancel' },
+          { text: 'Enviar', onPress: confirmSend }
+        ]
+      );
       ]
     );
   };
