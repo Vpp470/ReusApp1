@@ -203,6 +203,10 @@ const styles = StyleSheet.create({
     width: screenWidth * 0.85,
     height: screenHeight * 0.18,
   },
+  logoHorizontal: {
+    width: screenWidth * 0.8,
+    height: 80,
+  },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
