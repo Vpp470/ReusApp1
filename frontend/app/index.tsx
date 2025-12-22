@@ -9,16 +9,25 @@ export default function Index() {
   const { isAuthenticated, isLoading, loadStoredAuth } = useAuthStore();
 
   useEffect(() => {
+    console.log('🚀 Index: Carregant sessió guardada...');
     loadStoredAuth();
   }, []);
 
   useEffect(() => {
     if (!isLoading) {
-      // Sempre anar primer al login - l'usuari decidirà si vol entrar
-      // Si ja està autenticat, el login el redirigirà automàticament
-      router.replace('/auth/login');
+      console.log('📊 Index: isLoading=false, isAuthenticated=', isAuthenticated);
+      
+      if (isAuthenticated) {
+        // L'usuari ja està autenticat, anar directament a home
+        console.log('✅ Usuari ja autenticat, redirigint a home...');
+        router.replace('/(tabs)/home');
+      } else {
+        // L'usuari no està autenticat, anar al login
+        console.log('🔒 No autenticat, redirigint a login...');
+        router.replace('/auth/login');
+      }
     }
-  }, [isLoading]);
+  }, [isLoading, isAuthenticated]);
 
   return (
     <View style={styles.container}>
