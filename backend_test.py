@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://admin-stats-fix-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://eltomb-app.preview.emergentagent.com/api"
 
 # Test credentials
 ADMIN_CREDENTIALS = {

@@ -2862,7 +2862,7 @@ agent_communication:
       Comprehensive testing performed on the admin statistics endpoint as specifically requested:
       
       🎯 ENDPOINT TESTED:
-      - URL: GET https://admin-stats-fix-2.preview.emergentagent.com/api/admin/statistics
+      - URL: GET https://eltomb-app.preview.emergentagent.com/api/admin/statistics
       - Admin Token: i_yKBfolFbGsik3rMzPNVA5O6TyK5uzzAc-7YRQod-w
       - Authorization Header: Bearer i_yKBfolFbGsik3rMzPNVA5O6TyK5uzzAc-7YRQod-w
       
