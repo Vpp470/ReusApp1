@@ -445,6 +445,11 @@ class ConsentHistory(ConsentHistoryBase):
 class PushTokenUpdate(BaseModel):
     push_token: str
 
+class WebPushSubscription(BaseModel):
+    """Model per a la subscripció Web Push"""
+    endpoint: str
+    keys: dict  # p256dh i auth
+
 # Helper function for authentication
 async def get_user_from_token(authorization: str):
     """Obtenir usuari des del token d'autorització"""
