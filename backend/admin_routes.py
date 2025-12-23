@@ -1899,20 +1899,6 @@ async def send_welcome_emails_to_imported(
     return result
 
 
-@admin_router.get("/users/pending-welcome-emails")
-async def get_pending_welcome_emails(authorization: str = Header(None)):
-    """Obtenir el nombre d'usuaris pendents de rebre email de benvinguda"""
-    await verify_admin(authorization)
-    
-    count = await db.users.count_documents({
-        "must_change_password": True,
-        "temp_password": {"$exists": True, "$ne": None, "$ne": ""},
-        "welcome_email_sent": {"$ne": True}
-    })
-    
-    return {"pending_count": count}
-
-
 @admin_router.post("/users/import", response_model=ImportResult)
 async def import_users_bulk(
     file: UploadFile = File(...),
