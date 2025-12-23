@@ -90,19 +90,15 @@ export default function AdminUsers() {
     }
   };
 
+  // Debounce per la cerca - cerca al backend després de 500ms
   useEffect(() => {
-    // Filtrar usuaris segons cerca
-    if (searchQuery.trim() === '') {
-      setFilteredUsers(users);
-    } else {
-      const filtered = users.filter(
-        (user) =>
-          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredUsers(filtered);
-    }
-  }, [searchQuery, users]);
+    const timeoutId = setTimeout(() => {
+      // Sempre fer cerca al backend (tant si hi ha query com si no)
+      loadUsers(0, searchQuery.trim() || undefined);
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const loadUsers = async (page: number = 0, search?: string) => {
     try {
