@@ -1122,13 +1122,19 @@ export default function AdminUsers() {
         visible={importModalVisible}
         transparent={true}
         animationType="slide"
-        onRequestClose={() => setImportModalVisible(false)}
+        onRequestClose={() => {
+          setImportModalVisible(false);
+          setSelectedFile(null);
+        }}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>📥 Importar Usuaris</Text>
-              <Pressable onPress={() => setImportModalVisible(false)}>
+              <Pressable onPress={() => {
+                setImportModalVisible(false);
+                setSelectedFile(null);
+              }}>
                 <MaterialIcons name="close" size={24} color={Colors.gray} />
               </Pressable>
             </View>
@@ -1151,6 +1157,36 @@ export default function AdminUsers() {
                 <Text style={styles.templateButtonText}>Descarregar Plantilla Excel</Text>
               </Pressable>
 
+              {/* Secció de selecció de fitxer */}
+              <View style={styles.fileSelectionSection}>
+                <Text style={styles.sectionLabel}>Fitxer a importar:</Text>
+                
+                <Pressable 
+                  style={styles.selectFileButton} 
+                  onPress={handleSelectFile}
+                >
+                  <MaterialIcons name="folder-open" size={24} color={Colors.primary} />
+                  <Text style={styles.selectFileButtonText}>
+                    {selectedFile ? 'Canviar fitxer' : 'Seleccionar fitxer Excel/CSV'}
+                  </Text>
+                </Pressable>
+
+                {selectedFile && (
+                  <View style={styles.selectedFileBox}>
+                    <MaterialIcons name="insert-drive-file" size={24} color={Colors.success} />
+                    <View style={styles.selectedFileInfo}>
+                      <Text style={styles.selectedFileName} numberOfLines={1}>
+                        {selectedFile.name}
+                      </Text>
+                      <Text style={styles.selectedFileReady}>✓ Fitxer preparat per importar</Text>
+                    </View>
+                    <Pressable onPress={() => setSelectedFile(null)}>
+                      <MaterialIcons name="close" size={20} color={Colors.error} />
+                    </Pressable>
+                  </View>
+                )}
+              </View>
+
               <View style={styles.checkboxContainer}>
                 <Pressable 
                   style={[styles.checkbox, sendEmails && styles.checkboxChecked]}
@@ -1171,21 +1207,30 @@ export default function AdminUsers() {
             <View style={styles.modalFooter}>
               <Pressable
                 style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setImportModalVisible(false)}
+                onPress={() => {
+                  setImportModalVisible(false);
+                  setSelectedFile(null);
+                }}
               >
                 <Text style={styles.cancelButtonText}>Cancel·lar</Text>
               </Pressable>
               <Pressable
-                style={[styles.modalButton, styles.importActionButton]}
+                style={[
+                  styles.modalButton, 
+                  styles.importActionButton,
+                  !selectedFile && styles.importActionButtonDisabled
+                ]}
                 onPress={handleImportUsers}
-                disabled={importing}
+                disabled={importing || !selectedFile}
               >
                 {importing ? (
                   <ActivityIndicator size="small" color={Colors.white} />
                 ) : (
                   <>
-                    <MaterialIcons name="upload-file" size={20} color={Colors.white} />
-                    <Text style={styles.importActionButtonText}>Seleccionar Fitxer</Text>
+                    <MaterialIcons name="cloud-upload" size={20} color={Colors.white} />
+                    <Text style={styles.importActionButtonText}>
+                      {selectedFile ? 'Importar Usuaris' : 'Selecciona un fitxer'}
+                    </Text>
                   </>
                 )}
               </Pressable>
