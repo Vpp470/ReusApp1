@@ -310,8 +310,18 @@ export const adminService = {
 
   // Users
   users: {
-    getAll: async (token: string) => {
+    getAll: async (token: string, skip: number = 0, limit: number = 100, search?: string) => {
+      const params: any = { skip, limit };
+      if (search) params.search = search;
+      
       const response = await api.get('/admin/users', {
+        headers: { Authorization: token },
+        params
+      });
+      return response.data;
+    },
+    getCount: async (token: string) => {
+      const response = await api.get('/admin/users/count', {
         headers: { Authorization: token },
       });
       return response.data;
