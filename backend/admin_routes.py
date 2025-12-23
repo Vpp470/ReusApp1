@@ -2029,7 +2029,7 @@ async def import_users_bulk(
             
             # Obtenir cognoms
             surname = ""
-            for col in ['cognoms', 'apellidos', 'surname', 'lastname']:
+            for col in ['cognoms', 'apellidos', 'surname', 'lastname', 'last_name']:
                 if col in df.columns and pd.notna(row.get(col)):
                     surname = str(row[col]).strip()
                     break
