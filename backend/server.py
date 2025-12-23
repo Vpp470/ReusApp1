@@ -547,6 +547,69 @@ async def update_push_token(
     return {"success": True, "message": "Push token actualitzat correctament"}
 
 
+# ============================================================================
+# WEB PUSH NOTIFICATIONS
+# ============================================================================
+
+@api_router.get("/web-push/vapid-public-key")
+async def get_web_push_vapid_key():
+    """Obtenir la clau pública VAPID per al frontend"""
+    vapid_key = get_vapid_public_key()
+    if not vapid_key:
+        raise HTTPException(
+            status_code=503, 
+            detail="Web Push no configurat. Falten les claus VAPID."
+        )
+    return {"vapidPublicKey": vapid_key}
+
+
+@api_router.post("/web-push/subscribe")
+async def subscribe_web_push(
+    subscription: WebPushSubscription,
+    authorization: str = Header(None)
+):
+    """Guardar la subscripció Web Push d'un usuari"""
+    user = await get_user_from_token(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="No autoritzat")
+    
+    # Crear objecte de subscripció complet
+    subscription_obj = {
+        "endpoint": subscription.endpoint,
+        "keys": subscription.keys
+    }
+    
+    # Actualitzar l'usuari amb la subscripció Web Push
+    await db.users.update_one(
+        {"_id": user['_id']},
+        {"$set": {"web_push_subscription": subscription_obj}}
+    )
+    
+    logger.info(f"✅ Web Push subscrit per usuari {user.get('email')}")
+    
+    return {"success": True, "message": "Subscripció Web Push guardada correctament"}
+
+
+@api_router.delete("/web-push/unsubscribe")
+async def unsubscribe_web_push(
+    authorization: str = Header(None)
+):
+    """Eliminar la subscripció Web Push d'un usuari"""
+    user = await get_user_from_token(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="No autoritzat")
+    
+    # Eliminar la subscripció
+    await db.users.update_one(
+        {"_id": user['_id']},
+        {"$unset": {"web_push_subscription": ""}}
+    )
+    
+    logger.info(f"❌ Web Push dessubscrit per usuari {user.get('email')}")
+    
+    return {"success": True, "message": "Subscripció Web Push eliminada"}
+
+
 @api_router.put("/users/language")
 async def update_user_language(
     request: Request,
