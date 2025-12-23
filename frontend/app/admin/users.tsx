@@ -368,7 +368,7 @@ export default function AdminUsers() {
   };
 
   // Funcions per importació massiva
-  const handleImportUsers = async () => {
+  const handleSelectFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: [
@@ -384,6 +384,24 @@ export default function AdminUsers() {
       }
 
       const file = result.assets[0];
+      setSelectedFile({
+        uri: file.uri,
+        name: file.name,
+        mimeType: file.mimeType,
+      });
+    } catch (error: any) {
+      console.error('Error seleccionant fitxer:', error);
+      Alert.alert('Error', 'No s\'ha pogut seleccionar el fitxer');
+    }
+  };
+
+  const handleImportUsers = async () => {
+    if (!selectedFile) {
+      Alert.alert('Error', 'Has de seleccionar un fitxer primer');
+      return;
+    }
+
+    try {
       setImporting(true);
 
       // Crear FormData
@@ -391,15 +409,15 @@ export default function AdminUsers() {
       
       if (Platform.OS === 'web') {
         // Per web, obtenim el fitxer directament
-        const response = await fetch(file.uri);
+        const response = await fetch(selectedFile.uri);
         const blob = await response.blob();
-        formData.append('file', blob, file.name);
+        formData.append('file', blob, selectedFile.name);
       } else {
         // Per mobile
         formData.append('file', {
-          uri: file.uri,
-          type: file.mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          name: file.name,
+          uri: selectedFile.uri,
+          type: selectedFile.mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          name: selectedFile.name,
         } as any);
       }
       
@@ -414,6 +432,7 @@ export default function AdminUsers() {
 
       setImportResult(apiResponse.data);
       setImportModalVisible(false);
+      setSelectedFile(null);
       setShowImportResultModal(true);
       loadUsers();
 
