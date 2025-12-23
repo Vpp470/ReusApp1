@@ -2136,8 +2136,8 @@ async def send_notification_to_users(
     await verify_admin(authorization)
     
     try:
-        # Construir la consulta segons el target
-        query = {"push_token": {"$exists": True, "$ne": None, "$ne": ""}}
+        # Construir la consulta base segons el target (sense filtrar per push_token)
+        query = {}
         
         if notification.target == "admins":
             query["role"] = "admin"
@@ -2151,7 +2151,7 @@ async def send_notification_to_users(
             query["tags"] = tag
         # "all" no afegeix cap filtre addicional
         
-        # Obtenir usuaris
+        # Obtenir TOTS els usuaris que compleixen el filtre
         users = await db.users.find(query).to_list(10000)
         
         if not users:
@@ -2159,64 +2159,100 @@ async def send_notification_to_users(
                 success=True,
                 sent_count=0,
                 failed_count=0,
-                message="No hi ha usuaris amb push token registrat per aquest filtre"
+                message="No hi ha usuaris per aquest filtre"
             )
         
-        # Extreure tokens vàlids
-        push_tokens = [
+        # ==============================
+        # 1. EXPO PUSH NOTIFICATIONS
+        # ==============================
+        expo_tokens = [
             user.get("push_token") 
             for user in users 
             if user.get("push_token") and user.get("push_token").startswith("ExponentPushToken")
         ]
         
-        if not push_tokens:
-            return NotificationResponse(
-                success=True,
-                sent_count=0,
-                failed_count=0,
-                message="No hi ha tokens Expo vàlids"
+        expo_sent = 0
+        expo_failed = 0
+        
+        if expo_tokens:
+            result = send_push_notification(
+                push_tokens=expo_tokens,
+                title=notification.title,
+                body=notification.body,
+                data=notification.data
             )
+            
+            if isinstance(result, dict):
+                if "data" in result:
+                    for item in result.get("data", []):
+                        if item.get("status") == "ok":
+                            expo_sent += 1
+                        else:
+                            expo_failed += 1
+                elif "error" in result:
+                    expo_failed = len(expo_tokens)
+            else:
+                expo_sent = len(expo_tokens)  # Assumim que s'han enviat
         
-        # Enviar notificacions
-        result = send_push_notification(
-            push_tokens=push_tokens,
-            title=notification.title,
-            body=notification.body,
-            data=notification.data
-        )
+        # ==============================
+        # 2. WEB PUSH NOTIFICATIONS
+        # ==============================
+        web_subscriptions = [
+            user.get("web_push_subscription") 
+            for user in users 
+            if user.get("web_push_subscription") and isinstance(user.get("web_push_subscription"), dict)
+        ]
         
-        # Guardar historial de notificació
+        web_sent = 0
+        web_failed = 0
+        
+        if web_subscriptions:
+            web_result = send_web_push_to_many(
+                subscriptions=web_subscriptions,
+                title=notification.title,
+                body=notification.body,
+                data=notification.data
+            )
+            web_sent = web_result.get("sent_count", 0)
+            web_failed = web_result.get("failed_count", 0)
+        
+        # ==============================
+        # GUARDAR HISTORIAL
+        # ==============================
         notification_log = {
             "title": notification.title,
             "body": notification.body,
             "target": notification.target,
             "data": notification.data,
-            "tokens_count": len(push_tokens),
-            "result": result,
+            "expo_tokens_count": len(expo_tokens),
+            "web_subscriptions_count": len(web_subscriptions),
+            "expo_sent": expo_sent,
+            "expo_failed": expo_failed,
+            "web_sent": web_sent,
+            "web_failed": web_failed,
             "sent_at": datetime.utcnow(),
             "sent_by": authorization
         }
         await db.notification_history.insert_one(notification_log)
         
-        # Analitzar resultats
-        sent_count = 0
-        failed_count = 0
+        # Totals
+        total_sent = expo_sent + web_sent
+        total_failed = expo_failed + web_failed
+        total_devices = len(expo_tokens) + len(web_subscriptions)
         
-        if isinstance(result, dict):
-            if "data" in result:
-                for item in result.get("data", []):
-                    if item.get("status") == "ok":
-                        sent_count += 1
-                    else:
-                        failed_count += 1
-            elif "error" in result:
-                failed_count = len(push_tokens)
+        if total_devices == 0:
+            return NotificationResponse(
+                success=True,
+                sent_count=0,
+                failed_count=0,
+                message="No hi ha dispositius subscrits per aquest filtre (ni Expo ni Web Push)"
+            )
         
         return NotificationResponse(
             success=True,
-            sent_count=sent_count if sent_count > 0 else len(push_tokens),
-            failed_count=failed_count,
-            message=f"Notificació enviada a {len(push_tokens)} dispositius"
+            sent_count=total_sent,
+            failed_count=total_failed,
+            message=f"Notificació enviada: {expo_sent} Expo, {web_sent} Web Push"
         )
         
     except Exception as e:
