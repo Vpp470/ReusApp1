@@ -77,7 +77,7 @@ export default function AdminUsers() {
   const [showImportResultModal, setShowImportResultModal] = useState(false);
 
   useEffect(() => {
-    loadUsers();
+    loadInitialData();
     loadUserCounts();
   }, []);
 
@@ -89,16 +89,6 @@ export default function AdminUsers() {
       console.error('Error carregant comptadors:', error);
     }
   };
-
-  // Debounce per la cerca - cerca al backend després de 500ms
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      // Sempre fer cerca al backend (tant si hi ha query com si no)
-      loadUsers(0, searchQuery.trim() || undefined);
-    }, 500);
-    
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
 
   const loadUsers = async (page: number = 0, search?: string) => {
     try {
@@ -124,6 +114,22 @@ export default function AdminUsers() {
       setLoading(false);
     }
   };
+
+  // Funció inicial sense cerca
+  const loadInitialData = () => {
+    loadUsers(0);
+  };
+
+  // Debounce per la cerca - cerca al backend després de 500ms
+  useEffect(() => {
+    // No executar al primer renderitzat
+    const timeoutId = setTimeout(() => {
+      // Sempre fer cerca al backend (tant si hi ha query com si no)
+      loadUsers(0, searchQuery.trim() || undefined);
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const handleChangeRole = (user: User) => {
     if (user.email === currentUser?.email) {
