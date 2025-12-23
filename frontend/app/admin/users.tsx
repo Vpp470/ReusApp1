@@ -1496,9 +1496,12 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: Colors.white,
-    padding: Spacing.md,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.sm,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 70,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -1506,14 +1509,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   statNumber: {
-    fontSize: FontSizes.xxl,
+    fontSize: FontSizes.lg,
     fontWeight: 'bold',
     color: Colors.primary,
+    lineHeight: FontSizes.lg + 4,
   },
   statLabel: {
     fontSize: FontSizes.xs,
-    color: Colors.darkGray, // Text gris per fons blanc
-    marginTop: 4,
+    color: Colors.darkGray,
+    marginTop: 2,
+    textAlign: 'center',
   },
   content: {
     flex: 1,
