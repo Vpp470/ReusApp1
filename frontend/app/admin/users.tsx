@@ -57,6 +57,7 @@ export default function AdminUsers() {
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [importing, setImporting] = useState(false);
   const [sendEmails, setSendEmails] = useState(true);
+  const [selectedFile, setSelectedFile] = useState<{uri: string; name: string; mimeType?: string} | null>(null);
   const [importResult, setImportResult] = useState<{
     total: number;
     created: number;
