@@ -533,7 +533,7 @@ export default function AdminUsers() {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScrollView}>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{users.length}</Text>
+            <Text style={styles.statNumber}>{totalUsers}</Text>
             <Text style={styles.statLabel}>Total</Text>
           </View>
           <View style={styles.statCard}>
