@@ -23,6 +23,7 @@ from participation_tracker import (
 )
 from push_notifications import send_push_notification
 from email_service import send_welcome_email
+from web_push_service import send_web_push_to_many
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
