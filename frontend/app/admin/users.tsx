@@ -666,7 +666,7 @@ export default function AdminUsers() {
         <View style={styles.paginationContainer}>
           <Pressable
             style={[styles.paginationButton, currentPage === 0 && styles.paginationButtonDisabled]}
-            onPress={() => loadUsers(currentPage - 1)}
+            onPress={() => loadUsers(currentPage - 1, searchQuery.trim() || undefined)}
             disabled={currentPage === 0}
           >
             <MaterialIcons name="chevron-left" size={24} color={currentPage === 0 ? Colors.lightGray : Colors.primary} />
@@ -681,7 +681,7 @@ export default function AdminUsers() {
           
           <Pressable
             style={[styles.paginationButton, (currentPage + 1) * pageSize >= totalUsers && styles.paginationButtonDisabled]}
-            onPress={() => loadUsers(currentPage + 1)}
+            onPress={() => loadUsers(currentPage + 1, searchQuery.trim() || undefined)}
             disabled={(currentPage + 1) * pageSize >= totalUsers}
           >
             <Text style={[styles.paginationButtonText, (currentPage + 1) * pageSize >= totalUsers && styles.paginationButtonTextDisabled]}>Següent</Text>
