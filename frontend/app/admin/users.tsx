@@ -2121,6 +2121,27 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   // NOTA: actionButtonsContainer ja està definit més amunt
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.xs,
+  },
+  importButton: {
+    backgroundColor: '#FF9800',
+  },
+  createButton: {
+    backgroundColor: Colors.primary,
+  },
+  actionButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+  },
   // Estils per modal d'importació
   importDescription: {
     fontSize: FontSizes.md,
