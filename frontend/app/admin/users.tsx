@@ -91,12 +91,24 @@ export default function AdminUsers() {
     }
   }, [searchQuery, users]);
 
-  const loadUsers = async () => {
+  const loadUsers = async (page: number = 0, search?: string) => {
     try {
       setLoading(true);
-      const data = await adminService.users.getAll(token!);
-      setUsers(data);
-      setFilteredUsers(data);
+      const skip = page * pageSize;
+      const response = await adminService.users.getAll(token!, skip, pageSize, search);
+      
+      // El backend ara retorna { users, total, skip, limit }
+      if (response.users) {
+        setUsers(response.users);
+        setFilteredUsers(response.users);
+        setTotalUsers(response.total);
+      } else {
+        // Compatibilitat amb resposta antiga (array directe)
+        setUsers(response);
+        setFilteredUsers(response);
+        setTotalUsers(response.length);
+      }
+      setCurrentPage(page);
     } catch (error) {
       Alert.alert('Error', 'No s\'han pogut carregar els usuaris');
     } finally {
