@@ -2972,6 +2972,25 @@ async def serve_noticies_page():
         return FileResponse(file_path, media_type="text/html")
     raise HTTPException(status_code=404, detail="Page not found")
 
+# Service Worker route - servir des de frontend/public
+frontend_public_path = Path(__file__).parent.parent / "frontend" / "public"
+
+@app.get("/sw.js")
+async def serve_service_worker():
+    """Servir el Service Worker per Web Push"""
+    sw_path = frontend_public_path / "sw.js"
+    if sw_path.exists():
+        return FileResponse(sw_path, media_type="application/javascript")
+    raise HTTPException(status_code=404, detail="Service Worker not found")
+
+@app.get("/manifest.json")
+async def serve_manifest():
+    """Servir el manifest PWA"""
+    manifest_path = frontend_public_path / "manifest.json"
+    if manifest_path.exists():
+        return FileResponse(manifest_path, media_type="application/json")
+    raise HTTPException(status_code=404, detail="Manifest not found")
+
 # Mount Expo web app (after all API routes)
 dist_path = Path(__file__).parent / "dist"
 if dist_path.exists():
