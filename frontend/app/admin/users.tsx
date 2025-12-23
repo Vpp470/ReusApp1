@@ -78,7 +78,17 @@ export default function AdminUsers() {
 
   useEffect(() => {
     loadUsers();
+    loadUserCounts();
   }, []);
+
+  const loadUserCounts = async () => {
+    try {
+      const counts = await adminService.users.getCount(token!);
+      setUserCounts(counts);
+    } catch (error) {
+      console.error('Error carregant comptadors:', error);
+    }
+  };
 
   useEffect(() => {
     // Filtrar usuaris segons cerca
