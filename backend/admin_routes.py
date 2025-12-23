@@ -820,19 +820,53 @@ async def delete_news(
 async def get_all_users(
     authorization: str = Header(None),
     skip: int = 0,
-    limit: int = 100
+    limit: int = 100,
+    search: str = None
 ):
-    """Obtenir tots els usuaris"""
+    """Obtenir tots els usuaris amb paginació"""
     await verify_admin(authorization)
     
-    users = await db.users.find().skip(skip).limit(limit).to_list(limit)
+    # Construir query de cerca
+    query = {}
+    if search:
+        query = {
+            "$or": [
+                {"email": {"$regex": search, "$options": "i"}},
+                {"name": {"$regex": search, "$options": "i"}}
+            ]
+        }
+    
+    # Obtenir total
+    total = await db.users.count_documents(query)
+    
+    # Obtenir usuaris paginats
+    users = await db.users.find(query).skip(skip).limit(limit).to_list(limit)
     for user in users:
         user['id'] = str(user['_id'])
         user['_id'] = str(user['_id'])
         # No retornar password
         user.pop('password', None)
     
-    return users
+    return {
+        "users": users,
+        "total": total,
+        "skip": skip,
+        "limit": limit
+    }
+
+
+@admin_router.get("/users/count")
+async def get_users_count(authorization: str = Header(None)):
+    """Obtenir el recompte total d'usuaris per rol"""
+    await verify_admin(authorization)
+    
+    total = await db.users.count_documents({})
+    
+    counts = {"total": total}
+    for role in ["user", "admin", "local_associat", "entitat_colaboradora", "membre_consell"]:
+        counts[role] = await db.users.count_documents({"role": role})
+    
+    return counts
 
 @admin_router.post("/users/create")
 async def create_user_with_establishment(
