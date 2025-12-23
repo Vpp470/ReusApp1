@@ -903,6 +903,21 @@ async def create_user_with_establishment(
         "establishment_assigned": establishment_id is not None
     }
 
+
+@admin_router.get("/users/pending-welcome-emails")
+async def get_pending_welcome_emails(authorization: str = Header(None)):
+    """Obtenir el nombre d'usuaris pendents de rebre email de benvinguda"""
+    await verify_admin(authorization)
+    
+    count = await db.users.count_documents({
+        "must_change_password": True,
+        "temp_password": {"$exists": True, "$ne": None, "$ne": ""},
+        "welcome_email_sent": {"$ne": True}
+    })
+    
+    return {"pending_count": count}
+
+
 @admin_router.get("/users/{user_id}")
 async def get_user_details(
     user_id: str,
