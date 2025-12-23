@@ -1889,7 +1889,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   assignButtonText: {
-    color: Colors.textDark, // Text fosc per fons blanc
+    color: Colors.white, // Text blanc per botons amb fons verd
     fontSize: FontSizes.md,
     fontWeight: 'bold',
   },
