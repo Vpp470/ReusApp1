@@ -34,6 +34,11 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   
+  // Paginació
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize] = useState(100);
+  
   // Estats per assignar establiment
   const [establishments, setEstablishments] = useState<any[]>([]);
   const [filteredEstablishments, setFilteredEstablishments] = useState<any[]>([]);
