@@ -39,6 +39,9 @@ export default function AdminUsers() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(100);
   
+  // Comptadors per rol
+  const [userCounts, setUserCounts] = useState<Record<string, number>>({});
+  
   // Estats per assignar establiment
   const [establishments, setEstablishments] = useState<any[]>([]);
   const [filteredEstablishments, setFilteredEstablishments] = useState<any[]>([]);
