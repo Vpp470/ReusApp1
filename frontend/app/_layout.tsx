@@ -8,6 +8,8 @@ import { Colors } from '../src/constants/colors';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../src/i18n';
 import InstallPWAPrompt from '../src/components/InstallPWAPrompt';
+import WebPushPrompt from '../src/components/WebPushPrompt';
+import { useAuthStore } from '../src/store/authStore';
 
 // Prevenir que la pantalla de splash s'amagui automàticament
 SplashScreen.preventAutoHideAsync().catch(() => {});
