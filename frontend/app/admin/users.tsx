@@ -1921,18 +1921,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: Spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  modalBody: {
-    padding: Spacing.lg,
-    maxHeight: 500,
-  },
   fieldLabel: {
     fontSize: FontSizes.md,
     fontWeight: '600',
