@@ -814,8 +814,8 @@ class WebPushTester:
             self.log_test("POST /api/admin/notifications/send (Unauthorized)", False, f"Exception: {str(e)}")
             
     async def run_all_tests(self):
-        """Run all push notification tests"""
-        print("🚀 STARTING PUSH NOTIFICATIONS BACKEND TESTING")
+        """Run all Web Push notification tests"""
+        print("🚀 STARTING WEB PUSH NOTIFICATIONS BACKEND TESTING")
         print("=" * 60)
         print()
         
@@ -827,6 +827,24 @@ class WebPushTester:
             print("-" * 30)
             await self.login_admin()
             await self.login_user()
+            print()
+            
+            # Web Push specific endpoints tests
+            print("🌐 WEB PUSH ENDPOINTS TESTS")
+            print("-" * 30)
+            await self.test_vapid_public_key()
+            await self.test_web_push_subscribe()
+            await self.test_web_push_subscribe_unauthorized()
+            await self.test_web_push_unsubscribe()
+            await self.test_web_push_unsubscribe_unauthorized()
+            await self.test_admin_send_notification_web_push()
+            print()
+            
+            # Static files tests
+            print("📁 STATIC FILES TESTS")
+            print("-" * 30)
+            await self.test_static_service_worker()
+            await self.test_static_manifest()
             print()
             
             # Push token tests
