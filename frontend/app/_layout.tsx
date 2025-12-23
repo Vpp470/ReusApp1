@@ -82,6 +82,8 @@ export default function RootLayout() {
       </Stack>
       {/* Prompt per instal·lar PWA */}
       <InstallPWAPrompt />
+      {/* Prompt per Web Push (només web i quan autenticat) */}
+      {isAuthenticated && <WebPushPrompt authToken={token} />}
     </SafeAreaProvider>
   );
 }
