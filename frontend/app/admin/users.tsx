@@ -2120,35 +2120,7 @@ const styles = StyleSheet.create({
     color: Colors.darkGray, // Text gris per fons blanc
     marginTop: 4,
   },
-  // Estils per botons d'acció
-  actionButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    gap: Spacing.md,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
-    gap: Spacing.xs,
-  },
-  importButton: {
-    backgroundColor: '#FF9800',
-  },
-  createButton: {
-    backgroundColor: Colors.primary,
-  },
-  actionButtonText: {
-    color: Colors.white,
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-  },
+  // NOTA: actionButtonsContainer ja està definit més amunt
   // Estils per modal d'importació
   importDescription: {
     fontSize: FontSizes.md,
