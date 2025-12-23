@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Test Suite for Push Notifications System
-Tests the new push notification endpoints as requested.
+Backend Test Suite for Web Push Notifications System
+Tests the new Web Push notification endpoints as requested in the review.
 """
 
 import asyncio
@@ -12,6 +12,7 @@ from datetime import datetime
 
 # Backend URL from frontend environment
 BACKEND_URL = "https://eltomb-app.preview.emergentagent.com/api"
+BASE_URL = "https://eltomb-app.preview.emergentagent.com"
 
 # Test credentials
 ADMIN_CREDENTIALS = {
