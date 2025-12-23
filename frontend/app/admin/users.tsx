@@ -546,36 +546,36 @@ export default function AdminUsers() {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScrollView}>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{totalUsers}</Text>
+            <Text style={styles.statNumber}>{userCounts.total || totalUsers}</Text>
             <Text style={styles.statLabel}>Total</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>
-              {users.filter((u) => u.role === 'admin').length}
+              {userCounts.admin || 0}
             </Text>
             <Text style={styles.statLabel}>Admins</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>
-              {users.filter((u) => u.role === 'membre_consell').length}
+              {userCounts.membre_consell || 0}
             </Text>
             <Text style={styles.statLabel}>Consell</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>
-              {users.filter((u) => u.role === 'local_associat').length}
+              {userCounts.local_associat || 0}
             </Text>
             <Text style={styles.statLabel}>Locals</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>
-              {users.filter((u) => u.role === 'entitat_colaboradora').length}
+              {userCounts.entitat_colaboradora || 0}
             </Text>
             <Text style={styles.statLabel}>Entitats</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>
-              {users.filter((u) => !u.role || u.role === 'user').length}
+              {userCounts.user || 0}
             </Text>
             <Text style={styles.statLabel}>Usuaris</Text>
           </View>
