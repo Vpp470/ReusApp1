@@ -1966,7 +1966,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white, // Fons blanc per millor llegibilitat
   },
   establishmentButtonText: {
     fontSize: FontSizes.md,
