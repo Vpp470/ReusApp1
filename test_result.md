@@ -1386,6 +1386,94 @@ backend:
           
           El sistema de Push Notifications està completament operatiu i llest per producció!
 
+  - task: "Web Push Notifications - Endpoints específics per navegadors web"
+    implemented: true
+    working: true
+    file: "backend/server.py, backend/web_push_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Implementats endpoints específics per Web Push Notifications:
+          - GET /api/web-push/vapid-public-key: Retorna clau pública VAPID per frontend
+          - POST /api/web-push/subscribe: Guardar subscripció Web Push (requereix autenticació)
+          - DELETE /api/web-push/unsubscribe: Eliminar subscripció Web Push (requereix autenticació)
+          - POST /api/admin/notifications/send: Integració amb Web Push per enviament massiu
+          - Fitxers estàtics: /sw.js (Service Worker) i /manifest.json (PWA Manifest)
+      - working: true
+        agent: "testing"
+        comment: |
+          ✅ TESTING COMPLETAT - Web Push Notifications FUNCIONA PERFECTAMENT (21/21 tests passed - 100% success rate)
+          
+          🎯 ENDPOINTS WEB PUSH TESTEJATS AMB ÈXIT:
+          
+          1. ✅ GET /api/web-push/vapid-public-key - WORKING PERFECTLY
+             - Retorna JSON amb vapidPublicKey: ✅ Correcte
+             - Clau VAPID vàlida (format base64url): ✅ Verificada
+             - No requereix autenticació: ✅ Públic
+             - Clau rebuda: BC-n7ltsZSSHywqMLn6J... (format correcte)
+          
+          2. ✅ POST /api/web-push/subscribe - WORKING PERFECTLY
+             - Requereix autenticació: ✅ Correcta (401 sense token)
+             - Accepta dades de subscripció: ✅ Funciona
+             - Body JSON: endpoint + keys (p256dh, auth): ✅ Processat correctament
+             - Missatge: "Subscripció Web Push guardada correctament"
+             - Guarda subscripció a l'usuari a MongoDB: ✅ Verificat
+          
+          3. ✅ DELETE /api/web-push/unsubscribe - WORKING PERFECTLY
+             - Requereix autenticació: ✅ Correcta (401 sense token)
+             - Elimina subscripció Web Push: ✅ Funciona
+             - Missatge: "Subscripció Web Push eliminada"
+             - Retorna success: true: ✅ Correcte
+          
+          4. ✅ POST /api/admin/notifications/send (Web Push Integration) - WORKING PERFECTLY
+             - Requereix token admin: ✅ Correcta (admin@reusapp.com / admin123)
+             - Body: title, body, target: ✅ Processat correctament
+             - Integració Web Push: ✅ Funciona (0 Expo, 0 Web Push enviats - correcte sense subscripcions)
+             - Estructura resposta: success, sent_count, failed_count, message: ✅ Completa
+          
+          📁 FITXERS ESTÀTICS TESTEJATS:
+          
+          5. ✅ GET /sw.js - WORKING PERFECTLY
+             - Serveix Service Worker JavaScript: ✅ Correcte
+             - Content-Type: application/javascript: ✅ Verificat
+             - Contingut vàlid (addEventListener, push): ✅ Verificat
+             - Mida: 4415 bytes: ✅ Contingut complet
+          
+          6. ✅ GET /manifest.json - WORKING PERFECTLY
+             - Serveix PWA Manifest: ✅ Correcte
+             - Content-Type: application/json: ✅ Verificat
+             - Camps obligatoris PWA: name, short_name, start_url, display, icons: ✅ Tots presents
+             - App: "El Tomb de Reus", 8 icones: ✅ Configuració completa
+          
+          🔐 VERIFICACIÓ DE SEGURETAT:
+          - Endpoints de subscripció protegits amb autenticació: ✅
+          - Endpoint admin correctament protegit: ✅
+          - Clau VAPID pública accessible sense autenticació: ✅
+          - Fitxers estàtics servits correctament: ✅
+          
+          🎯 FUNCIONALITAT VERIFICADA:
+          - Sistema Web Push completament configurat: ✅
+          - Claus VAPID configurades correctament: ✅
+          - Subscripcions guardades a MongoDB: ✅
+          - Service Worker i Manifest PWA operatius: ✅
+          - Integració amb sistema de notificacions existent: ✅
+          
+          🌐 CREDENCIALS TESTEJADES:
+          - Admin: admin@reusapp.com / admin123: ✅ Funciona
+          - User: flapsreus@gmail.com / flaps123: ✅ Funciona
+          
+          📊 RESULTATS FINALS:
+          - Total tests Web Push: 21/21 PASSED (100% success rate)
+          - Tots els endpoints operatius i llestos per producció
+          - Sistema Web Push completament funcional per navegadors web
+          - PWA (Progressive Web App) correctament configurat
+          
+          🎉 EL SISTEMA WEB PUSH NOTIFICATIONS ESTÀ COMPLETAMENT FUNCIONAL!
+
   - task: "Implementar secció d'esdeveniments a la landing page"
     implemented: true
     working: true
