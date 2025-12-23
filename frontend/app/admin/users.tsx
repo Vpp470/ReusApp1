@@ -2357,4 +2357,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
+  // Estils per l'indicador de cerca
+  searchInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primaryLight,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+  },
+  searchInfoText: {
+    fontSize: FontSizes.sm,
+    color: Colors.primary,
+    flex: 1,
+  },
 });
