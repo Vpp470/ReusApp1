@@ -1724,7 +1724,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   saveButtonText: {
-    color: Colors.textDark, // Text fosc per fons blanc
+    color: Colors.white, // Text blanc per botons amb fons de color
     fontSize: FontSizes.md,
     fontWeight: 'bold',
   },
