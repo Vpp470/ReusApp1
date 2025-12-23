@@ -28,9 +28,14 @@ from admin_routes import admin_router, OfferCreate, OfferUpdate
 from news_scheduler import start_news_scheduler
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ.get('MONGO_URL')
+if not mongo_url:
+    print("⚠️ WARNING: MONGO_URL not set, using default localhost")
+    mongo_url = 'mongodb://localhost:27017'
+
+db_name = os.environ.get('DB_NAME', 'tomb_reus_db')
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[db_name]
 
 # Neuromobile API configuration
 NEUROMOBILE_API_BASE = "https://api.neuromobile.com/v1"
