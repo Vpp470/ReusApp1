@@ -15,6 +15,7 @@ from bson import ObjectId
 import paypalrestsdk
 import random
 from push_notifications import send_push_notification, send_notification_to_user
+from web_push_service import get_vapid_public_key
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
