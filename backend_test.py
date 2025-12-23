@@ -921,7 +921,7 @@ class WebPushTester:
 
 async def main():
     """Main test runner"""
-    tester = PushNotificationTester()
+    tester = WebPushTester()
     success = await tester.run_all_tests()
     
     # Exit with appropriate code
