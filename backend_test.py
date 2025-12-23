@@ -25,7 +25,7 @@ USER_CREDENTIALS = {
     "password": "flaps123"
 }
 
-class PushNotificationTester:
+class WebPushTester:
     def __init__(self):
         self.admin_token = None
         self.user_token = None
