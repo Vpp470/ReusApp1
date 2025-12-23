@@ -1944,7 +1944,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     borderColor: Colors.border,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white, // Fons blanc per defecte
   },
   roleButtonActive: {
     backgroundColor: Colors.primary,
@@ -1952,10 +1952,10 @@ const styles = StyleSheet.create({
   },
   roleButtonText: {
     fontSize: FontSizes.sm,
-    color: Colors.textDark, // Text fosc per fons blanc // Text blanc per llegibilitat
+    color: Colors.textDark, // Text fosc per fons blanc
   },
   roleButtonTextActive: {
-    color: Colors.textDark, // Text fosc per fons blanc
+    color: Colors.white, // Text blanc per botons actius amb fons verd
     fontWeight: '600',
   },
   establishmentButton: {
