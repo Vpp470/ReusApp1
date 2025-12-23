@@ -100,6 +100,11 @@ En acceptar aquesta política, vostè consent expressament:
 # Create the main app
 app = FastAPI(title="El Tomb de Reus API")
 
+# Root endpoint - Railway healthcheck
+@app.get("/")
+async def root():
+    return {"status": "ok", "service": "El Tomb de Reus API", "version": "1.0"}
+
 # Health check endpoints (for Railway and general use)
 @app.get("/health")
 async def health_check_root():
