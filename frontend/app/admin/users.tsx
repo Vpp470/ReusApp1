@@ -1797,11 +1797,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     gap: Spacing.sm,
   },
-  currentUserText: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    color: Colors.accent,
-  },
   establishmentSection: {
     marginTop: Spacing.lg,
     padding: Spacing.md,
