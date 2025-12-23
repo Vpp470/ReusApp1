@@ -516,6 +516,7 @@ export default function AdminUsers() {
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar per nom o email..."
+          placeholderTextColor={Colors.gray}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -525,6 +526,16 @@ export default function AdminUsers() {
           </Pressable>
         )}
       </View>
+
+      {/* Indicador de cerca activa */}
+      {searchQuery.trim().length > 0 && (
+        <View style={styles.searchInfoContainer}>
+          <MaterialIcons name="info-outline" size={18} color={Colors.primary} />
+          <Text style={styles.searchInfoText}>
+            Cercant "{searchQuery.trim()}" en {totalUsers.toLocaleString()} resultats trobats
+          </Text>
+        </View>
+      )}
 
       {/* Botons d'acció */}
       <View style={styles.actionButtonsContainer}>
