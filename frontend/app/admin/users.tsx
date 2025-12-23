@@ -646,6 +646,35 @@ export default function AdminUsers() {
         )}
       </ScrollView>
 
+      {/* Paginació */}
+      {totalUsers > pageSize && (
+        <View style={styles.paginationContainer}>
+          <Pressable
+            style={[styles.paginationButton, currentPage === 0 && styles.paginationButtonDisabled]}
+            onPress={() => loadUsers(currentPage - 1)}
+            disabled={currentPage === 0}
+          >
+            <MaterialIcons name="chevron-left" size={24} color={currentPage === 0 ? Colors.lightGray : Colors.primary} />
+            <Text style={[styles.paginationButtonText, currentPage === 0 && styles.paginationButtonTextDisabled]}>Anterior</Text>
+          </Pressable>
+          
+          <View style={styles.paginationInfo}>
+            <Text style={styles.paginationText}>
+              {currentPage * pageSize + 1} - {Math.min((currentPage + 1) * pageSize, totalUsers)} de {totalUsers}
+            </Text>
+          </View>
+          
+          <Pressable
+            style={[styles.paginationButton, (currentPage + 1) * pageSize >= totalUsers && styles.paginationButtonDisabled]}
+            onPress={() => loadUsers(currentPage + 1)}
+            disabled={(currentPage + 1) * pageSize >= totalUsers}
+          >
+            <Text style={[styles.paginationButtonText, (currentPage + 1) * pageSize >= totalUsers && styles.paginationButtonTextDisabled]}>Següent</Text>
+            <MaterialIcons name="chevron-right" size={24} color={(currentPage + 1) * pageSize >= totalUsers ? Colors.lightGray : Colors.primary} />
+          </Pressable>
+        </View>
+      )}
+
       {/* Modal for role change */}
       <Modal
         visible={modalVisible}
