@@ -2143,6 +2143,58 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     fontWeight: '600',
   },
+  importActionButtonDisabled: {
+    backgroundColor: Colors.lightGray,
+    opacity: 0.6,
+  },
+  fileSelectionSection: {
+    marginVertical: Spacing.md,
+  },
+  sectionLabel: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.textDark,
+    marginBottom: Spacing.sm,
+  },
+  selectFileButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.background,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    borderStyle: 'dashed',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  selectFileButtonText: {
+    color: Colors.primary,
+    fontSize: FontSizes.md,
+    fontWeight: '500',
+  },
+  selectedFileBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginTop: Spacing.md,
+    gap: Spacing.sm,
+  },
+  selectedFileInfo: {
+    flex: 1,
+  },
+  selectedFileName: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.textDark,
+  },
+  selectedFileReady: {
+    fontSize: FontSizes.sm,
+    color: Colors.success,
+    marginTop: 2,
+  },
   // Estils per resultat d'importació
   resultSummary: {
     flexDirection: 'row',
