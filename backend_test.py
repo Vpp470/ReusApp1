@@ -116,6 +116,325 @@ class WebPushTester:
             self.log_test("User Login", False, f"Exception: {str(e)}")
             return False
             
+    async def test_vapid_public_key(self):
+        """Test GET /api/web-push/vapid-public-key endpoint"""
+        try:
+            async with self.session.get(f"{BACKEND_URL}/web-push/vapid-public-key") as response:
+                
+                if response.status == 200:
+                    result = await response.json()
+                    
+                    if "vapidPublicKey" in result:
+                        vapid_key = result["vapidPublicKey"]
+                        # Check if it's a valid VAPID key format (base64url)
+                        if vapid_key and len(vapid_key) > 50:
+                            self.log_test(
+                                "GET /api/web-push/vapid-public-key", 
+                                True, 
+                                f"VAPID key received: {vapid_key[:20]}...", 
+                                response.status
+                            )
+                        else:
+                            self.log_test(
+                                "GET /api/web-push/vapid-public-key", 
+                                False, 
+                                f"Invalid VAPID key format: {vapid_key}", 
+                                response.status
+                            )
+                    else:
+                        self.log_test(
+                            "GET /api/web-push/vapid-public-key", 
+                            False, 
+                            "Missing vapidPublicKey in response", 
+                            response.status
+                        )
+                else:
+                    error_text = await response.text()
+                    self.log_test(
+                        "GET /api/web-push/vapid-public-key", 
+                        False, 
+                        f"Failed: {error_text}", 
+                        response.status
+                    )
+                    
+        except Exception as e:
+            self.log_test("GET /api/web-push/vapid-public-key", False, f"Exception: {str(e)}")
+            
+    async def test_web_push_subscribe(self):
+        """Test POST /api/web-push/subscribe endpoint"""
+        if not self.admin_token:
+            self.log_test("POST /api/web-push/subscribe", False, "No admin token available")
+            return
+            
+        try:
+            headers = {"Authorization": self.admin_token}
+            
+            # Test subscription data as specified in the review request
+            subscription_data = {
+                "endpoint": "https://test.example.com/push",
+                "keys": {
+                    "p256dh": "test_key",
+                    "auth": "test_auth"
+                }
+            }
+            
+            async with self.session.post(
+                f"{BACKEND_URL}/web-push/subscribe", 
+                headers=headers,
+                json=subscription_data
+            ) as response:
+                
+                if response.status == 200:
+                    result = await response.json()
+                    success = result.get("success", False)
+                    message = result.get("message", "")
+                    
+                    self.log_test(
+                        "POST /api/web-push/subscribe", 
+                        success, 
+                        f"Message: {message}", 
+                        response.status
+                    )
+                else:
+                    error_text = await response.text()
+                    self.log_test(
+                        "POST /api/web-push/subscribe", 
+                        False, 
+                        f"Failed: {error_text}", 
+                        response.status
+                    )
+                    
+        except Exception as e:
+            self.log_test("POST /api/web-push/subscribe", False, f"Exception: {str(e)}")
+            
+    async def test_web_push_subscribe_unauthorized(self):
+        """Test POST /api/web-push/subscribe without authorization"""
+        try:
+            subscription_data = {
+                "endpoint": "https://test.example.com/push",
+                "keys": {
+                    "p256dh": "test_key",
+                    "auth": "test_auth"
+                }
+            }
+            
+            async with self.session.post(
+                f"{BACKEND_URL}/web-push/subscribe", 
+                json=subscription_data
+            ) as response:
+                
+                # Should return 401 Unauthorized
+                if response.status == 401:
+                    self.log_test(
+                        "POST /api/web-push/subscribe (Unauthorized)", 
+                        True, 
+                        "Correctly blocked unauthorized access", 
+                        response.status
+                    )
+                else:
+                    error_text = await response.text()
+                    self.log_test(
+                        "POST /api/web-push/subscribe (Unauthorized)", 
+                        False, 
+                        f"Should return 401, got: {error_text}", 
+                        response.status
+                    )
+                    
+        except Exception as e:
+            self.log_test("POST /api/web-push/subscribe (Unauthorized)", False, f"Exception: {str(e)}")
+            
+    async def test_web_push_unsubscribe(self):
+        """Test DELETE /api/web-push/unsubscribe endpoint"""
+        if not self.admin_token:
+            self.log_test("DELETE /api/web-push/unsubscribe", False, "No admin token available")
+            return
+            
+        try:
+            headers = {"Authorization": self.admin_token}
+            
+            async with self.session.delete(
+                f"{BACKEND_URL}/web-push/unsubscribe", 
+                headers=headers
+            ) as response:
+                
+                if response.status == 200:
+                    result = await response.json()
+                    success = result.get("success", False)
+                    message = result.get("message", "")
+                    
+                    self.log_test(
+                        "DELETE /api/web-push/unsubscribe", 
+                        success, 
+                        f"Message: {message}", 
+                        response.status
+                    )
+                else:
+                    error_text = await response.text()
+                    self.log_test(
+                        "DELETE /api/web-push/unsubscribe", 
+                        False, 
+                        f"Failed: {error_text}", 
+                        response.status
+                    )
+                    
+        except Exception as e:
+            self.log_test("DELETE /api/web-push/unsubscribe", False, f"Exception: {str(e)}")
+            
+    async def test_web_push_unsubscribe_unauthorized(self):
+        """Test DELETE /api/web-push/unsubscribe without authorization"""
+        try:
+            async with self.session.delete(f"{BACKEND_URL}/web-push/unsubscribe") as response:
+                
+                # Should return 401 Unauthorized
+                if response.status == 401:
+                    self.log_test(
+                        "DELETE /api/web-push/unsubscribe (Unauthorized)", 
+                        True, 
+                        "Correctly blocked unauthorized access", 
+                        response.status
+                    )
+                else:
+                    error_text = await response.text()
+                    self.log_test(
+                        "DELETE /api/web-push/unsubscribe (Unauthorized)", 
+                        False, 
+                        f"Should return 401, got: {error_text}", 
+                        response.status
+                    )
+                    
+        except Exception as e:
+            self.log_test("DELETE /api/web-push/unsubscribe (Unauthorized)", False, f"Exception: {str(e)}")
+            
+    async def test_admin_send_notification_web_push(self):
+        """Test POST /api/admin/notifications/send with Web Push integration"""
+        if not self.admin_token:
+            self.log_test("POST /api/admin/notifications/send (Web Push)", False, "No admin token available")
+            return
+            
+        try:
+            headers = {"Authorization": self.admin_token}
+            
+            # Test notification data as specified in the review request
+            notification_data = {
+                "title": "Test Web Push",
+                "body": "Missatge de prova",
+                "target": "all"
+            }
+            
+            async with self.session.post(
+                f"{BACKEND_URL}/admin/notifications/send", 
+                headers=headers,
+                json=notification_data
+            ) as response:
+                
+                if response.status == 200:
+                    result = await response.json()
+                    success = result.get("success", False)
+                    sent_count = result.get("sent_count", 0)
+                    failed_count = result.get("failed_count", 0)
+                    message = result.get("message", "")
+                    
+                    details = f"Success: {success}, Sent: {sent_count}, Failed: {failed_count}, Message: {message}"
+                    
+                    self.log_test(
+                        "POST /api/admin/notifications/send (Web Push)", 
+                        success, 
+                        details, 
+                        response.status
+                    )
+                else:
+                    error_text = await response.text()
+                    self.log_test(
+                        "POST /api/admin/notifications/send (Web Push)", 
+                        False, 
+                        f"Failed: {error_text}", 
+                        response.status
+                    )
+                    
+        except Exception as e:
+            self.log_test("POST /api/admin/notifications/send (Web Push)", False, f"Exception: {str(e)}")
+            
+    async def test_static_service_worker(self):
+        """Test GET /sw.js - Service Worker JavaScript file"""
+        try:
+            async with self.session.get(f"{BASE_URL}/sw.js") as response:
+                
+                if response.status == 200:
+                    content_type = response.headers.get('content-type', '')
+                    content = await response.text()
+                    
+                    # Check if it's JavaScript content
+                    is_js = 'application/javascript' in content_type or 'text/javascript' in content_type
+                    has_sw_content = 'addEventListener' in content and 'push' in content
+                    
+                    if is_js and has_sw_content:
+                        self.log_test(
+                            "GET /sw.js", 
+                            True, 
+                            f"Service Worker served correctly, Content-Type: {content_type}, Size: {len(content)} bytes", 
+                            response.status
+                        )
+                    else:
+                        self.log_test(
+                            "GET /sw.js", 
+                            False, 
+                            f"Invalid content or content-type. Type: {content_type}, Has SW content: {has_sw_content}", 
+                            response.status
+                        )
+                else:
+                    error_text = await response.text()
+                    self.log_test(
+                        "GET /sw.js", 
+                        False, 
+                        f"Failed: {error_text}", 
+                        response.status
+                    )
+                    
+        except Exception as e:
+            self.log_test("GET /sw.js", False, f"Exception: {str(e)}")
+            
+    async def test_static_manifest(self):
+        """Test GET /manifest.json - PWA Manifest file"""
+        try:
+            async with self.session.get(f"{BASE_URL}/manifest.json") as response:
+                
+                if response.status == 200:
+                    content_type = response.headers.get('content-type', '')
+                    result = await response.json()
+                    
+                    # Check if it's valid JSON and has required PWA fields
+                    required_fields = ["name", "short_name", "start_url", "display", "icons"]
+                    missing_fields = [field for field in required_fields if field not in result]
+                    
+                    if not missing_fields:
+                        app_name = result.get("name", "")
+                        icons_count = len(result.get("icons", []))
+                        
+                        self.log_test(
+                            "GET /manifest.json", 
+                            True, 
+                            f"PWA Manifest valid, App: {app_name}, Icons: {icons_count}, Content-Type: {content_type}", 
+                            response.status
+                        )
+                    else:
+                        self.log_test(
+                            "GET /manifest.json", 
+                            False, 
+                            f"Missing required PWA fields: {missing_fields}", 
+                            response.status
+                        )
+                else:
+                    error_text = await response.text()
+                    self.log_test(
+                        "GET /manifest.json", 
+                        False, 
+                        f"Failed: {error_text}", 
+                        response.status
+                    )
+                    
+        except Exception as e:
+            self.log_test("GET /manifest.json", False, f"Exception: {str(e)}")
+
     async def test_update_push_token(self):
         """Test PUT /api/users/push-token endpoint"""
         if not self.user_token:
