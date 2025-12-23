@@ -1385,6 +1385,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // Paginació
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border || '#E5E5E5',
+  },
+  paginationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.background,
+  },
+  paginationButtonDisabled: {
+    opacity: 0.5,
+  },
+  paginationButtonText: {
+    color: Colors.primary,
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+  },
+  paginationButtonTextDisabled: {
+    color: Colors.lightGray,
+  },
+  paginationInfo: {
+    alignItems: 'center',
+  },
+  paginationText: {
+    color: Colors.textDark,
+    fontSize: FontSizes.sm,
+  },
   header: {
     backgroundColor: Colors.primary,
     flexDirection: 'row',
