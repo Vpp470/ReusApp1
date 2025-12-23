@@ -1930,8 +1930,8 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     fontSize: FontSizes.md,
-    color: Colors.textDark, // Text fosc per fons blanc // Text blanc per llegibilitat
-    backgroundColor: Colors.background,
+    color: Colors.textDark, // Text fosc per fons clar
+    backgroundColor: Colors.white, // Fons blanc per millor llegibilitat
   },
   roleButtons: {
     flexDirection: 'row',
