@@ -1823,6 +1823,81 @@ class ImportResult(BaseModel):
     emails_failed: int
 
 
+class SendEmailsResult(BaseModel):
+    total_users: int
+    emails_sent: int
+    emails_failed: int
+    errors: List[str]
+
+
+@admin_router.post("/users/send-welcome-emails", response_model=SendEmailsResult)
+async def send_welcome_emails_to_imported(
+    limit: int = Form(100),
+    authorization: str = Header(None)
+):
+    """
+    Enviar emails de benvinguda als usuaris importats que encara no han rebut l'email.
+    Els usuaris importats tenen el camp 'temp_password' i 'must_change_password' = True.
+    """
+    await verify_admin(authorization)
+    
+    result = SendEmailsResult(
+        total_users=0,
+        emails_sent=0,
+        emails_failed=0,
+        errors=[]
+    )
+    
+    # Buscar usuaris importats que tenen temp_password (necessari per enviar email)
+    users = await db.users.find({
+        "must_change_password": True,
+        "temp_password": {"$exists": True, "$ne": None, "$ne": ""},
+        "welcome_email_sent": {"$ne": True}
+    }).limit(limit).to_list(limit)
+    
+    result.total_users = len(users)
+    
+    for user in users:
+        email = user.get("email")
+        name = user.get("name", "")
+        temp_password = user.get("temp_password")
+        
+        if not email or not temp_password:
+            continue
+        
+        try:
+            success = send_welcome_email(email, name, temp_password)
+            if success:
+                result.emails_sent += 1
+                # Marcar com enviat
+                await db.users.update_one(
+                    {"_id": user["_id"]},
+                    {"$set": {"welcome_email_sent": True, "welcome_email_sent_at": datetime.utcnow()}}
+                )
+            else:
+                result.emails_failed += 1
+                result.errors.append(f"Error enviant a {email}")
+        except Exception as e:
+            result.emails_failed += 1
+            result.errors.append(f"Error enviant a {email}: {str(e)}")
+    
+    return result
+
+
+@admin_router.get("/users/pending-welcome-emails")
+async def get_pending_welcome_emails(authorization: str = Header(None)):
+    """Obtenir el nombre d'usuaris pendents de rebre email de benvinguda"""
+    await verify_admin(authorization)
+    
+    count = await db.users.count_documents({
+        "must_change_password": True,
+        "temp_password": {"$exists": True, "$ne": None, "$ne": ""},
+        "welcome_email_sent": {"$ne": True}
+    })
+    
+    return {"pending_count": count}
+
+
 @admin_router.post("/users/import", response_model=ImportResult)
 async def import_users_bulk(
     file: UploadFile = File(...),
