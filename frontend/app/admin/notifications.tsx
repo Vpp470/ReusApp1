@@ -69,6 +69,7 @@ export default function AdminNotificationsScreen() {
   useEffect(() => {
     loadStats();
     loadHistory();
+    loadTags();
   }, []);
 
   const loadStats = async () => {
@@ -93,6 +94,19 @@ export default function AdminNotificationsScreen() {
       setHistory(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error carregant historial:', error);
+    }
+  };
+
+  const loadTags = async () => {
+    try {
+      const response = await api.get('/admin/tags', {
+        headers: { Authorization: token }
+      });
+      if (response.data.tags) {
+        setTags(response.data.tags);
+      }
+    } catch (error) {
+      console.error('Error carregant marcadors:', error);
     }
   };
 
