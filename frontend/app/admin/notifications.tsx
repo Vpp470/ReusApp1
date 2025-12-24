@@ -241,13 +241,18 @@ export default function AdminNotificationsScreen() {
           <View style={styles.statsContainer}>
             <View style={styles.statCard}>
               <MaterialIcons name="devices" size={28} color={Colors.primary} />
-              <Text style={styles.statNumber}>{stats.total_users_with_token}</Text>
-              <Text style={styles.statLabel}>Dispositius registrats</Text>
+              <Text style={styles.statNumber}>{stats.total_users_with_token || 0}</Text>
+              <Text style={styles.statLabel}>Total dispositius</Text>
             </View>
             <View style={styles.statCard}>
-              <MaterialIcons name="notifications-active" size={28} color={Colors.success} />
-              <Text style={styles.statNumber}>{stats.notifications_last_30_days}</Text>
-              <Text style={styles.statLabel}>Enviades (30 dies)</Text>
+              <MaterialIcons name="phone-android" size={28} color={Colors.success} />
+              <Text style={styles.statNumber}>{stats.total_expo_push || 0}</Text>
+              <Text style={styles.statLabel}>Expo (mòbil)</Text>
+            </View>
+            <View style={styles.statCard}>
+              <MaterialIcons name="computer" size={28} color={Colors.info || '#2196F3'} />
+              <Text style={styles.statNumber}>{stats.total_web_push || 0}</Text>
+              <Text style={styles.statLabel}>Web Push</Text>
             </View>
           </View>
         )}
