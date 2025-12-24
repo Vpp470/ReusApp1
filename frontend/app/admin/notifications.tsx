@@ -273,40 +273,97 @@ export default function AdminNotificationsScreen() {
           </Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Destinataris *</Text>
+            <Text style={styles.label}>Destinataris per Rol *</Text>
             <View style={styles.targetGrid}>
               {targetOptions.map((option) => (
                 <Pressable
                   key={option.value}
                   style={[
                     styles.targetOption,
-                    broadcastTarget === option.value && styles.targetOptionSelected
+                    broadcastTarget === option.value && !selectedTag && styles.targetOptionSelected
                   ]}
-                  onPress={() => setBroadcastTarget(option.value)}
+                  onPress={() => {
+                    setBroadcastTarget(option.value);
+                    setSelectedTag(null);
+                  }}
                 >
                   <MaterialIcons 
                     name={option.icon as any} 
                     size={20} 
-                    color={broadcastTarget === option.value ? Colors.white : Colors.primary} 
+                    color={broadcastTarget === option.value && !selectedTag ? Colors.white : Colors.primary} 
                   />
                   <Text style={[
                     styles.targetOptionText,
-                    broadcastTarget === option.value && styles.targetOptionTextSelected
+                    broadcastTarget === option.value && !selectedTag && styles.targetOptionTextSelected
                   ]}>
                     {option.label}
                   </Text>
                   {stats && option.value === 'all' && (
                     <Text style={[
                       styles.targetCount,
-                      broadcastTarget === option.value && styles.targetCountSelected
+                      broadcastTarget === option.value && !selectedTag && styles.targetCountSelected
                     ]}>
-                      {stats.total_users_with_token}
+                      {stats.total_users_with_token || 0}
                     </Text>
                   )}
                 </Pressable>
               ))}
             </View>
           </View>
+
+          {/* Secció de Marcadors/Tags */}
+          {tags.length > 0 && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>O selecciona un Marcador/Esdeveniment</Text>
+              <Text style={styles.sublabel}>Envia només als usuaris que han participat en aquest esdeveniment</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagsScroll}>
+                <View style={styles.tagsContainer}>
+                  {tags.slice(0, 10).map((tag) => (
+                    <Pressable
+                      key={tag.name}
+                      style={[
+                        styles.tagChip,
+                        selectedTag === tag.name && styles.tagChipSelected
+                      ]}
+                      onPress={() => {
+                        if (selectedTag === tag.name) {
+                          setSelectedTag(null);
+                        } else {
+                          setSelectedTag(tag.name);
+                        }
+                      }}
+                    >
+                      <MaterialIcons 
+                        name="local-offer" 
+                        size={16} 
+                        color={selectedTag === tag.name ? Colors.white : Colors.primary} 
+                      />
+                      <Text style={[
+                        styles.tagChipText,
+                        selectedTag === tag.name && styles.tagChipTextSelected
+                      ]}>
+                        {tag.name}
+                      </Text>
+                      <Text style={[
+                        styles.tagChipCount,
+                        selectedTag === tag.name && styles.tagChipCountSelected
+                      ]}>
+                        {tag.count}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+              {selectedTag && (
+                <View style={styles.selectedTagInfo}>
+                  <MaterialIcons name="check-circle" size={18} color={Colors.success} />
+                  <Text style={styles.selectedTagText}>
+                    Enviaràs a {tags.find(t => t.name === selectedTag)?.count || 0} usuaris del marcador "{selectedTag}"
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Títol *</Text>
