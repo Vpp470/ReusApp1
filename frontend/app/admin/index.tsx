@@ -299,43 +299,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FontSizes.md,
     fontWeight: '600',
-    color: Colors.textDark, // Text fosc per fons blanc // Text blanc per llegibilitat
-  },
-  maintenanceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.white,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF9800',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  maintenanceCardDisabled: {
-    opacity: 0.7,
-  },
-  maintenanceContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: Spacing.md,
-  },
-  maintenanceText: {
-    flex: 1,
-  },
-  maintenanceTitle: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
     color: Colors.textDark,
-  },
-  maintenanceSubtitle: {
-    fontSize: FontSizes.sm,
-    color: Colors.gray,
-    marginTop: 4,
   },
 });
