@@ -135,6 +135,9 @@ export default function AdminNotificationsScreen() {
       return;
     }
 
+    // Determinar el target final
+    const finalTarget = selectedTag ? `tag:${selectedTag}` : broadcastTarget;
+
     // Per a web, usar window.confirm; per a mòbil, usar Alert.alert
     const confirmSend = async () => {
       try {
@@ -142,7 +145,7 @@ export default function AdminNotificationsScreen() {
         const response = await api.post('/admin/notifications/send', {
           title: broadcastTitle,
           body: broadcastBody,
-          target: broadcastTarget,
+          target: finalTarget,
         }, {
           headers: { Authorization: token }
         });
@@ -154,6 +157,7 @@ export default function AdminNotificationsScreen() {
           );
           setBroadcastTitle('');
           setBroadcastBody('');
+          setSelectedTag(null);
           loadHistory();
           loadStats();
         } else {
@@ -168,15 +172,16 @@ export default function AdminNotificationsScreen() {
     };
 
     // Confirmació segons plataforma
+    const targetLabel = selectedTag ? `usuaris amb marcador "${selectedTag}"` : getTargetLabel(broadcastTarget);
     if (Platform.OS === 'web') {
-      const confirmed = window.confirm(`Estàs segur que vols enviar aquesta notificació a ${getTargetLabel(broadcastTarget)}?`);
+      const confirmed = window.confirm(`Estàs segur que vols enviar aquesta notificació a ${targetLabel}?`);
       if (confirmed) {
         await confirmSend();
       }
     } else {
       Alert.alert(
         'Confirmar enviament',
-        `Estàs segur que vols enviar aquesta notificació a ${getTargetLabel(broadcastTarget)}?`,
+        `Estàs segur que vols enviar aquesta notificació a ${targetLabel}?`,
         [
           { text: 'Cancel·lar', style: 'cancel' },
           { text: 'Enviar', onPress: confirmSend }
