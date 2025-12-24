@@ -2287,12 +2287,20 @@ async def get_notification_stats(authorization: str = Header(None)):
     """Obtenir estadístiques de notificacions"""
     await verify_admin(authorization)
     
-    # Comptar usuaris amb push token
-    total_with_token = await db.users.count_documents({
+    # Comptar usuaris amb Expo push token
+    total_expo_push = await db.users.count_documents({
         "push_token": {"$exists": True, "$ne": None, "$ne": ""}
     })
     
-    # Comptar per rol
+    # Comptar usuaris amb Web Push subscription
+    total_web_push = await db.users.count_documents({
+        "web_push_subscription": {"$exists": True, "$ne": None}
+    })
+    
+    # Total dispositius (Expo + Web)
+    total_with_token = total_expo_push + total_web_push
+    
+    # Comptar per rol (Expo)
     stats_by_role = {}
     for role in ["user", "admin", "local_associat", "entitat_colaboradora", "membre_consell"]:
         count = await db.users.count_documents({
@@ -2310,6 +2318,8 @@ async def get_notification_stats(authorization: str = Header(None)):
     
     return {
         "total_users_with_token": total_with_token,
+        "total_expo_push": total_expo_push,
+        "total_web_push": total_web_push,
         "by_role": stats_by_role,
         "notifications_last_30_days": notifications_sent
     }
