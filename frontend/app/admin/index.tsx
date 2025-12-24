@@ -20,7 +20,6 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { token } = useAuthStore();
   const [pendingPromotions, setPendingPromotions] = useState(0);
-  const [fixingSpelling, setFixingSpelling] = useState(false);
 
   useEffect(() => {
     loadPendingPromotions();
@@ -35,35 +34,6 @@ export default function AdminDashboard() {
       setPendingPromotions(pending.length);
     } catch (error) {
       console.error('Error loading pending promotions:', error);
-    }
-  };
-
-  const fixHosteleriaSpelling = async () => {
-    setFixingSpelling(true);
-    try {
-      const authHeader = token?.startsWith('Bearer ') ? token : `Bearer ${token}`;
-      const response = await api.post('/admin/fix-hosteleria-spelling', {}, {
-        headers: { Authorization: authHeader },
-      });
-      const data = response.data;
-      if (data.corrected_count > 0) {
-        Alert.alert(
-          '✅ Correcció completada',
-          `S'han corregit ${data.corrected_count} establiments.\n\n"Hostalería" → "Hostelería"`,
-          [{ text: 'OK' }]
-        );
-      } else {
-        Alert.alert(
-          'ℹ️ Cap canvi necessari',
-          'Tots els establiments ja tenen l\'ortografia correcta.',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error: any) {
-      console.error('Error fixing spelling:', error);
-      Alert.alert('Error', error?.response?.data?.detail || 'No s\'ha pogut fer la correcció');
-    } finally {
-      setFixingSpelling(false);
     }
   };
 
