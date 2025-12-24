@@ -2590,7 +2590,7 @@ async def get_tags_stats(authorization: str = Header(None)):
     Retorna estadístiques de tots els tags utilitzats en promocions, esdeveniments i ofertes
     """
     user = await get_user_from_token(authorization)
-    if user['role'] != 'admin':
+    if not user or user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail="Only admins can view tags")
     
     try:
