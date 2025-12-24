@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   Pressable,
   ScrollView,
   Alert,
@@ -16,13 +15,11 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSizes, BorderRadius } from '../../src/constants/colors';
 import { useAuthStore } from '../../src/store/authStore';
-import { sendLocalNotification } from '../../src/services/notifications';
 import api from '../../src/services/api';
 
 interface NotificationStats {
   total_users_with_token: number;
   total_web_push: number;
-  total_expo_push: number;
   by_role: Record<string, number>;
   notifications_last_30_days: number;
 }
@@ -32,8 +29,6 @@ interface NotificationHistoryItem {
   title: string;
   body: string;
   target: string;
-  tokens_count?: number;
-  expo_sent?: number;
   web_sent?: number;
   sent_at: string;
 }
@@ -47,11 +42,6 @@ export default function AdminNotificationsScreen() {
   const router = useRouter();
   const { token } = useAuthStore();
   
-  // Test notification
-  const [testTitle, setTestTitle] = useState('');
-  const [testBody, setTestBody] = useState('');
-  const [testLoading, setTestLoading] = useState(false);
-  
   // Broadcast notification
   const [broadcastTitle, setBroadcastTitle] = useState('');
   const [broadcastBody, setBroadcastBody] = useState('');
@@ -64,7 +54,6 @@ export default function AdminNotificationsScreen() {
   const [history, setHistory] = useState<NotificationHistoryItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
-  const [showTagSelector, setShowTagSelector] = useState(false);
 
   useEffect(() => {
     loadStats();
@@ -90,7 +79,6 @@ export default function AdminNotificationsScreen() {
       const response = await api.get('/admin/notifications/history?limit=10', {
         headers: { Authorization: token }
       });
-      // Assegurar que sempre és un array
       setHistory(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error carregant historial:', error);
@@ -110,35 +98,14 @@ export default function AdminNotificationsScreen() {
     }
   };
 
-  const handleSendTestNotification = async () => {
-    if (!testTitle || !testBody) {
-      Alert.alert('Error', 'Títol i missatge són obligatoris');
-      return;
-    }
-
-    try {
-      setTestLoading(true);
-      await sendLocalNotification(testTitle, testBody);
-      Alert.alert('Èxit', 'Notificació de prova enviada!');
-      setTestTitle('');
-      setTestBody('');
-    } catch (error) {
-      Alert.alert('Error', 'No s\'ha pogut enviar la notificació');
-    } finally {
-      setTestLoading(false);
-    }
-  };
-
   const handleSendBroadcast = async () => {
     if (!broadcastTitle || !broadcastBody) {
       Alert.alert('Error', 'Títol i missatge són obligatoris');
       return;
     }
 
-    // Determinar el target final
     const finalTarget = selectedTag ? `tag:${selectedTag}` : broadcastTarget;
 
-    // Per a web, usar window.confirm; per a mòbil, usar Alert.alert
     const confirmSend = async () => {
       try {
         setBroadcastLoading(true);
@@ -171,7 +138,6 @@ export default function AdminNotificationsScreen() {
       }
     };
 
-    // Confirmació segons plataforma
     const targetLabel = selectedTag ? `usuaris amb marcador "${selectedTag}"` : getTargetLabel(broadcastTarget);
     if (Platform.OS === 'web') {
       const confirmed = window.confirm(`Estàs segur que vols enviar aquesta notificació a ${targetLabel}?`);
@@ -241,18 +207,13 @@ export default function AdminNotificationsScreen() {
           <View style={styles.statsContainer}>
             <View style={styles.statCard}>
               <MaterialIcons name="devices" size={28} color={Colors.primary} />
-              <Text style={styles.statNumber}>{stats.total_users_with_token || 0}</Text>
-              <Text style={styles.statLabel}>Total dispositius</Text>
-            </View>
-            <View style={styles.statCard}>
-              <MaterialIcons name="phone-android" size={28} color={Colors.success} />
-              <Text style={styles.statNumber}>{stats.total_expo_push || 0}</Text>
-              <Text style={styles.statLabel}>Expo (mòbil)</Text>
-            </View>
-            <View style={styles.statCard}>
-              <MaterialIcons name="computer" size={28} color={Colors.info || '#2196F3'} />
               <Text style={styles.statNumber}>{stats.total_web_push || 0}</Text>
-              <Text style={styles.statLabel}>Web Push</Text>
+              <Text style={styles.statLabel}>Dispositius subscrits</Text>
+            </View>
+            <View style={styles.statCard}>
+              <MaterialIcons name="notifications-active" size={28} color={Colors.success} />
+              <Text style={styles.statNumber}>{stats.notifications_last_30_days || 0}</Text>
+              <Text style={styles.statLabel}>Enviades (30 dies)</Text>
             </View>
           </View>
         )}
@@ -261,19 +222,19 @@ export default function AdminNotificationsScreen() {
         <View style={styles.infoBox}>
           <MaterialIcons name="info" size={24} color={Colors.primary} />
           <Text style={styles.infoText}>
-            Les notificacions push s'envien als dispositius que tenen l'app instal·lada amb Expo Go o l'app compilada.
+            Les notificacions s'envien als usuaris que han activat les notificacions a l'app web (PWA).
           </Text>
         </View>
 
         {/* Broadcast Notification */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Enviar Notificació Massiva</Text>
+          <Text style={styles.sectionTitle}>Enviar Notificació</Text>
           <Text style={styles.sectionSubtitle}>
             Envia notificacions a tots els usuaris o a grups específics
           </Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Destinataris per Rol *</Text>
+            <Text style={styles.label}>Destinataris per Rol</Text>
             <View style={styles.targetGrid}>
               {targetOptions.map((option) => (
                 <Pressable
@@ -298,14 +259,6 @@ export default function AdminNotificationsScreen() {
                   ]}>
                     {option.label}
                   </Text>
-                  {stats && option.value === 'all' && (
-                    <Text style={[
-                      styles.targetCount,
-                      broadcastTarget === option.value && !selectedTag && styles.targetCountSelected
-                    ]}>
-                      {stats.total_users_with_token || 0}
-                    </Text>
-                  )}
                 </Pressable>
               ))}
             </View>
@@ -314,8 +267,8 @@ export default function AdminNotificationsScreen() {
           {/* Secció de Marcadors/Tags */}
           {tags.length > 0 && (
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>O selecciona un Marcador/Esdeveniment</Text>
-              <Text style={styles.sublabel}>Envia només als usuaris que han participat en aquest esdeveniment</Text>
+              <Text style={styles.label}>O selecciona un Marcador</Text>
+              <Text style={styles.sublabel}>Envia només als participants d'aquest esdeveniment</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagsScroll}>
                 <View style={styles.tagsContainer}>
                   {tags.slice(0, 10).map((tag) => (
@@ -370,7 +323,7 @@ export default function AdminNotificationsScreen() {
             <TextInput
               style={styles.input}
               placeholder="Títol de la notificació"
-              placeholderTextColor={Colors.lightGray}
+              placeholderTextColor={Colors.gray}
               value={broadcastTitle}
               onChangeText={setBroadcastTitle}
             />
@@ -381,7 +334,7 @@ export default function AdminNotificationsScreen() {
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Contingut de la notificació"
-              placeholderTextColor={Colors.lightGray}
+              placeholderTextColor={Colors.gray}
               value={broadcastBody}
               onChangeText={setBroadcastBody}
               multiline
@@ -400,17 +353,19 @@ export default function AdminNotificationsScreen() {
             ) : (
               <>
                 <MaterialIcons name="send" size={20} color={Colors.white} />
-                <Text style={styles.sendButtonText}>Enviar a {getTargetLabel(broadcastTarget)}</Text>
+                <Text style={styles.sendButtonText}>Enviar Notificació</Text>
               </>
             )}
           </Pressable>
         </View>
 
         {/* History */}
-        {history.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Historial d'enviaments</Text>
-            {history.map((item) => (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Historial d'enviaments</Text>
+          {history.length === 0 ? (
+            <Text style={styles.emptyText}>No hi ha notificacions enviades</Text>
+          ) : (
+            history.map((item) => (
               <View key={item._id} style={styles.historyItem}>
                 <View style={styles.historyHeader}>
                   <Text style={styles.historyTitle} numberOfLines={1}>{item.title}</Text>
@@ -419,92 +374,13 @@ export default function AdminNotificationsScreen() {
                 <Text style={styles.historyBody} numberOfLines={2}>{item.body}</Text>
                 <View style={styles.historyFooter}>
                   <MaterialIcons name="people" size={14} color={Colors.textSecondary} />
-                  <Text style={styles.historyMeta}>{item.tokens_count} dispositius</Text>
-                  <Text style={styles.historyTarget}>• {getTargetLabel(item.target)}</Text>
+                  <Text style={styles.historyMeta}>
+                    {item.web_sent || 0} enviats • {getTargetLabel(item.target)}
+                  </Text>
                 </View>
               </View>
-            ))}
-          </View>
-        )}
-
-        {/* Test Notification */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notificació de Prova (Local)</Text>
-          <Text style={styles.sectionSubtitle}>
-            Envia una notificació local al teu dispositiu per provar
-          </Text>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Títol *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Títol de la notificació"
-              placeholderTextColor={Colors.lightGray}
-              value={testTitle}
-              onChangeText={setTestTitle}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Missatge *</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Contingut de la notificació"
-              placeholderTextColor={Colors.lightGray}
-              value={testBody}
-              onChangeText={setTestBody}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-          </View>
-
-          <Pressable
-            style={[styles.sendButton, styles.secondaryButton]}
-            onPress={handleSendTestNotification}
-            disabled={testLoading}
-          >
-            {testLoading ? (
-              <ActivityIndicator color={Colors.primary} />
-            ) : (
-              <>
-                <MaterialIcons name="phone-android" size={20} color={Colors.primary} />
-                <Text style={[styles.sendButtonText, styles.secondaryButtonText]}>Enviar Prova Local</Text>
-              </>
-            )}
-          </Pressable>
-        </View>
-
-        {/* Instructions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Com funciona?</Text>
-          
-          <View style={styles.instruction}>
-            <View style={styles.instructionNumber}>
-              <Text style={styles.instructionNumberText}>1</Text>
-            </View>
-            <Text style={styles.instructionText}>
-              Els usuaris han d'obrir l'app amb Expo Go o la versió compilada per registrar el seu dispositiu
-            </Text>
-          </View>
-
-          <View style={styles.instruction}>
-            <View style={styles.instructionNumber}>
-              <Text style={styles.instructionNumberText}>2</Text>
-            </View>
-            <Text style={styles.instructionText}>
-              Selecciona el grup de destinataris i escriu el missatge
-            </Text>
-          </View>
-
-          <View style={styles.instruction}>
-            <View style={styles.instructionNumber}>
-              <Text style={styles.instructionNumberText}>3</Text>
-            </View>
-            <Text style={styles.instructionText}>
-              La notificació s'enviarà a tots els dispositius registrats del grup seleccionat
-            </Text>
-          </View>
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -519,8 +395,8 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: Colors.primary,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
   },
@@ -528,7 +404,7 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   headerTitle: {
-    fontSize: FontSizes.xl,
+    fontSize: FontSizes.lg,
     fontWeight: 'bold',
     color: Colors.white,
   },
@@ -536,8 +412,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: Spacing.lg,
-    paddingBottom: 100,
+    padding: Spacing.md,
+    paddingBottom: Spacing.xl,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -550,32 +426,28 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   statNumber: {
-    fontSize: FontSizes.xxl || 28,
+    fontSize: FontSizes.xl,
     fontWeight: 'bold',
-    color: Colors.textDark,
+    color: Colors.primary,
     marginTop: Spacing.xs,
   },
   statLabel: {
-    fontSize: FontSizes.sm,
+    fontSize: FontSizes.xs,
     color: Colors.textSecondary,
     textAlign: 'center',
+    marginTop: 2,
   },
   infoBox: {
     flexDirection: 'row',
-    backgroundColor: Colors.primary + '15',
+    alignItems: 'flex-start',
+    backgroundColor: Colors.primaryLight || '#E8F5E9',
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     marginBottom: Spacing.lg,
@@ -589,20 +461,14 @@ const styles = StyleSheet.create({
   },
   section: {
     backgroundColor: Colors.white,
-    padding: Spacing.lg,
     borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
     marginBottom: Spacing.lg,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   sectionTitle: {
     fontSize: FontSizes.lg,
@@ -613,7 +479,7 @@ const styles = StyleSheet.create({
   sectionSubtitle: {
     fontSize: FontSizes.sm,
     color: Colors.textSecondary,
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   inputGroup: {
     marginBottom: Spacing.md,
@@ -624,8 +490,13 @@ const styles = StyleSheet.create({
     color: Colors.textDark,
     marginBottom: Spacing.xs,
   },
+  sublabel: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.sm,
+  },
   input: {
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white,
     borderRadius: BorderRadius.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
@@ -647,7 +518,7 @@ const styles = StyleSheet.create({
   targetOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
@@ -665,115 +536,6 @@ const styles = StyleSheet.create({
   },
   targetOptionTextSelected: {
     color: Colors.white,
-  },
-  targetCount: {
-    fontSize: FontSizes.xs,
-    color: Colors.primary,
-    backgroundColor: Colors.white,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  targetCountSelected: {
-    color: Colors.primary,
-  },
-  sendButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
-  },
-  sendButtonDisabled: {
-    opacity: 0.7,
-  },
-  sendButtonText: {
-    color: Colors.white,
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  secondaryButtonText: {
-    color: Colors.primary,
-  },
-  historyItem: {
-    backgroundColor: Colors.background,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.sm,
-    marginTop: Spacing.sm,
-  },
-  historyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  historyTitle: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    color: Colors.textDark,
-    flex: 1,
-  },
-  historyDate: {
-    fontSize: FontSizes.xs,
-    color: Colors.textSecondary,
-  },
-  historyBody: {
-    fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.xs,
-  },
-  historyFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  historyMeta: {
-    fontSize: FontSizes.xs,
-    color: Colors.textSecondary,
-  },
-  historyTarget: {
-    fontSize: FontSizes.xs,
-    color: Colors.textSecondary,
-  },
-  instruction: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginTop: Spacing.md,
-    gap: Spacing.md,
-  },
-  instructionNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  instructionNumberText: {
-    color: Colors.white,
-    fontSize: FontSizes.sm,
-    fontWeight: 'bold',
-  },
-  instructionText: {
-    flex: 1,
-    fontSize: FontSizes.sm,
-    color: Colors.textDark,
-    lineHeight: 20,
-  },
-  // Estils per marcadors/tags
-  sublabel: {
-    fontSize: FontSizes.xs,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.sm,
   },
   tagsScroll: {
     marginTop: Spacing.xs,
@@ -833,5 +595,65 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     color: Colors.success,
     flex: 1,
+  },
+  sendButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+  },
+  sendButtonDisabled: {
+    opacity: 0.7,
+  },
+  sendButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  emptyText: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    padding: Spacing.lg,
+  },
+  historyItem: {
+    backgroundColor: Colors.background,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    marginTop: Spacing.sm,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  historyTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.textDark,
+    flex: 1,
+  },
+  historyDate: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+  },
+  historyBody: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.xs,
+  },
+  historyFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  historyMeta: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
   },
 });
