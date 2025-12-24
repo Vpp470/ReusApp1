@@ -769,4 +769,69 @@ const styles = StyleSheet.create({
     color: Colors.textDark,
     lineHeight: 20,
   },
+  // Estils per marcadors/tags
+  sublabel: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.sm,
+  },
+  tagsScroll: {
+    marginTop: Spacing.xs,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    paddingRight: Spacing.md,
+  },
+  tagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    gap: Spacing.xs,
+  },
+  tagChipSelected: {
+    backgroundColor: Colors.primary,
+  },
+  tagChipText: {
+    fontSize: FontSizes.sm,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  tagChipTextSelected: {
+    color: Colors.white,
+  },
+  tagChipCount: {
+    fontSize: FontSizes.xs,
+    color: Colors.white,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    overflow: 'hidden',
+    minWidth: 20,
+    textAlign: 'center',
+  },
+  tagChipCountSelected: {
+    backgroundColor: Colors.white,
+    color: Colors.primary,
+  },
+  selectedTagInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primaryLight || '#E8F5E9',
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    marginTop: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  selectedTagText: {
+    fontSize: FontSizes.sm,
+    color: Colors.success,
+    flex: 1,
+  },
 });
