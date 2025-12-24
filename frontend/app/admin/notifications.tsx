@@ -21,6 +21,8 @@ import api from '../../src/services/api';
 
 interface NotificationStats {
   total_users_with_token: number;
+  total_web_push: number;
+  total_expo_push: number;
   by_role: Record<string, number>;
   notifications_last_30_days: number;
 }
@@ -30,8 +32,15 @@ interface NotificationHistoryItem {
   title: string;
   body: string;
   target: string;
-  tokens_count: number;
+  tokens_count?: number;
+  expo_sent?: number;
+  web_sent?: number;
   sent_at: string;
+}
+
+interface Tag {
+  name: string;
+  count: number;
 }
 
 export default function AdminNotificationsScreen() {
@@ -47,12 +56,15 @@ export default function AdminNotificationsScreen() {
   const [broadcastTitle, setBroadcastTitle] = useState('');
   const [broadcastBody, setBroadcastBody] = useState('');
   const [broadcastTarget, setBroadcastTarget] = useState('all');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [broadcastLoading, setBroadcastLoading] = useState(false);
   
-  // Stats and history
+  // Stats, history and tags
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [history, setHistory] = useState<NotificationHistoryItem[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [showTagSelector, setShowTagSelector] = useState(false);
 
   useEffect(() => {
     loadStats();
