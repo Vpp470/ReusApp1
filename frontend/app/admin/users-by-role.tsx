@@ -229,10 +229,11 @@ export default function UsersListByRoleScreen() {
                 <tr>
                   <td>\${index + 1}</td>
                   <td>\${user.name || '-'}</td>
-                  <td>${user.email}</td>
-                  <td>${user.phone || '-'}</td>
+                  <td>\${user.email}</td>
+                  <td>\${user.phone || '-'}</td>
+                  \${role === 'local_associat' ? \`<td>\${user.establishment_name || '-'}</td>\` : ''}
                 </tr>
-              `).join('')}
+              \`).join('')}
             </tbody>
           </table>
           
