@@ -58,8 +58,14 @@ export default function OwnershipManagement() {
   const [showCredentialsModal, setShowCredentialsModal] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    // Només carregar dades si tenim token
+    if (token) {
+      console.log('🔐 Token disponible, carregant dades...');
+      loadData();
+    } else {
+      console.log('⏳ Esperant token...');
+    }
+  }, [token]);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
