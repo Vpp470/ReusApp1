@@ -78,6 +78,9 @@ export default function OwnershipManagement() {
     try {
       setLoading(true);
       
+      // DEBUG: Mostrar el token que s'envia
+      console.log('🔐 Token per ownership:', token);
+      
       // Carregar establiments
       const establishmentsResponse = await api.get('/admin/establishments', {
         headers: { Authorization: token || '' },
