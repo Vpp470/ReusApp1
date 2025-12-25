@@ -2918,6 +2918,65 @@ agent_communication:
       - Actualment mostra enllaços a Google Maps extern
       - L'usuari vol un mapa geolocalitzat dins l'aplicació
 
+  - agent: "testing"
+    message: |
+      ✅ OWNERSHIP MANAGEMENT TESTING COMPLETAT - TOTS ELS ENDPOINTS FUNCIONEN PERFECTAMENT
+      
+      He completat el testing exhaustiu del sistema d'Assignació d'Establiments (Ownership Management) com sol·licitat:
+      
+      🎯 ENDPOINTS TESTEJATS (11/11 - 100% ÈXIT):
+      
+      🔐 AUTENTICACIÓ ADMIN:
+      ✅ Login admin@reusapp.com / admin123 - WORKING PERFECTLY
+      
+      📋 ENDPOINTS D'ASSIGNACIÓ D'ESTABLIMENTS:
+      1. ✅ GET /api/admin/establishments - WORKING PERFECTLY
+         - Retorna 347 establiments correctament
+         - Estructura de dades vàlida amb tots els camps
+         - Autenticació admin requerida i verificada
+      
+      2. ✅ GET /api/admin/users/local-associats - WORKING PERFECTLY
+         - Retorna 1000 usuaris amb rol local_associat
+         - Filtratge per rol funcionant correctament
+         - Passwords excloses de la resposta (seguretat)
+      
+      3. ✅ GET /api/admin/users/local-associats?email=flapsreus@gmail.com - WORKING PERFECTLY
+         - Cerca per email funcionant correctament
+         - Trobat 1 usuari coincident amb l'email especificat
+         - Filtratge combinat (rol + email) operatiu
+      
+      4. ✅ PUT /api/admin/establishments/{id}/assign-owner - WORKING PERFECTLY
+         - Assignació de propietari funcionant correctament
+         - Body JSON: {"owner_id": "USER_ID"} acceptat
+         - Actualització bidireccional: establiment ← → usuari
+         - Missatge de confirmació: "Propietari assignat correctament a Flaps"
+      
+      5. ✅ GET /api/admin/establishments/{id}/owner - WORKING PERFECTLY
+         - Verificació de propietari assignat funcionant
+         - Retorna dades completes del propietari: id, name, email, role
+         - Gestió correcta quan no hi ha propietari assignat
+      
+      6. ✅ PUT /api/admin/establishments/{id}/assign-owner (desassignar) - WORKING PERFECTLY
+         - Desassignació amb {"owner_id": null} funcionant
+         - Eliminació correcta de la relació establiment-propietari
+         - Missatge de confirmació: "Propietari desassignat"
+      
+      🎯 FLUX COMPLET VERIFICAT:
+      - Establiment de prova: "+IDEES" (ID: 6915ecf864ca831b9f7b2018)
+      - Usuari de prova: "Flaps" (flapsreus@gmail.com)
+      - Estat inicial: Sense propietari ✅
+      - Assignació: Propietari assignat correctament ✅
+      - Verificació: Assignació confirmada ✅
+      - Desassignació: Propietari eliminat correctament ✅
+      - Verificació final: Desassignació confirmada ✅
+      
+      🔒 SEGURETAT VERIFICADA:
+      - Tots els endpoints requereixen autenticació admin ✅
+      - Token d'autorització validat correctament ✅
+      - Accés denegat sense credencials vàlides ✅
+      
+      🎉 EL SISTEMA D'ASSIGNACIÓ D'ESTABLIMENTS ESTÀ COMPLETAMENT FUNCIONAL!
+
   - agent: "main"
     message: |
       He implementat la funcionalitat d'exportació d'Excel amb correus d'establiments:
