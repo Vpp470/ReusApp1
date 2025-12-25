@@ -278,10 +278,11 @@ export default function OwnershipManagement() {
     try {
       setSaving(true);
       
+      const authToken = getAuthToken();
       const response = await api.put(
         `/admin/establishments/${selectedEstablishment._id}/assign-owner`,
         { owner_id: selectedUserId || null },
-        { headers: { Authorization: token || '' } }
+        { headers: { Authorization: authToken || '' } }
       );
       
       Alert.alert(
