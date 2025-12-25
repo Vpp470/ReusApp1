@@ -56,12 +56,11 @@ class OwnershipManagementTester:
         print("🔐 Testing Admin Login...")
         
         try:
-            params = {
-                'email': ADMIN_EMAIL,
-                'password': ADMIN_PASSWORD
-            }
+            data = aiohttp.FormData()
+            data.add_field('email', ADMIN_EMAIL)
+            data.add_field('password', ADMIN_PASSWORD)
             
-            async with self.session.post(f"{API_BASE}/auth/login", params=params) as response:
+            async with self.session.post(f"{API_BASE}/auth/login", data=data) as response:
                 if response.status == 200:
                     result = await response.json()
                     self.admin_token = result.get('token')
