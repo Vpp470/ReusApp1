@@ -95,12 +95,8 @@ export default function OwnershipManagement() {
     try {
       setLoading(true);
       
-      // Obtenir token - primer de l'store, després del localStorage com a fallback
-      let authToken = token;
-      if (!authToken && typeof localStorage !== 'undefined') {
-        authToken = localStorage.getItem('reusapp_auth_token');
-        console.log('🔑 Token obtingut del localStorage:', authToken ? 'SÍ' : 'NO');
-      }
+      // Obtenir token de manera consistent
+      const authToken = getAuthToken();
       
       // DEBUG: Mostrar el token que s'envia
       console.log('🔐 Token per ownership:', authToken ? authToken.substring(0, 10) + '...' : 'NULL');
