@@ -1565,6 +1565,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textAlign: 'center',
   },
+  statArrow: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    opacity: 0.5,
+  },
   content: {
     flex: 1,
   },
