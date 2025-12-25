@@ -880,7 +880,14 @@ async def get_users_count(authorization: str = Header(None)):
     
     counts = {"total": total}
     for role in ["user", "admin", "local_associat", "entitat_colaboradora", "membre_consell"]:
-        counts[role] = await db.users.count_documents({"role": role})
+        # Comptar tant els usuaris amb role="X" com els que tenen "X" dins l'array roles
+        count = await db.users.count_documents({
+            "$or": [
+                {"role": role},
+                {"roles": role}
+            ]
+        })
+        counts[role] = count
     
     return counts
 
