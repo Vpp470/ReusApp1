@@ -79,33 +79,16 @@ export default function OwnershipManagement() {
       setLoading(true);
       
       // Carregar establiments
-      const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
-      const establishmentsResponse = await fetch(`${backendUrl}/api/admin/establishments`, {
-        headers: {
-          'Authorization': token || '',
-          'Content-Type': 'application/json',
-        },
+      const establishmentsResponse = await api.get('/admin/establishments', {
+        headers: { Authorization: token || '' },
       });
-      
-      if (!establishmentsResponse.ok) {
-        throw new Error('Error carregant establiments');
-      }
-      
-      const establishmentsData = await establishmentsResponse.json();
+      const establishmentsData = establishmentsResponse.data || [];
       
       // Carregar usuaris local_associat
-      const usersResponse = await fetch(`${backendUrl}/api/admin/users/local-associats`, {
-        headers: {
-          'Authorization': token || '',
-          'Content-Type': 'application/json',
-        },
+      const usersResponse = await api.get('/admin/users/local-associats', {
+        headers: { Authorization: token || '' },
       });
-      
-      if (!usersResponse.ok) {
-        throw new Error('Error carregant usuaris');
-      }
-      
-      const usersData = await usersResponse.json();
+      const usersData = usersResponse.data || [];
       
       // Enriquir establiments amb info del propietari
       const enrichedEstablishments = establishmentsData.map((est: Establishment) => {
