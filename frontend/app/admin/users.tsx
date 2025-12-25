@@ -159,14 +159,16 @@ export default function AdminUsers() {
       return;
     }
     try {
-      console.log('Saving roles for user:', selectedUser.email, 'New roles:', selectedRoles);
-      await adminService.users.update(token!, selectedUser.id, {
-        roles: selectedRoles, // Ara enviem array de rols
+      // Usar _id o id segons el que tingui l'usuari
+      const userId = (selectedUser as any)._id || selectedUser.id;
+      console.log('Saving roles for user:', selectedUser.email, 'ID:', userId, 'New roles:', selectedRoles);
+      await adminService.users.update(token!, userId, {
+        roles: selectedRoles,
       });
       console.log('Roles updated successfully');
       Alert.alert('Èxit', 'Rols actualitzats correctament');
       setModalVisible(false);
-      loadUsers();
+      loadUsers(currentPage, searchQuery.trim() || undefined);
     } catch (error) {
       console.error('Error updating roles:', error);
       Alert.alert('Error', 'No s\'han pogut actualitzar els rols');
