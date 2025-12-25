@@ -1789,11 +1789,16 @@ const styles = StyleSheet.create({
   userDetails: {
     flex: 1,
   },
+  rolesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+    marginTop: Spacing.xs,
+  },
   roleTag: {
     paddingHorizontal: Spacing.sm,
     paddingVertical: 4,
     borderRadius: BorderRadius.sm,
-    marginTop: Spacing.xs,
     alignSelf: 'flex-start',
   },
   roleTagText: {
