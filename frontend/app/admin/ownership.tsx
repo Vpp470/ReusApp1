@@ -109,7 +109,7 @@ export default function OwnershipManagement() {
       
       // Carregar usuaris local_associat
       const usersResponse = await api.get('/admin/users/local-associats', {
-        headers: { Authorization: token || '' },
+        headers: { Authorization: authToken },
       });
       const usersData = usersResponse.data || [];
       
