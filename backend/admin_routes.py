@@ -405,40 +405,7 @@ async def delete_establishment(
 
 # NOTA: Endpoint PUT assign-owner mogut a línia 865 per evitar duplicats
 
-@admin_router.get("/users/local-associats")
-async def get_local_associats(
-    authorization: str = Header(None),
-    email: str = None
-):
-    """Obtenir tots els usuaris (filtrable per email per cerca)"""
-    await verify_admin(authorization)
-    
-    # Si es proporciona un email, cercar només aquest usuari
-    if email:
-        user = await db.users.find_one({"email": email.lower()})
-        if user:
-            return [{
-                "id": str(user['_id']),
-                "name": user.get('name', ''),
-                "email": user.get('email', ''),
-                "role": user.get('role', 'user')
-            }]
-        return []
-    
-    # Retornar TOTS els usuaris registrats (no només local_associat)
-    users = await db.users.find({}).to_list(1000)
-    
-    result = []
-    for user in users:
-        result.append({
-            "id": str(user['_id']),
-            "name": user.get('name', ''),
-            "email": user.get('email', ''),
-            "role": user.get('role', 'user')
-        })
-    
-    return result
-
+# NOTA: Endpoint local-associats mogut a línia 790 - eliminar duplicat
 
 # ============================================================================
 # OFERTES - Admin CRUD
