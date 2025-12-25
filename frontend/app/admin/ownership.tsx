@@ -285,17 +285,6 @@ export default function OwnershipManagement() {
                 { owner_id: null },
                 { headers: { Authorization: token || '' } }
               );
-                  headers: {
-                    'Authorization': token || '',
-                    'Content-Type': 'application/json',
-                  },
-                }
-              );
-
-              if (!response.ok) {
-                throw new Error('Error desassignant propietari');
-              }
-
               Alert.alert('Èxit', 'Propietari desassignat correctament');
               loadData();
             } catch (error) {
