@@ -461,4 +461,20 @@ const styles = StyleSheet.create({
     color: Colors.gray,
     marginTop: 4,
   },
+  establishmentTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FB8C00',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+    marginTop: Spacing.xs,
+    alignSelf: 'flex-start',
+    gap: 4,
+  },
+  establishmentTagText: {
+    fontSize: FontSizes.xs,
+    color: Colors.white,
+    fontWeight: '600',
+  },
 });
