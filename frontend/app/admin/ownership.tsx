@@ -84,12 +84,26 @@ export default function OwnershipManagement() {
     try {
       setLoading(true);
       
+      // Obtenir token - primer de l'store, després del localStorage com a fallback
+      let authToken = token;
+      if (!authToken && typeof localStorage !== 'undefined') {
+        authToken = localStorage.getItem('reusapp_auth_token');
+        console.log('🔑 Token obtingut del localStorage:', authToken ? 'SÍ' : 'NO');
+      }
+      
       // DEBUG: Mostrar el token que s'envia
-      console.log('🔐 Token per ownership:', token);
+      console.log('🔐 Token per ownership:', authToken ? authToken.substring(0, 10) + '...' : 'NULL');
+      
+      if (!authToken) {
+        console.error('❌ No hi ha token disponible!');
+        Alert.alert('Error', 'Sessió no vàlida. Torna a iniciar sessió.');
+        setLoading(false);
+        return;
+      }
       
       // Carregar establiments
       const establishmentsResponse = await api.get('/admin/establishments', {
-        headers: { Authorization: token || '' },
+        headers: { Authorization: authToken },
       });
       const establishmentsData = establishmentsResponse.data || [];
       
