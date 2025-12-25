@@ -326,6 +326,13 @@ export default function UsersListByRoleScreen() {
                       <MaterialIcons name="phone" size={12} color={Colors.gray} /> {user.phone}
                     </Text>
                   )}
+                  {/* Mostrar local associat per usuaris amb rol local_associat */}
+                  {role === 'local_associat' && user.establishment_name && (
+                    <View style={styles.establishmentTag}>
+                      <MaterialIcons name="store" size={12} color={Colors.white} />
+                      <Text style={styles.establishmentTagText}>{user.establishment_name}</Text>
+                    </View>
+                  )}
                 </View>
               </View>
             ))
