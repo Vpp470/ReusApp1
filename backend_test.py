@@ -56,12 +56,12 @@ class OwnershipManagementTester:
         print("🔐 Testing Admin Login...")
         
         try:
-            data = {
+            params = {
                 'email': ADMIN_EMAIL,
                 'password': ADMIN_PASSWORD
             }
             
-            async with self.session.post(f"{API_BASE}/auth/login", data=data) as response:
+            async with self.session.post(f"{API_BASE}/auth/login", params=params) as response:
                 if response.status == 200:
                     result = await response.json()
                     self.admin_token = result.get('token')
