@@ -24,6 +24,13 @@ interface User {
   role: string;
   roles?: string[];
   created_at?: string;
+  establishment_id?: string;
+  establishment_name?: string;
+}
+
+interface Establishment {
+  _id: string;
+  name: string;
 }
 
 const roleLabels: Record<string, string> = {
@@ -50,27 +57,45 @@ export default function UsersListByRoleScreen() {
   const { token } = useAuthStore();
   
   const [users, setUsers] = useState<User[]>([]);
+  const [establishments, setEstablishments] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (role) {
-      loadUsers();
+      loadData();
     }
   }, [role]);
 
-  const loadUsers = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      // Carregar tots els usuaris amb el rol especificat
+      
+      // Carregar establiments per tenir el mapa d'IDs a noms
+      const estResponse = await api.get('/establishments', {
+        headers: { Authorization: token }
+      });
+      const estMap: Record<string, string> = {};
+      (estResponse.data || []).forEach((est: Establishment) => {
+        estMap[est._id] = est.name;
+      });
+      setEstablishments(estMap);
+      
+      // Carregar usuaris
       const response = await api.get(`/admin/users?skip=0&limit=10000&role=${role}`, {
         headers: { Authorization: token }
       });
       
       const userData = response.data.users || response.data || [];
-      setUsers(userData);
+      // Afegir nom d'establiment als usuaris
+      const usersWithEst = userData.map((user: User) => ({
+        ...user,
+        establishment_name: user.establishment_id ? estMap[user.establishment_id] : undefined
+      }));
+      
+      setUsers(usersWithEst);
     } catch (error) {
-      console.error('Error carregant usuaris:', error);
+      console.error('Error carregant dades:', error);
     } finally {
       setLoading(false);
     }
