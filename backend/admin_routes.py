@@ -773,12 +773,23 @@ async def get_local_associats(
         query["email"] = {"$regex": email, "$options": "i"}
     
     users = await db.users.find(query).to_list(1000)
+    result = []
     for user in users:
-        user['_id'] = str(user['_id'])
-        user['id'] = str(user['_id'])
-        user.pop('password', None)
+        # Determinar el rol principal a mostrar
+        role = user.get('role', 'user')
+        roles = user.get('roles', [])
+        if 'local_associat' in roles:
+            role = 'local_associat'
+        
+        result.append({
+            'id': str(user['_id']),
+            '_id': str(user['_id']),
+            'name': user.get('name', ''),
+            'email': user.get('email', ''),
+            'role': role
+        })
     
-    return users
+    return result
 
 
 class AssignOwnerRequest(BaseModel):
