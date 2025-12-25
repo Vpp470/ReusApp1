@@ -221,13 +221,14 @@ export default function UsersListByRoleScreen() {
                 <th>Nom</th>
                 <th>Email</th>
                 <th>Telèfon</th>
+                ${role === 'local_associat' ? '<th>Local Associat</th>' : ''}
               </tr>
             </thead>
             <tbody>
-              ${users.map((user, index) => `
+              \${users.map((user, index) => \`
                 <tr>
-                  <td>${index + 1}</td>
-                  <td>${user.name || '-'}</td>
+                  <td>\${index + 1}</td>
+                  <td>\${user.name || '-'}</td>
                   <td>${user.email}</td>
                   <td>${user.phone || '-'}</td>
                 </tr>
