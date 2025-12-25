@@ -858,14 +858,20 @@ async def get_local_associats(
     return users
 
 
+class AssignOwnerRequest(BaseModel):
+    owner_id: Optional[str] = None
+
+
 @admin_router.put("/establishments/{establishment_id}/assign-owner")
 async def assign_establishment_owner(
     establishment_id: str,
-    authorization: str = Header(None),
-    owner_id: str = None
+    request: AssignOwnerRequest = None,
+    authorization: str = Header(None)
 ):
     """Assignar o desassignar propietari a un establiment"""
     await verify_admin(authorization)
+    
+    owner_id = request.owner_id if request else None
     
     # Si no hi ha owner_id, desassignar
     if not owner_id:
