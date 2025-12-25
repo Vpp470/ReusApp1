@@ -815,6 +815,87 @@ async def delete_news(
     return {"success": True, "message": "Notícia eliminada"}
 
 # ============================================================================
+# ESTABLIMENTS - Admin gestió
+# ============================================================================
+
+@admin_router.get("/establishments")
+async def get_all_establishments_admin(authorization: str = Header(None)):
+    """Obtenir tots els establiments per a l'admin"""
+    await verify_admin(authorization)
+    
+    establishments = await db.establishments.find().to_list(1000)
+    for est in establishments:
+        est['_id'] = str(est['_id'])
+        est['id'] = str(est['_id'])
+    
+    return establishments
+
+
+@admin_router.get("/users/local-associats")
+async def get_local_associats(
+    authorization: str = Header(None),
+    email: str = None
+):
+    """Obtenir usuaris amb rol local_associat"""
+    await verify_admin(authorization)
+    
+    query = {
+        "$or": [
+            {"role": "local_associat"},
+            {"roles": "local_associat"}
+        ]
+    }
+    
+    if email:
+        query["email"] = {"$regex": email, "$options": "i"}
+    
+    users = await db.users.find(query).to_list(1000)
+    for user in users:
+        user['_id'] = str(user['_id'])
+        user['id'] = str(user['_id'])
+        user.pop('password', None)
+    
+    return users
+
+
+@admin_router.put("/establishments/{establishment_id}/assign-owner")
+async def assign_establishment_owner(
+    establishment_id: str,
+    authorization: str = Header(None),
+    owner_id: str = None
+):
+    """Assignar o desassignar propietari a un establiment"""
+    await verify_admin(authorization)
+    
+    # Si no hi ha owner_id, desassignar
+    if not owner_id:
+        await db.establishments.update_one(
+            {"_id": ObjectId(establishment_id)},
+            {"$unset": {"owner_id": ""}}
+        )
+        return {"success": True, "message": "Propietari desassignat"}
+    
+    # Verificar que l'usuari existeix
+    user = await db.users.find_one({"_id": ObjectId(owner_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuari no trobat")
+    
+    # Assignar propietari a l'establiment
+    await db.establishments.update_one(
+        {"_id": ObjectId(establishment_id)},
+        {"$set": {"owner_id": owner_id}}
+    )
+    
+    # Assignar establiment a l'usuari
+    await db.users.update_one(
+        {"_id": ObjectId(owner_id)},
+        {"$set": {"establishment_id": establishment_id}}
+    )
+    
+    return {"success": True, "message": f"Propietari assignat correctament a {user.get('name')}"}
+
+
+# ============================================================================
 # USUARIS - Admin gestió
 # ============================================================================
 
