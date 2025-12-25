@@ -134,7 +134,7 @@ Status: 200 OK
 
 ### ❌ INCORRECTE (NO hauries de veure):
 ```
-POST https://eltomb-app.preview.emergentagent.com/api/auth/login
+POST https://adminfix-deploy.preview.emergentagent.com/api/auth/login
 Status: ERR_FAILED
 ```
 

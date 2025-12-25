@@ -12,34 +12,34 @@ Els serveis (backend i frontend) **ESTAN CONFIGURATS PER FUNCIONAR SEMPRE**, amb
 
 ## ✅ URLs CORRECTES per WordPress (Fork Actual)
 
-**Domini actual:** `https://eltomb-app.preview.emergentagent.com`
+**Domini actual:** `https://adminfix-deploy.preview.emergentagent.com`
 
 ### Pàgines per als iframes:
 
 ```html
 <!-- Test Simple (verifica que tot funciona) -->
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/test-simple.html"></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/test-simple.html"></iframe>
 
 <!-- Inici -->
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-inici.html"></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-inici.html"></iframe>
 
 <!-- Establiments -->
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-establiments.html"></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-establiments.html"></iframe>
 
 <!-- Ofertes -->
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-ofertes.html"></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-ofertes.html"></iframe>
 
 <!-- Esdeveniments -->
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-esdeveniments.html"></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-esdeveniments.html"></iframe>
 
 <!-- Mapa -->
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-mapa.html"></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-mapa.html"></iframe>
 
 <!-- Notícies -->
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-noticies.html"></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-noticies.html"></iframe>
 
 <!-- Sobre Nosaltres -->
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-sobre.html"></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-sobre.html"></iframe>
 ```
 
 ---
@@ -47,7 +47,7 @@ Els serveis (backend i frontend) **ESTAN CONFIGURATS PER FUNCIONAR SEMPRE**, amb
 ## 🔍 Verificació Ràpida
 
 ### 1. Prova la pàgina de test:
-**URL:** https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/test-simple.html
+**URL:** https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/test-simple.html
 
 Hauries de veure:
 - ✅ Logo "El Tomb de Reus"
@@ -55,12 +55,12 @@ Hauries de veure:
 - ✅ "API Funciona: 267 establiments trobats"
 
 ### 2. Prova l'API directament:
-**URL:** https://eltomb-app.preview.emergentagent.com/api/establishments
+**URL:** https://adminfix-deploy.preview.emergentagent.com/api/establishments
 
 Hauria de retornar un JSON amb 267 establiments.
 
 ### 3. Prova la pàgina d'establiments:
-**URL:** https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-establiments.html
+**URL:** https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-establiments.html
 
 Hauries de veure:
 - ✅ Logo a dalt esquerra
@@ -118,7 +118,7 @@ mongodb     RUNNING
 
 Si fas un nou fork, la URL canviarà. Les URLs actuals són:
 - **Domini:** `reusapp-fix.preview.emergentagent.com`
-- **Backend:** `https://eltomb-app.preview.emergentagent.com/api`
+- **Backend:** `https://adminfix-deploy.preview.emergentagent.com/api`
 
 Si fas un altre fork, necessitaràs:
 1. Actualitzar les URLs als fitxers HTML

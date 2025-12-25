@@ -18,37 +18,37 @@ A cada pàgina, canvia a l'editor de codi HTML i pega el codi corresponent:
 
 ### 1. PÀGINA: Inici
 ```html
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-inici.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-inici.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 2. PÀGINA: Mapa
 ```html
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-mapa.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-mapa.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 3. PÀGINA: Sobre Nosaltres
 ```html
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-sobre.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-sobre.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 4. PÀGINA: Establiments
 ```html
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-establiments.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-establiments.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 5. PÀGINA: Ofertes
 ```html
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-ofertes.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-ofertes.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 6. PÀGINA: Notícies
 ```html
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-noticies.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-noticies.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ### 7. PÀGINA: esdeveniments
 ```html
-<iframe src="https://eltomb-app.preview.emergentagent.com/api/landing/tomb-pagines/tomb-esdeveniments.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
+<iframe src="https://adminfix-deploy.preview.emergentagent.com/api/landing/tomb-pagines/tomb-esdeveniments.html" style="width:100%; height:100vh; border:none; display:block; margin:0; padding:0;" frameborder="0" scrolling="yes" allowfullscreen></iframe>
 ```
 
 ## Pas 3: Configurar la Pàgina d'Inici

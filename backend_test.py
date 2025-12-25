@@ -11,8 +11,8 @@ import sys
 from datetime import datetime
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://eltomb-app.preview.emergentagent.com/api"
-BASE_URL = "https://eltomb-app.preview.emergentagent.com"
+BACKEND_URL = "https://adminfix-deploy.preview.emergentagent.com/api"
+BASE_URL = "https://adminfix-deploy.preview.emergentagent.com"
 
 # Test credentials
 ADMIN_CREDENTIALS = {
