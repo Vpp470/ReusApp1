@@ -2,17 +2,27 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-// Determinar la URL base segons la plataforma
-// En web, les peticions a /api es redirigeixen automàticament al backend
-// En mobile, necessitem la URL completa
+// Determinar la URL base segons la plataforma i entorn
 const getBaseURL = () => {
-  // En web, usar URL relativa per aprofitar el proxy
+  // Obtenir URL del backend des de variables d'entorn
+  const envUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 
+                 process.env.EXPO_PUBLIC_BACKEND_URL;
+  
+  // Si tenim una URL d'entorn configurada, utilitzar-la
+  if (envUrl) {
+    // Assegurar que acabi amb /api
+    const baseUrl = envUrl.endsWith('/api') ? envUrl : `${envUrl}/api`;
+    console.log('API Base URL:', baseUrl);
+    return baseUrl;
+  }
+  
+  // Fallback: En web usar URL relativa, en mobile usar localhost
   if (Platform.OS === 'web') {
+    // En producció el proxy hauria de funcionar
     return '/api';
   }
-  // En mobile, usar la URL completa
-  const envUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
-  return `${envUrl}/api`;
+  
+  return 'http://localhost:8001/api';
 };
 
 const api = axios.create({
