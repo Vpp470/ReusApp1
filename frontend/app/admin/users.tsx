@@ -634,15 +634,24 @@ export default function AdminUsers() {
                 <View style={styles.userDetails}>
                   <Text style={styles.userName}>{user.name}</Text>
                   <Text style={styles.userEmail}>{user.email}</Text>
-                  <View
-                    style={[
-                      styles.roleTag,
-                      { backgroundColor: getRoleBadgeStyle(user.role).backgroundColor },
-                    ]}
-                  >
-                    <Text style={[styles.roleTagText, { color: getRoleBadgeStyle(user.role).color }]}>
-                      {getRoleLabel(user.role)}
-                    </Text>
+                  <View style={styles.rolesContainer}>
+                    {/* Mostrar tots els rols de l'usuari */}
+                    {((user as any).roles && (user as any).roles.length > 0 
+                      ? (user as any).roles 
+                      : [user.role || 'user']
+                    ).map((role: string, index: number) => (
+                      <View
+                        key={index}
+                        style={[
+                          styles.roleTag,
+                          { backgroundColor: getRoleBadgeStyle(role).backgroundColor },
+                        ]}
+                      >
+                        <Text style={[styles.roleTagText, { color: getRoleBadgeStyle(role).color }]}>
+                          {getRoleLabel(role)}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
                 </View>
               </View>
