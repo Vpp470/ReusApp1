@@ -3094,3 +3094,48 @@ backend:
           
           The GET /api/tickets/campaign endpoint is fully functional and meets all requirements specified in the test request.
 
+  - task: "Sistema d'Assignació d'Establiments (Ownership Management)"
+    implemented: true
+    working: true
+    file: "backend/admin_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          ✅ TESTED: Ownership Management System WORKING PERFECTLY (11/11 tests passed - 100% success rate)
+          
+          COMPREHENSIVE TESTING COMPLETED:
+          🔐 Admin Authentication: ✅ Working (admin@reusapp.com / admin123)
+          
+          📋 ENDPOINTS TESTED:
+          1. ✅ GET /api/admin/establishments - Retrieved 347 establishments
+          2. ✅ GET /api/admin/users/local-associats - Retrieved 1000 local associat users
+          3. ✅ GET /api/admin/users/local-associats?email=flapsreus@gmail.com - Found 1 user matching email
+          4. ✅ PUT /api/admin/establishments/{id}/assign-owner - Successfully assigned owner
+          5. ✅ GET /api/admin/establishments/{id}/owner - Verified owner assignment
+          6. ✅ PUT /api/admin/establishments/{id}/assign-owner (unassign) - Successfully unassigned owner
+          
+          🎯 COMPLETE FLOW TESTED:
+          - Test establishment: "+IDEES" (ID: 6915ecf864ca831b9f7b2018)
+          - Test user: "Flaps" (flapsreus@gmail.com) (ID: 6913912de7be251e7a51ae69)
+          - Initial state: No owner assigned ✅
+          - Assignment: Owner successfully assigned ✅
+          - Verification: Assignment correctly verified ✅
+          - Unassignment: Owner successfully unassigned ✅
+          - Final verification: Unassignment correctly verified ✅
+          
+          🔍 FUNCTIONALITY VERIFIED:
+          ✅ Admin can list all establishments (347 found)
+          ✅ Admin can list all local associat users (1000 found)
+          ✅ Admin can search users by email (exact match working)
+          ✅ Admin can assign user as establishment owner
+          ✅ Admin can verify current establishment owner
+          ✅ Admin can unassign establishment owner (set to null)
+          ✅ All operations require admin authentication
+          ✅ Proper error handling and success messages
+          
+          🎉 CONCLUSION: The complete ownership management system is fully functional and ready for production use. All endpoints work correctly with proper authentication, validation, and data persistence.
+
