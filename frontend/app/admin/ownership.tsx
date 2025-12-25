@@ -47,6 +47,17 @@ export default function OwnershipManagement() {
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [saving, setSaving] = useState(false);
   
+  // Funció auxiliar per obtenir el token de manera consistent
+  const getAuthToken = (): string | null => {
+    // Primer intentar obtenir del store
+    if (token) return token;
+    // Fallback a localStorage (web)
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('reusapp_auth_token');
+    }
+    return null;
+  };
+  
   // Estats per cerca i creació d'usuaris
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [searchingUser, setSearchingUser] = useState(false);
