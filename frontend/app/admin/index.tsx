@@ -101,6 +101,12 @@ export default function AdminDashboard() {
           color: Colors.textDark, // Text fosc per fons blanc // Text blanc per llegibilitat
         },
         {
+          icon: 'handshake',
+          label: 'Entitats Col·laboradores',
+          route: '/admin/sponsors',
+          color: '#9C27B0',
+        },
+        {
           icon: 'business',
           label: 'Assignar Establiments',
           route: '/admin/ownership',
