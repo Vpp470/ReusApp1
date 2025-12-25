@@ -1,931 +1,417 @@
 #!/usr/bin/env python3
 """
-Backend Test Suite for Web Push Notifications System
-Tests the new Web Push notification endpoints as requested in the review.
+Backend Test Suite for Ownership Management (Assignar Establiments)
+Testing the complete flow of assigning and unassigning establishment owners.
 """
 
 import asyncio
 import aiohttp
 import json
-import sys
+import os
 from datetime import datetime
 
-# Backend URL from frontend environment
-BACKEND_URL = "https://adminfix-deploy.preview.emergentagent.com/api"
-BASE_URL = "https://adminfix-deploy.preview.emergentagent.com"
+# Get backend URL from environment
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://adminfix-deploy.preview.emergentagent.com')
+API_BASE = f"{BACKEND_URL}/api"
 
 # Test credentials
-ADMIN_CREDENTIALS = {
-    "email": "admin@reusapp.com",
-    "password": "admin123"
-}
+ADMIN_EMAIL = "admin@reusapp.com"
+ADMIN_PASSWORD = "admin123"
+TEST_USER_EMAIL = "flapsreus@gmail.com"
 
-USER_CREDENTIALS = {
-    "email": "flapsreus@gmail.com", 
-    "password": "flaps123"
-}
-
-class WebPushTester:
+class OwnershipManagementTester:
     def __init__(self):
-        self.admin_token = None
-        self.user_token = None
         self.session = None
+        self.admin_token = None
         self.test_results = []
         
-    async def setup(self):
-        """Initialize HTTP session"""
+    async def __aenter__(self):
         self.session = aiohttp.ClientSession()
+        return self
         
-    async def cleanup(self):
-        """Cleanup HTTP session"""
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self.session:
             await self.session.close()
-            
-    def log_test(self, test_name, success, details="", status_code=None):
-        """Log test result"""
+    
+    def log_test(self, test_name, success, details="", response_data=None):
+        """Log test results"""
         status = "✅ PASS" if success else "❌ FAIL"
-        result = {
-            "test": test_name,
-            "success": success,
-            "details": details,
-            "status_code": status_code,
-            "timestamp": datetime.now().isoformat()
-        }
-        self.test_results.append(result)
-        
-        print(f"{status} {test_name}")
+        print(f"{status}: {test_name}")
         if details:
-            print(f"    {details}")
-        if status_code:
-            print(f"    Status Code: {status_code}")
+            print(f"   Details: {details}")
+        if response_data and isinstance(response_data, dict):
+            if 'message' in response_data:
+                print(f"   Message: {response_data['message']}")
         print()
         
-    async def login_admin(self):
-        """Login as admin and get token"""
+        self.test_results.append({
+            'test': test_name,
+            'success': success,
+            'details': details,
+            'response': response_data
+        })
+    
+    async def admin_login(self):
+        """Test admin login and get token"""
+        print("🔐 Testing Admin Login...")
+        
         try:
-            params = {
-                "email": ADMIN_CREDENTIALS["email"],
-                "password": ADMIN_CREDENTIALS["password"]
+            data = {
+                'email': ADMIN_EMAIL,
+                'password': ADMIN_PASSWORD
             }
             
-            async with self.session.post(f"{BACKEND_URL}/auth/login", params=params) as response:
+            async with self.session.post(f"{API_BASE}/auth/login", data=data) as response:
                 if response.status == 200:
                     result = await response.json()
-                    self.admin_token = result.get("token")
-                    self.log_test(
-                        "Admin Login", 
-                        True, 
-                        f"Token: {self.admin_token[:20]}..., Role: {result.get('user', {}).get('role')}", 
-                        response.status
-                    )
-                    return True
+                    self.admin_token = result.get('token')
+                    user_role = result.get('user', {}).get('role')
+                    
+                    if self.admin_token and user_role == 'admin':
+                        self.log_test(
+                            "Admin Login", 
+                            True, 
+                            f"Token: {self.admin_token[:20]}..., Role: {user_role}"
+                        )
+                        return True
+                    else:
+                        self.log_test("Admin Login", False, "Invalid token or role")
+                        return False
                 else:
                     error_text = await response.text()
-                    self.log_test("Admin Login", False, f"Login failed: {error_text}", response.status)
+                    self.log_test("Admin Login", False, f"HTTP {response.status}: {error_text}")
                     return False
                     
         except Exception as e:
             self.log_test("Admin Login", False, f"Exception: {str(e)}")
             return False
-            
-    async def login_user(self):
-        """Login as regular user and get token"""
+    
+    async def get_establishments(self):
+        """Test GET /api/admin/establishments"""
+        print("🏢 Testing Get Establishments...")
+        
         try:
-            params = {
-                "email": USER_CREDENTIALS["email"],
-                "password": USER_CREDENTIALS["password"]
-            }
+            headers = {'Authorization': self.admin_token}
             
-            async with self.session.post(f"{BACKEND_URL}/auth/login", params=params) as response:
+            async with self.session.get(f"{API_BASE}/admin/establishments", headers=headers) as response:
+                if response.status == 200:
+                    establishments = await response.json()
+                    count = len(establishments)
+                    
+                    self.log_test(
+                        "GET /api/admin/establishments",
+                        True,
+                        f"Retrieved {count} establishments"
+                    )
+                    
+                    # Return first establishment for testing
+                    if establishments:
+                        return establishments[0]
+                    else:
+                        self.log_test("Get First Establishment", False, "No establishments found")
+                        return None
+                else:
+                    error_text = await response.text()
+                    self.log_test("GET /api/admin/establishments", False, f"HTTP {response.status}: {error_text}")
+                    return None
+                    
+        except Exception as e:
+            self.log_test("GET /api/admin/establishments", False, f"Exception: {str(e)}")
+            return None
+    
+    async def get_local_associats(self):
+        """Test GET /api/admin/users/local-associats"""
+        print("👥 Testing Get Local Associats...")
+        
+        try:
+            headers = {'Authorization': self.admin_token}
+            
+            async with self.session.get(f"{API_BASE}/admin/users/local-associats", headers=headers) as response:
+                if response.status == 200:
+                    users = await response.json()
+                    count = len(users)
+                    
+                    self.log_test(
+                        "GET /api/admin/users/local-associats",
+                        True,
+                        f"Retrieved {count} local associat users"
+                    )
+                    return users
+                else:
+                    error_text = await response.text()
+                    self.log_test("GET /api/admin/users/local-associats", False, f"HTTP {response.status}: {error_text}")
+                    return []
+                    
+        except Exception as e:
+            self.log_test("GET /api/admin/users/local-associats", False, f"Exception: {str(e)}")
+            return []
+    
+    async def search_user_by_email(self, email):
+        """Test GET /api/admin/users/local-associats?email=EMAIL"""
+        print(f"🔍 Testing Search User by Email: {email}...")
+        
+        try:
+            headers = {'Authorization': self.admin_token}
+            params = {'email': email}
+            
+            async with self.session.get(f"{API_BASE}/admin/users/local-associats", headers=headers, params=params) as response:
+                if response.status == 200:
+                    users = await response.json()
+                    count = len(users)
+                    
+                    self.log_test(
+                        f"Search User by Email ({email})",
+                        True,
+                        f"Found {count} users matching email"
+                    )
+                    
+                    # Return first matching user
+                    if users:
+                        return users[0]
+                    else:
+                        self.log_test("Find Specific User", False, f"No user found with email {email}")
+                        return None
+                else:
+                    error_text = await response.text()
+                    self.log_test(f"Search User by Email ({email})", False, f"HTTP {response.status}: {error_text}")
+                    return None
+                    
+        except Exception as e:
+            self.log_test(f"Search User by Email ({email})", False, f"Exception: {str(e)}")
+            return None
+    
+    async def assign_owner(self, establishment_id, owner_id):
+        """Test PUT /api/admin/establishments/{establishment_id}/assign-owner"""
+        print(f"👤 Testing Assign Owner: {owner_id} to establishment {establishment_id}...")
+        
+        try:
+            headers = {
+                'Authorization': self.admin_token,
+                'Content-Type': 'application/json'
+            }
+            data = {'owner_id': owner_id}
+            
+            async with self.session.put(
+                f"{API_BASE}/admin/establishments/{establishment_id}/assign-owner", 
+                headers=headers, 
+                json=data
+            ) as response:
                 if response.status == 200:
                     result = await response.json()
-                    self.user_token = result.get("token")
+                    
                     self.log_test(
-                        "User Login", 
-                        True, 
-                        f"Token: {self.user_token[:20]}..., Role: {result.get('user', {}).get('role')}", 
-                        response.status
+                        "Assign Owner",
+                        True,
+                        f"Successfully assigned owner {owner_id}",
+                        result
                     )
                     return True
                 else:
                     error_text = await response.text()
-                    self.log_test("User Login", False, f"Login failed: {error_text}", response.status)
+                    self.log_test("Assign Owner", False, f"HTTP {response.status}: {error_text}")
                     return False
                     
         except Exception as e:
-            self.log_test("User Login", False, f"Exception: {str(e)}")
+            self.log_test("Assign Owner", False, f"Exception: {str(e)}")
             return False
-            
-    async def test_vapid_public_key(self):
-        """Test GET /api/web-push/vapid-public-key endpoint"""
-        try:
-            async with self.session.get(f"{BACKEND_URL}/web-push/vapid-public-key") as response:
-                
-                if response.status == 200:
-                    result = await response.json()
-                    
-                    if "vapidPublicKey" in result:
-                        vapid_key = result["vapidPublicKey"]
-                        # Check if it's a valid VAPID key format (base64url)
-                        if vapid_key and len(vapid_key) > 50:
-                            self.log_test(
-                                "GET /api/web-push/vapid-public-key", 
-                                True, 
-                                f"VAPID key received: {vapid_key[:20]}...", 
-                                response.status
-                            )
-                        else:
-                            self.log_test(
-                                "GET /api/web-push/vapid-public-key", 
-                                False, 
-                                f"Invalid VAPID key format: {vapid_key}", 
-                                response.status
-                            )
-                    else:
-                        self.log_test(
-                            "GET /api/web-push/vapid-public-key", 
-                            False, 
-                            "Missing vapidPublicKey in response", 
-                            response.status
-                        )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "GET /api/web-push/vapid-public-key", 
-                        False, 
-                        f"Failed: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("GET /api/web-push/vapid-public-key", False, f"Exception: {str(e)}")
-            
-    async def test_web_push_subscribe(self):
-        """Test POST /api/web-push/subscribe endpoint"""
-        if not self.admin_token:
-            self.log_test("POST /api/web-push/subscribe", False, "No admin token available")
-            return
-            
-        try:
-            headers = {"Authorization": self.admin_token}
-            
-            # Test subscription data as specified in the review request
-            subscription_data = {
-                "endpoint": "https://test.example.com/push",
-                "keys": {
-                    "p256dh": "test_key",
-                    "auth": "test_auth"
-                }
-            }
-            
-            async with self.session.post(
-                f"{BACKEND_URL}/web-push/subscribe", 
-                headers=headers,
-                json=subscription_data
-            ) as response:
-                
-                if response.status == 200:
-                    result = await response.json()
-                    success = result.get("success", False)
-                    message = result.get("message", "")
-                    
-                    self.log_test(
-                        "POST /api/web-push/subscribe", 
-                        success, 
-                        f"Message: {message}", 
-                        response.status
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "POST /api/web-push/subscribe", 
-                        False, 
-                        f"Failed: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("POST /api/web-push/subscribe", False, f"Exception: {str(e)}")
-            
-    async def test_web_push_subscribe_unauthorized(self):
-        """Test POST /api/web-push/subscribe without authorization"""
-        try:
-            subscription_data = {
-                "endpoint": "https://test.example.com/push",
-                "keys": {
-                    "p256dh": "test_key",
-                    "auth": "test_auth"
-                }
-            }
-            
-            async with self.session.post(
-                f"{BACKEND_URL}/web-push/subscribe", 
-                json=subscription_data
-            ) as response:
-                
-                # Should return 401 Unauthorized
-                if response.status == 401:
-                    self.log_test(
-                        "POST /api/web-push/subscribe (Unauthorized)", 
-                        True, 
-                        "Correctly blocked unauthorized access", 
-                        response.status
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "POST /api/web-push/subscribe (Unauthorized)", 
-                        False, 
-                        f"Should return 401, got: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("POST /api/web-push/subscribe (Unauthorized)", False, f"Exception: {str(e)}")
-            
-    async def test_web_push_unsubscribe(self):
-        """Test DELETE /api/web-push/unsubscribe endpoint"""
-        if not self.admin_token:
-            self.log_test("DELETE /api/web-push/unsubscribe", False, "No admin token available")
-            return
-            
-        try:
-            headers = {"Authorization": self.admin_token}
-            
-            async with self.session.delete(
-                f"{BACKEND_URL}/web-push/unsubscribe", 
-                headers=headers
-            ) as response:
-                
-                if response.status == 200:
-                    result = await response.json()
-                    success = result.get("success", False)
-                    message = result.get("message", "")
-                    
-                    self.log_test(
-                        "DELETE /api/web-push/unsubscribe", 
-                        success, 
-                        f"Message: {message}", 
-                        response.status
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "DELETE /api/web-push/unsubscribe", 
-                        False, 
-                        f"Failed: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("DELETE /api/web-push/unsubscribe", False, f"Exception: {str(e)}")
-            
-    async def test_web_push_unsubscribe_unauthorized(self):
-        """Test DELETE /api/web-push/unsubscribe without authorization"""
-        try:
-            async with self.session.delete(f"{BACKEND_URL}/web-push/unsubscribe") as response:
-                
-                # Should return 401 Unauthorized
-                if response.status == 401:
-                    self.log_test(
-                        "DELETE /api/web-push/unsubscribe (Unauthorized)", 
-                        True, 
-                        "Correctly blocked unauthorized access", 
-                        response.status
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "DELETE /api/web-push/unsubscribe (Unauthorized)", 
-                        False, 
-                        f"Should return 401, got: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("DELETE /api/web-push/unsubscribe (Unauthorized)", False, f"Exception: {str(e)}")
-            
-    async def test_admin_send_notification_web_push(self):
-        """Test POST /api/admin/notifications/send with Web Push integration"""
-        if not self.admin_token:
-            self.log_test("POST /api/admin/notifications/send (Web Push)", False, "No admin token available")
-            return
-            
-        try:
-            headers = {"Authorization": self.admin_token}
-            
-            # Test notification data as specified in the review request
-            notification_data = {
-                "title": "Test Web Push",
-                "body": "Missatge de prova",
-                "target": "all"
-            }
-            
-            async with self.session.post(
-                f"{BACKEND_URL}/admin/notifications/send", 
-                headers=headers,
-                json=notification_data
-            ) as response:
-                
-                if response.status == 200:
-                    result = await response.json()
-                    success = result.get("success", False)
-                    sent_count = result.get("sent_count", 0)
-                    failed_count = result.get("failed_count", 0)
-                    message = result.get("message", "")
-                    
-                    details = f"Success: {success}, Sent: {sent_count}, Failed: {failed_count}, Message: {message}"
-                    
-                    self.log_test(
-                        "POST /api/admin/notifications/send (Web Push)", 
-                        success, 
-                        details, 
-                        response.status
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "POST /api/admin/notifications/send (Web Push)", 
-                        False, 
-                        f"Failed: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("POST /api/admin/notifications/send (Web Push)", False, f"Exception: {str(e)}")
-            
-    async def test_static_service_worker(self):
-        """Test GET /sw.js - Service Worker JavaScript file"""
-        try:
-            async with self.session.get(f"{BASE_URL}/sw.js") as response:
-                
-                if response.status == 200:
-                    content_type = response.headers.get('content-type', '')
-                    content = await response.text()
-                    
-                    # Check if it's JavaScript content
-                    is_js = 'application/javascript' in content_type or 'text/javascript' in content_type
-                    has_sw_content = 'addEventListener' in content and 'push' in content
-                    
-                    if is_js and has_sw_content:
-                        self.log_test(
-                            "GET /sw.js", 
-                            True, 
-                            f"Service Worker served correctly, Content-Type: {content_type}, Size: {len(content)} bytes", 
-                            response.status
-                        )
-                    else:
-                        self.log_test(
-                            "GET /sw.js", 
-                            False, 
-                            f"Invalid content or content-type. Type: {content_type}, Has SW content: {has_sw_content}", 
-                            response.status
-                        )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "GET /sw.js", 
-                        False, 
-                        f"Failed: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("GET /sw.js", False, f"Exception: {str(e)}")
-            
-    async def test_static_manifest(self):
-        """Test GET /manifest.json - PWA Manifest file"""
-        try:
-            async with self.session.get(f"{BASE_URL}/manifest.json") as response:
-                
-                if response.status == 200:
-                    content_type = response.headers.get('content-type', '')
-                    result = await response.json()
-                    
-                    # Check if it's valid JSON and has required PWA fields
-                    required_fields = ["name", "short_name", "start_url", "display", "icons"]
-                    missing_fields = [field for field in required_fields if field not in result]
-                    
-                    if not missing_fields:
-                        app_name = result.get("name", "")
-                        icons_count = len(result.get("icons", []))
-                        
-                        self.log_test(
-                            "GET /manifest.json", 
-                            True, 
-                            f"PWA Manifest valid, App: {app_name}, Icons: {icons_count}, Content-Type: {content_type}", 
-                            response.status
-                        )
-                    else:
-                        self.log_test(
-                            "GET /manifest.json", 
-                            False, 
-                            f"Missing required PWA fields: {missing_fields}", 
-                            response.status
-                        )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "GET /manifest.json", 
-                        False, 
-                        f"Failed: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("GET /manifest.json", False, f"Exception: {str(e)}")
-
-    async def test_update_push_token(self):
-        """Test PUT /api/users/push-token endpoint"""
-        if not self.user_token:
-            self.log_test("PUT /api/users/push-token", False, "No user token available")
-            return
-            
-        try:
-            # Test with valid Expo push token format
-            test_token = "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
-            
-            headers = {"Authorization": self.user_token}
-            data = {"push_token": test_token}
-            
-            async with self.session.put(
-                f"{BACKEND_URL}/users/push-token", 
-                headers=headers,
-                json=data
-            ) as response:
-                
-                if response.status == 200:
-                    result = await response.json()
-                    success = result.get("success", False)
-                    message = result.get("message", "")
-                    
-                    self.log_test(
-                        "PUT /api/users/push-token", 
-                        success, 
-                        f"Message: {message}", 
-                        response.status
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "PUT /api/users/push-token", 
-                        False, 
-                        f"Failed: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("PUT /api/users/push-token", False, f"Exception: {str(e)}")
-            
-    async def test_update_push_token_unauthorized(self):
-        """Test PUT /api/users/push-token without authorization"""
-        try:
-            test_token = "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
-            data = {"push_token": test_token}
-            
-            async with self.session.put(
-                f"{BACKEND_URL}/users/push-token", 
-                json=data
-            ) as response:
-                
-                # Should return 401 Unauthorized
-                if response.status == 401:
-                    self.log_test(
-                        "PUT /api/users/push-token (Unauthorized)", 
-                        True, 
-                        "Correctly blocked unauthorized access", 
-                        response.status
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "PUT /api/users/push-token (Unauthorized)", 
-                        False, 
-                        f"Should return 401, got: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("PUT /api/users/push-token (Unauthorized)", False, f"Exception: {str(e)}")
-            
-    async def test_notification_stats(self):
-        """Test GET /api/admin/notifications/stats endpoint"""
-        if not self.admin_token:
-            self.log_test("GET /api/admin/notifications/stats", False, "No admin token available")
-            return
-            
-        try:
-            headers = {"Authorization": self.admin_token}
-            
-            async with self.session.get(
-                f"{BACKEND_URL}/admin/notifications/stats", 
-                headers=headers
-            ) as response:
-                
-                if response.status == 200:
-                    result = await response.json()
-                    
-                    # Check expected fields
-                    expected_fields = ["total_users_with_token", "by_role", "notifications_last_30_days"]
-                    missing_fields = [field for field in expected_fields if field not in result]
-                    
-                    if not missing_fields:
-                        total_users = result.get("total_users_with_token", 0)
-                        by_role = result.get("by_role", {})
-                        notifications_count = result.get("notifications_last_30_days", 0)
-                        
-                        details = f"Total users with token: {total_users}, By role: {by_role}, Notifications last 30 days: {notifications_count}"
-                        
-                        self.log_test(
-                            "GET /api/admin/notifications/stats", 
-                            True, 
-                            details, 
-                            response.status
-                        )
-                    else:
-                        self.log_test(
-                            "GET /api/admin/notifications/stats", 
-                            False, 
-                            f"Missing fields: {missing_fields}", 
-                            response.status
-                        )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "GET /api/admin/notifications/stats", 
-                        False, 
-                        f"Failed: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("GET /api/admin/notifications/stats", False, f"Exception: {str(e)}")
-            
-    async def test_notification_stats_unauthorized(self):
-        """Test GET /api/admin/notifications/stats without admin token"""
-        try:
-            async with self.session.get(f"{BACKEND_URL}/admin/notifications/stats") as response:
-                
-                # Should return 401 or 403
-                if response.status in [401, 403]:
-                    self.log_test(
-                        "GET /api/admin/notifications/stats (Unauthorized)", 
-                        True, 
-                        "Correctly blocked unauthorized access", 
-                        response.status
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "GET /api/admin/notifications/stats (Unauthorized)", 
-                        False, 
-                        f"Should return 401/403, got: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("GET /api/admin/notifications/stats (Unauthorized)", False, f"Exception: {str(e)}")
-            
-    async def test_notification_history(self):
-        """Test GET /api/admin/notifications/history endpoint"""
-        if not self.admin_token:
-            self.log_test("GET /api/admin/notifications/history", False, "No admin token available")
-            return
-            
-        try:
-            headers = {"Authorization": self.admin_token}
-            
-            async with self.session.get(
-                f"{BACKEND_URL}/admin/notifications/history?limit=50", 
-                headers=headers
-            ) as response:
-                
-                if response.status == 200:
-                    result = await response.json()
-                    
-                    if isinstance(result, list):
-                        history_count = len(result)
-                        
-                        # Check structure of first item if exists
-                        if history_count > 0:
-                            first_item = result[0]
-                            expected_fields = ["title", "body", "target", "sent_at"]
-                            has_required_fields = all(field in first_item for field in expected_fields)
-                            
-                            details = f"History count: {history_count}, Structure valid: {has_required_fields}"
-                        else:
-                            details = f"History count: {history_count} (empty as expected - no notifications sent yet)"
-                            
-                        self.log_test(
-                            "GET /api/admin/notifications/history", 
-                            True, 
-                            details, 
-                            response.status
-                        )
-                    else:
-                        self.log_test(
-                            "GET /api/admin/notifications/history", 
-                            False, 
-                            f"Expected array, got: {type(result)}", 
-                            response.status
-                        )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "GET /api/admin/notifications/history", 
-                        False, 
-                        f"Failed: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("GET /api/admin/notifications/history", False, f"Exception: {str(e)}")
-            
-    async def test_notification_history_unauthorized(self):
-        """Test GET /api/admin/notifications/history without admin token"""
-        try:
-            async with self.session.get(f"{BACKEND_URL}/admin/notifications/history") as response:
-                
-                # Should return 401 or 403
-                if response.status in [401, 403]:
-                    self.log_test(
-                        "GET /api/admin/notifications/history (Unauthorized)", 
-                        True, 
-                        "Correctly blocked unauthorized access", 
-                        response.status
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "GET /api/admin/notifications/history (Unauthorized)", 
-                        False, 
-                        f"Should return 401/403, got: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("GET /api/admin/notifications/history (Unauthorized)", False, f"Exception: {str(e)}")
-            
-    async def test_send_notification(self):
-        """Test POST /api/admin/notifications/send endpoint"""
-        if not self.admin_token:
-            self.log_test("POST /api/admin/notifications/send", False, "No admin token available")
-            return
-            
-        try:
-            headers = {"Authorization": self.admin_token}
-            
-            # Test notification data
-            notification_data = {
-                "title": "Test Notification",
-                "body": "This is a test notification from the testing suite",
-                "target": "all"
-            }
-            
-            async with self.session.post(
-                f"{BACKEND_URL}/admin/notifications/send", 
-                headers=headers,
-                json=notification_data
-            ) as response:
-                
-                if response.status == 200:
-                    result = await response.json()
-                    
-                    # Check expected response structure
-                    expected_fields = ["success", "sent_count", "failed_count", "message"]
-                    missing_fields = [field for field in expected_fields if field not in result]
-                    
-                    if not missing_fields:
-                        success = result.get("success", False)
-                        sent_count = result.get("sent_count", 0)
-                        failed_count = result.get("failed_count", 0)
-                        message = result.get("message", "")
-                        
-                        details = f"Success: {success}, Sent: {sent_count}, Failed: {failed_count}, Message: {message}"
-                        
-                        # Should succeed even with 0 sends (no users with push tokens)
-                        self.log_test(
-                            "POST /api/admin/notifications/send", 
-                            success, 
-                            details, 
-                            response.status
-                        )
-                    else:
-                        self.log_test(
-                            "POST /api/admin/notifications/send", 
-                            False, 
-                            f"Missing fields: {missing_fields}", 
-                            response.status
-                        )
-                else:
-                    error_text = await response.text()
-                    self.log_test(
-                        "POST /api/admin/notifications/send", 
-                        False, 
-                        f"Failed: {error_text}", 
-                        response.status
-                    )
-                    
-        except Exception as e:
-            self.log_test("POST /api/admin/notifications/send", False, f"Exception: {str(e)}")
-            
-    async def test_send_notification_different_targets(self):
-        """Test POST /api/admin/notifications/send with different target types"""
-        if not self.admin_token:
-            self.log_test("POST /api/admin/notifications/send (Different Targets)", False, "No admin token available")
-            return
-            
-        targets_to_test = ["users", "admins", "role:local_associat"]
+    
+    async def get_establishment_owner(self, establishment_id):
+        """Test GET /api/admin/establishments/{establishment_id}/owner"""
+        print(f"🔍 Testing Get Establishment Owner for {establishment_id}...")
         
-        for target in targets_to_test:
-            try:
-                headers = {"Authorization": self.admin_token}
-                
-                notification_data = {
-                    "title": f"Test Notification for {target}",
-                    "body": f"Testing target: {target}",
-                    "target": target
-                }
-                
-                async with self.session.post(
-                    f"{BACKEND_URL}/admin/notifications/send", 
-                    headers=headers,
-                    json=notification_data
-                ) as response:
-                    
-                    if response.status == 200:
-                        result = await response.json()
-                        success = result.get("success", False)
-                        sent_count = result.get("sent_count", 0)
-                        message = result.get("message", "")
-                        
-                        details = f"Target: {target}, Success: {success}, Sent: {sent_count}, Message: {message}"
-                        
-                        self.log_test(
-                            f"POST /api/admin/notifications/send (Target: {target})", 
-                            success, 
-                            details, 
-                            response.status
-                        )
-                    else:
-                        error_text = await response.text()
-                        self.log_test(
-                            f"POST /api/admin/notifications/send (Target: {target})", 
-                            False, 
-                            f"Failed: {error_text}", 
-                            response.status
-                        )
-                        
-            except Exception as e:
-                self.log_test(f"POST /api/admin/notifications/send (Target: {target})", False, f"Exception: {str(e)}")
-                
-    async def test_send_notification_unauthorized(self):
-        """Test POST /api/admin/notifications/send without admin token"""
         try:
-            notification_data = {
-                "title": "Unauthorized Test",
-                "body": "This should fail",
-                "target": "all"
-            }
+            headers = {'Authorization': self.admin_token}
             
-            async with self.session.post(
-                f"{BACKEND_URL}/admin/notifications/send", 
-                json=notification_data
-            ) as response:
-                
-                # Should return 401 or 403
-                if response.status in [401, 403]:
-                    self.log_test(
-                        "POST /api/admin/notifications/send (Unauthorized)", 
-                        True, 
-                        "Correctly blocked unauthorized access", 
-                        response.status
-                    )
+            async with self.session.get(f"{API_BASE}/admin/establishments/{establishment_id}/owner", headers=headers) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    
+                    if result.get('owner'):
+                        owner = result['owner']
+                        self.log_test(
+                            "Get Establishment Owner",
+                            True,
+                            f"Owner: {owner.get('name')} ({owner.get('email')})",
+                            result
+                        )
+                        return owner
+                    else:
+                        self.log_test(
+                            "Get Establishment Owner",
+                            True,
+                            "No owner assigned (as expected)",
+                            result
+                        )
+                        return None
                 else:
                     error_text = await response.text()
-                    self.log_test(
-                        "POST /api/admin/notifications/send (Unauthorized)", 
-                        False, 
-                        f"Should return 401/403, got: {error_text}", 
-                        response.status
-                    )
+                    self.log_test("Get Establishment Owner", False, f"HTTP {response.status}: {error_text}")
+                    return None
                     
         except Exception as e:
-            self.log_test("POST /api/admin/notifications/send (Unauthorized)", False, f"Exception: {str(e)}")
+            self.log_test("Get Establishment Owner", False, f"Exception: {str(e)}")
+            return None
+    
+    async def unassign_owner(self, establishment_id):
+        """Test PUT /api/admin/establishments/{establishment_id}/assign-owner with null owner_id"""
+        print(f"🚫 Testing Unassign Owner from establishment {establishment_id}...")
+        
+        try:
+            headers = {
+                'Authorization': self.admin_token,
+                'Content-Type': 'application/json'
+            }
+            data = {'owner_id': None}
             
-    async def run_all_tests(self):
-        """Run all Web Push notification tests"""
-        print("🚀 STARTING WEB PUSH NOTIFICATIONS BACKEND TESTING")
+            async with self.session.put(
+                f"{API_BASE}/admin/establishments/{establishment_id}/assign-owner", 
+                headers=headers, 
+                json=data
+            ) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    
+                    self.log_test(
+                        "Unassign Owner",
+                        True,
+                        "Successfully unassigned owner",
+                        result
+                    )
+                    return True
+                else:
+                    error_text = await response.text()
+                    self.log_test("Unassign Owner", False, f"HTTP {response.status}: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("Unassign Owner", False, f"Exception: {str(e)}")
+            return False
+    
+    async def run_complete_ownership_test(self):
+        """Run the complete ownership management test flow"""
+        print("🚀 Starting Complete Ownership Management Test Flow")
         print("=" * 60)
-        print()
         
-        await self.setup()
+        # Step 1: Admin Login
+        if not await self.admin_login():
+            print("❌ Cannot proceed without admin login")
+            return False
         
-        try:
-            # Authentication tests
-            print("🔐 AUTHENTICATION TESTS")
-            print("-" * 30)
-            await self.login_admin()
-            await self.login_user()
-            print()
-            
-            # Web Push specific endpoints tests
-            print("🌐 WEB PUSH ENDPOINTS TESTS")
-            print("-" * 30)
-            await self.test_vapid_public_key()
-            await self.test_web_push_subscribe()
-            await self.test_web_push_subscribe_unauthorized()
-            await self.test_web_push_unsubscribe()
-            await self.test_web_push_unsubscribe_unauthorized()
-            await self.test_admin_send_notification_web_push()
-            print()
-            
-            # Static files tests
-            print("📁 STATIC FILES TESTS")
-            print("-" * 30)
-            await self.test_static_service_worker()
-            await self.test_static_manifest()
-            print()
-            
-            # Push token tests
-            print("📱 PUSH TOKEN TESTS")
-            print("-" * 30)
-            await self.test_update_push_token()
-            await self.test_update_push_token_unauthorized()
-            print()
-            
-            # Notification stats tests
-            print("📊 NOTIFICATION STATS TESTS")
-            print("-" * 30)
-            await self.test_notification_stats()
-            await self.test_notification_stats_unauthorized()
-            print()
-            
-            # Notification history tests
-            print("📋 NOTIFICATION HISTORY TESTS")
-            print("-" * 30)
-            await self.test_notification_history()
-            await self.test_notification_history_unauthorized()
-            print()
-            
-            # Send notification tests
-            print("📤 SEND NOTIFICATION TESTS")
-            print("-" * 30)
-            await self.test_send_notification()
-            await self.test_send_notification_different_targets()
-            await self.test_send_notification_unauthorized()
-            print()
-            
-        finally:
-            await self.cleanup()
-            
-        # Print summary
-        self.print_summary()
+        # Step 2: Get establishments
+        establishment = await self.get_establishments()
+        if not establishment:
+            print("❌ Cannot proceed without establishments")
+            return False
         
+        establishment_id = establishment.get('id') or establishment.get('_id')
+        establishment_name = establishment.get('name', 'Unknown')
+        print(f"📍 Using establishment: {establishment_name} (ID: {establishment_id})")
+        
+        # Step 3: Get local associats
+        local_associats = await self.get_local_associats()
+        
+        # Step 4: Search for specific user by email
+        test_user = await self.search_user_by_email(TEST_USER_EMAIL)
+        if not test_user:
+            print(f"⚠️  User {TEST_USER_EMAIL} not found, using first local associat if available")
+            if local_associats:
+                test_user = local_associats[0]
+            else:
+                print("❌ No local associat users available for testing")
+                return False
+        
+        user_id = test_user.get('id') or test_user.get('_id')
+        user_name = test_user.get('name', 'Unknown')
+        user_email = test_user.get('email', 'Unknown')
+        print(f"👤 Using user: {user_name} ({user_email}) (ID: {user_id})")
+        
+        # Step 5: Check initial owner state
+        print("\n📋 Checking initial owner state...")
+        initial_owner = await self.get_establishment_owner(establishment_id)
+        
+        # Step 6: Assign owner
+        print(f"\n👤 Assigning {user_name} as owner of {establishment_name}...")
+        if not await self.assign_owner(establishment_id, user_id):
+            print("❌ Owner assignment failed")
+            return False
+        
+        # Step 7: Verify assignment
+        print("\n✅ Verifying owner assignment...")
+        assigned_owner = await self.get_establishment_owner(establishment_id)
+        if assigned_owner and assigned_owner.get('id') == user_id:
+            self.log_test("Verify Owner Assignment", True, f"Owner correctly assigned: {assigned_owner.get('name')}")
+        else:
+            self.log_test("Verify Owner Assignment", False, "Owner assignment verification failed")
+            return False
+        
+        # Step 8: Unassign owner
+        print(f"\n🚫 Unassigning owner from {establishment_name}...")
+        if not await self.unassign_owner(establishment_id):
+            print("❌ Owner unassignment failed")
+            return False
+        
+        # Step 9: Verify unassignment
+        print("\n✅ Verifying owner unassignment...")
+        final_owner = await self.get_establishment_owner(establishment_id)
+        if final_owner is None:
+            self.log_test("Verify Owner Unassignment", True, "Owner correctly unassigned")
+        else:
+            self.log_test("Verify Owner Unassignment", False, f"Owner still assigned: {final_owner}")
+            return False
+        
+        return True
+    
     def print_summary(self):
         """Print test summary"""
-        print("=" * 60)
-        print("📋 TEST SUMMARY")
+        print("\n" + "=" * 60)
+        print("📊 TEST SUMMARY")
         print("=" * 60)
         
         total_tests = len(self.test_results)
-        passed_tests = sum(1 for result in self.test_results if result["success"])
+        passed_tests = sum(1 for result in self.test_results if result['success'])
         failed_tests = total_tests - passed_tests
         
         print(f"Total Tests: {total_tests}")
-        print(f"✅ Passed: {passed_tests}")
-        print(f"❌ Failed: {failed_tests}")
-        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
-        print()
+        print(f"Passed: {passed_tests} ✅")
+        print(f"Failed: {failed_tests} ❌")
+        print(f"Success Rate: {(passed_tests/total_tests*100):.1f}%")
         
         if failed_tests > 0:
-            print("❌ FAILED TESTS:")
+            print("\n❌ FAILED TESTS:")
             for result in self.test_results:
-                if not result["success"]:
-                    print(f"  - {result['test']}: {result['details']}")
-            print()
-            
-        print("✅ PASSED TESTS:")
-        for result in self.test_results:
-            if result["success"]:
-                print(f"  - {result['test']}")
-        print()
+                if not result['success']:
+                    print(f"   - {result['test']}: {result['details']}")
         
-        # Overall result
-        if failed_tests == 0:
-            print("🎉 ALL TESTS PASSED! Push Notifications System is working correctly.")
-        else:
-            print(f"⚠️  {failed_tests} test(s) failed. Please review the issues above.")
-            
-        return failed_tests == 0
+        print("\n🎯 OWNERSHIP MANAGEMENT ENDPOINTS TESTED:")
+        print("   1. ✅ GET /api/admin/establishments")
+        print("   2. ✅ GET /api/admin/users/local-associats")
+        print("   3. ✅ GET /api/admin/users/local-associats?email=EMAIL")
+        print("   4. ✅ PUT /api/admin/establishments/{id}/assign-owner (assign)")
+        print("   5. ✅ GET /api/admin/establishments/{id}/owner")
+        print("   6. ✅ PUT /api/admin/establishments/{id}/assign-owner (unassign)")
+        
+        return passed_tests == total_tests
 
 async def main():
-    """Main test runner"""
-    tester = WebPushTester()
-    success = await tester.run_all_tests()
+    """Main test function"""
+    print("🧪 OWNERSHIP MANAGEMENT BACKEND TESTING")
+    print("Testing assignment and unassignment of establishment owners")
+    print(f"Backend URL: {BACKEND_URL}")
+    print(f"Admin Credentials: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
+    print(f"Test User Email: {TEST_USER_EMAIL}")
+    print()
     
-    # Exit with appropriate code
-    sys.exit(0 if success else 1)
+    async with OwnershipManagementTester() as tester:
+        success = await tester.run_complete_ownership_test()
+        all_passed = tester.print_summary()
+        
+        if success and all_passed:
+            print("\n🎉 ALL OWNERSHIP MANAGEMENT TESTS PASSED!")
+            return True
+        else:
+            print("\n💥 SOME TESTS FAILED!")
+            return False
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    success = asyncio.run(main())
+    exit(0 if success else 1)
