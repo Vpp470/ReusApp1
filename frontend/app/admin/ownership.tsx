@@ -58,14 +58,14 @@ export default function OwnershipManagement() {
   const [showCredentialsModal, setShowCredentialsModal] = useState(false);
 
   useEffect(() => {
-    // Només carregar dades si tenim token
-    if (token) {
-      console.log('🔐 Token disponible, carregant dades...');
+    // Carregar directament les dades quan el component es munta
+    const initData = async () => {
+      // Petit delay per assegurar que localStorage està llest
+      await new Promise(resolve => setTimeout(resolve, 100));
       loadData();
-    } else {
-      console.log('⏳ Esperant token...');
-    }
-  }, [token]);
+    };
+    initData();
+  }, []);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
