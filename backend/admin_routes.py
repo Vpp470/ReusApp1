@@ -823,20 +823,34 @@ async def get_all_users(
     authorization: str = Header(None),
     skip: int = 0,
     limit: int = 100,
-    search: str = None
+    search: str = None,
+    role: str = None
 ):
-    """Obtenir tots els usuaris amb paginació"""
+    """Obtenir tots els usuaris amb paginació i filtre per rol"""
     await verify_admin(authorization)
     
     # Construir query de cerca
     query = {}
+    
+    # Filtre per rol
+    if role and role != 'all':
+        query["$or"] = [
+            {"role": role},
+            {"roles": role}
+        ]
+    
+    # Filtre per cerca
     if search:
-        query = {
+        search_query = {
             "$or": [
                 {"email": {"$regex": search, "$options": "i"}},
                 {"name": {"$regex": search, "$options": "i"}}
             ]
         }
+        if query:
+            query = {"$and": [query, search_query]}
+        else:
+            query = search_query
     
     # Obtenir total
     total = await db.users.count_documents(query)
