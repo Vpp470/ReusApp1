@@ -842,10 +842,10 @@ async def assign_establishment_owner(
     if not user:
         raise HTTPException(status_code=404, detail="Usuari no trobat")
     
-    # Assignar propietari a l'establiment
+    # Assignar propietari a l'establiment (desar com ObjectId)
     await db.establishments.update_one(
         {"_id": ObjectId(establishment_id)},
-        {"$set": {"owner_id": owner_id}}
+        {"$set": {"owner_id": ObjectId(owner_id)}}
     )
     
     # Assignar establiment a l'usuari
