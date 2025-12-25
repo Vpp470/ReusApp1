@@ -567,43 +567,67 @@ export default function AdminUsers() {
         </Pressable>
       </View>
 
-      {/* Stats */}
+      {/* Stats - Ara clicables */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScrollView}>
         <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
+          <Pressable 
+            style={styles.statCard}
+            onPress={() => router.push('/admin/users-by-role?role=all')}
+          >
             <Text style={styles.statNumber}>{userCounts.total || totalUsers}</Text>
             <Text style={styles.statLabel}>Total</Text>
-          </View>
-          <View style={styles.statCard}>
+            <MaterialIcons name="chevron-right" size={16} color={Colors.primary} style={styles.statArrow} />
+          </Pressable>
+          <Pressable 
+            style={styles.statCard}
+            onPress={() => router.push('/admin/users-by-role?role=admin')}
+          >
             <Text style={styles.statNumber}>
               {userCounts.admin || 0}
             </Text>
             <Text style={styles.statLabel}>Admins</Text>
-          </View>
-          <View style={styles.statCard}>
+            <MaterialIcons name="chevron-right" size={16} color={Colors.primary} style={styles.statArrow} />
+          </Pressable>
+          <Pressable 
+            style={styles.statCard}
+            onPress={() => router.push('/admin/users-by-role?role=membre_consell')}
+          >
             <Text style={styles.statNumber}>
               {userCounts.membre_consell || 0}
             </Text>
             <Text style={styles.statLabel}>Consell</Text>
-          </View>
-          <View style={styles.statCard}>
+            <MaterialIcons name="chevron-right" size={16} color={Colors.primary} style={styles.statArrow} />
+          </Pressable>
+          <Pressable 
+            style={styles.statCard}
+            onPress={() => router.push('/admin/users-by-role?role=local_associat')}
+          >
             <Text style={styles.statNumber}>
               {userCounts.local_associat || 0}
             </Text>
             <Text style={styles.statLabel}>Locals</Text>
-          </View>
-          <View style={styles.statCard}>
+            <MaterialIcons name="chevron-right" size={16} color={Colors.primary} style={styles.statArrow} />
+          </Pressable>
+          <Pressable 
+            style={styles.statCard}
+            onPress={() => router.push('/admin/users-by-role?role=entitat_colaboradora')}
+          >
             <Text style={styles.statNumber}>
               {userCounts.entitat_colaboradora || 0}
             </Text>
             <Text style={styles.statLabel}>Entitats</Text>
-          </View>
-          <View style={styles.statCard}>
+            <MaterialIcons name="chevron-right" size={16} color={Colors.primary} style={styles.statArrow} />
+          </Pressable>
+          <Pressable 
+            style={styles.statCard}
+            onPress={() => router.push('/admin/users-by-role?role=user')}
+          >
             <Text style={styles.statNumber}>
               {userCounts.user || 0}
             </Text>
             <Text style={styles.statLabel}>Usuaris</Text>
-          </View>
+            <MaterialIcons name="chevron-right" size={16} color={Colors.primary} style={styles.statArrow} />
+          </Pressable>
         </View>
       </ScrollView>
 
