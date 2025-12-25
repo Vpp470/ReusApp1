@@ -247,36 +247,23 @@ export default function OwnershipManagement() {
 
     try {
       setSaving(true);
-      const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
       
-      const url = `${backendUrl}/api/admin/establishments/${selectedEstablishment._id}/assign-owner`;
-      const params = selectedUserId ? `?user_id=${selectedUserId}` : '';
-      
-      const response = await fetch(url + params, {
-        method: 'PUT',
-        headers: {
-          'Authorization': token || '',
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Error assignant propietari');
-      }
-
-      const result = await response.json();
+      const response = await api.put(
+        `/admin/establishments/${selectedEstablishment._id}/assign-owner`,
+        { owner_id: selectedUserId || null },
+        { headers: { Authorization: token || '' } }
+      );
       
       Alert.alert(
         'Èxit',
-        result.message || 'Propietari assignat correctament'
+        response.data?.message || 'Propietari assignat correctament'
       );
       
       setModalVisible(false);
       loadData();
     } catch (error: any) {
       console.error('Error assignant propietari:', error);
-      Alert.alert('Error', error.message || 'No s\'ha pogut assignar el propietari');
+      Alert.alert('Error', error.response?.data?.detail || 'No s\'ha pogut assignar el propietari');
     } finally {
       setSaving(false);
     }
@@ -293,11 +280,11 @@ export default function OwnershipManagement() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
-              const response = await fetch(
-                `${backendUrl}/api/admin/establishments/${establishment._id}/assign-owner`,
-                {
-                  method: 'PUT',
+              await api.put(
+                `/admin/establishments/${establishment._id}/assign-owner`,
+                { owner_id: null },
+                { headers: { Authorization: token || '' } }
+              );
                   headers: {
                     'Authorization': token || '',
                     'Content-Type': 'application/json',
