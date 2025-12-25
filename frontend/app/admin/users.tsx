@@ -329,29 +329,43 @@ export default function AdminUsers() {
       return;
     }
 
-    Alert.alert(
-      'Confirmar eliminació',
-      `Estàs segur que vols eliminar l'usuari ${user.name}? Aquesta acció no es pot desfer.`,
-      [
-        {
-          text: 'Cancel·lar',
-          style: 'cancel',
-        },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await adminService.users.delete(token!, user.id);
-              Alert.alert('Èxit', 'Usuari eliminat correctament');
-              loadUsers();
-            } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.detail || 'No s\'ha pogut eliminar l\'usuari');
-            }
+    const userId = (user as any)._id || user.id;
+
+    // Confirmació segons plataforma
+    const confirmDelete = async () => {
+      try {
+        await adminService.users.delete(token!, userId);
+        Alert.alert('Èxit', 'Usuari eliminat correctament');
+        loadUsers(currentPage, searchQuery.trim() || undefined);
+        loadUserCounts();
+      } catch (error: any) {
+        console.error('Error eliminant usuari:', error);
+        Alert.alert('Error', error.response?.data?.detail || 'No s\'ha pogut eliminar l\'usuari');
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(`Estàs segur que vols eliminar l'usuari ${user.name}? Aquesta acció no es pot desfer.`);
+      if (confirmed) {
+        confirmDelete();
+      }
+    } else {
+      Alert.alert(
+        'Confirmar eliminació',
+        `Estàs segur que vols eliminar l'usuari ${user.name}? Aquesta acció no es pot desfer.`,
+        [
+          {
+            text: 'Cancel·lar',
+            style: 'cancel',
           },
-        },
-      ]
-    );
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: confirmDelete,
+          },
+        ]
+      );
+    }
   };
 
   const handleCreateUser = async () => {
