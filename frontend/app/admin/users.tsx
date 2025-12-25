@@ -153,7 +153,10 @@ export default function AdminUsers() {
   };
 
   const handleSaveRole = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser) {
+      console.log('No selected user');
+      return;
+    }
     if (selectedRoles.length === 0) {
       Alert.alert('Error', 'Has de seleccionar almenys un rol');
       return;
@@ -161,17 +164,24 @@ export default function AdminUsers() {
     try {
       // Usar _id o id segons el que tingui l'usuari
       const userId = (selectedUser as any)._id || selectedUser.id;
-      console.log('Saving roles for user:', selectedUser.email, 'ID:', userId, 'New roles:', selectedRoles);
-      await adminService.users.update(token!, userId, {
+      console.log('=== SAVING ROLES ===');
+      console.log('User:', selectedUser.email);
+      console.log('User ID:', userId);
+      console.log('Selected roles:', selectedRoles);
+      console.log('Token:', token ? 'Present' : 'Missing');
+      
+      const result = await adminService.users.update(token!, userId, {
         roles: selectedRoles,
       });
-      console.log('Roles updated successfully');
+      
+      console.log('Update result:', result);
       Alert.alert('Èxit', 'Rols actualitzats correctament');
       setModalVisible(false);
       loadUsers(currentPage, searchQuery.trim() || undefined);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating roles:', error);
-      Alert.alert('Error', 'No s\'han pogut actualitzar els rols');
+      console.error('Error response:', error?.response?.data);
+      Alert.alert('Error', error?.response?.data?.detail || 'No s\'han pogut actualitzar els rols');
     }
   };
 
