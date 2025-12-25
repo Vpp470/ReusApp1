@@ -403,51 +403,7 @@ async def delete_establishment(
     
     return {"success": True, "message": "Establiment eliminat"}
 
-@admin_router.put("/establishments/{establishment_id}/assign-owner")
-async def assign_establishment_owner(
-    establishment_id: str,
-    user_id: Optional[str] = None,
-    authorization: str = Header(None)
-):
-    """Assignar o desassignar un propietari a un establiment"""
-    await verify_admin(authorization)
-    
-    # Verificar que l'establiment existeix
-    establishment = await db.establishments.find_one({"_id": ObjectId(establishment_id)})
-    if not establishment:
-        raise HTTPException(status_code=404, detail="Establiment no trobat")
-    
-    # Si user_id és None, desassignem el propietari
-    if user_id is None:
-        await db.establishments.update_one(
-            {"_id": ObjectId(establishment_id)},
-            {"$set": {"owner_id": None, "updated_at": datetime.utcnow()}}
-        )
-        return {"success": True, "message": "Propietari desassignat correctament"}
-    
-    # Verificar que l'usuari existeix
-    user = await db.users.find_one({"_id": ObjectId(user_id)})
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuari no trobat")
-    
-    # Permetre assignar qualsevol usuari registrat
-    # (l'admin pot decidir qui és propietari d'un establiment)
-    
-    # Assignar el propietari
-    await db.establishments.update_one(
-        {"_id": ObjectId(establishment_id)},
-        {"$set": {"owner_id": ObjectId(user_id), "updated_at": datetime.utcnow()}}
-    )
-    
-    return {
-        "success": True, 
-        "message": "Propietari assignat correctament",
-        "owner": {
-            "id": str(user['_id']),
-            "name": user.get('name'),
-            "email": user.get('email')
-        }
-    }
+# NOTA: Endpoint PUT assign-owner mogut a línia 865 per evitar duplicats
 
 @admin_router.get("/users/local-associats")
 async def get_local_associats(
