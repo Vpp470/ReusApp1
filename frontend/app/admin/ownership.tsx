@@ -311,10 +311,11 @@ export default function OwnershipManagement() {
           style: 'destructive',
           onPress: async () => {
             try {
+              const authToken = getAuthToken();
               await api.put(
                 `/admin/establishments/${establishment._id}/assign-owner`,
                 { owner_id: null },
-                { headers: { Authorization: token || '' } }
+                { headers: { Authorization: authToken || '' } }
               );
               Alert.alert('Èxit', 'Propietari desassignat correctament');
               loadData();
