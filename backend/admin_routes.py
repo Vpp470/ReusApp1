@@ -2280,7 +2280,26 @@ async def send_notification_to_users(
             web_failed = web_result.get("failed_count", 0)
         
         # ==============================
-        # GUARDAR HISTORIAL
+        # 3. GUARDAR NOTIFICACIONS PER CADA USUARI
+        # ==============================
+        now = datetime.utcnow()
+        user_notifications = []
+        for user in users:
+            user_notifications.append({
+                "user_id": user["_id"],
+                "title": notification.title,
+                "body": notification.body,
+                "data": notification.data or {},
+                "read": False,
+                "created_at": now
+            })
+        
+        # Inserció massiva per eficiència
+        if user_notifications:
+            await db.notifications.insert_many(user_notifications)
+        
+        # ==============================
+        # GUARDAR HISTORIAL ADMIN
         # ==============================
         notification_log = {
             "title": notification.title,
@@ -2293,7 +2312,8 @@ async def send_notification_to_users(
             "expo_failed": expo_failed,
             "web_sent": web_sent,
             "web_failed": web_failed,
-            "sent_at": datetime.utcnow(),
+            "users_notified": len(user_notifications),
+            "sent_at": now,
             "sent_by": authorization
         }
         await db.notification_history.insert_one(notification_log)
@@ -2308,14 +2328,14 @@ async def send_notification_to_users(
                 success=True,
                 sent_count=0,
                 failed_count=0,
-                message="No hi ha dispositius subscrits per aquest filtre (ni Expo ni Web Push)"
+                message=f"No hi ha dispositius subscrits per aquest filtre (ni Expo ni Web Push). {len(user_notifications)} usuaris notificats."
             )
         
         return NotificationResponse(
             success=True,
             sent_count=total_sent,
             failed_count=total_failed,
-            message=f"Notificació enviada: {expo_sent} Expo, {web_sent} Web Push"
+            message=f"Notificació enviada: {expo_sent} Expo, {web_sent} Web Push. {len(user_notifications)} usuaris notificats."
         )
         
     except Exception as e:
