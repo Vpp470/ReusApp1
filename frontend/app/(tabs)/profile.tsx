@@ -25,7 +25,8 @@ import {
   isWebPushSupported, 
   subscribeToWebPush, 
   isSubscribedToWebPush,
-  getNotificationPermission 
+  getNotificationPermission,
+  resyncWebPushSubscription
 } from '../../src/services/webPushService';
 
 export default function ProfileScreen() {
