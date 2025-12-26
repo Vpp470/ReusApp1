@@ -186,7 +186,11 @@ export default function AdminNotificationsScreen() {
       }
     };
 
-    const targetLabel = selectedTag ? `usuaris amb marcador "${selectedTag}"` : getTargetLabel(broadcastTarget);
+    const targetLabel = selectedTag 
+      ? `usuaris amb marcador "${selectedTag}"` 
+      : selectedCampaign 
+        ? `participants de la campanya "${campaigns.find(c => c._id === selectedCampaign)?.name || selectedCampaign}"`
+        : getTargetLabel(broadcastTarget);
     if (Platform.OS === 'web') {
       const confirmed = window.confirm(`Estàs segur que vols enviar aquesta notificació a ${targetLabel}?`);
       if (confirmed) {
