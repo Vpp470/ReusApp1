@@ -34,7 +34,7 @@
 </head>
 <body>
     <div class="container">
-        <img src="https://merchant-connect-15.preview.emergentagent.com/api/landing/assets/logo-tomb-oficial.png" 
+        <img src="https://appcentral-3.preview.emergentagent.com/api/landing/assets/logo-tomb-oficial.png" 
              alt="El Tomb de Reus" class="logo">
         <h1>✅ Servidor Actiu!</h1>
         <div class="status success">El servei està funcionant correctament</div>
@@ -42,7 +42,7 @@
             <p><strong>URL Actual:</strong></p>
             <p id="current-url"></p>
             <p style="margin-top: 1rem;"><strong>API Base:</strong></p>
-            <p>https://merchant-connect-15.preview.emergentagent.com/api</p>
+            <p>https://appcentral-3.preview.emergentagent.com/api</p>
         </div>
         <div id="api-test" style="margin-top: 2rem;"></div>
     </div>
@@ -51,7 +51,7 @@
         document.getElementById('current-url').textContent = window.location.href;
         
         // Test API
-        fetch('https://merchant-connect-15.preview.emergentagent.com/api/establishments')
+        fetch('https://appcentral-3.preview.emergentagent.com/api/establishments')
             .then(r => r.json())
             .then(data => {
                 document.getElementById('api-test').innerHTML = 

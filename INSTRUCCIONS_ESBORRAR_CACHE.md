@@ -134,7 +134,7 @@ Status: 200 OK
 
 ### ❌ INCORRECTE (NO hauries de veure):
 ```
-POST https://merchant-connect-15.preview.emergentagent.com/api/auth/login
+POST https://appcentral-3.preview.emergentagent.com/api/auth/login
 Status: ERR_FAILED
 ```
 
