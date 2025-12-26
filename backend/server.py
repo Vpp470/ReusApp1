@@ -3008,10 +3008,15 @@ async def mark_notification_as_read(
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     try:
+        user_id = user["_id"]
+        # Buscar per user_id com ObjectId O com string (per compatibilitat)
         result = await db.notifications.update_one(
             {
                 "_id": ObjectId(notification_id),
-                "user_id": str(user["_id"])
+                "$or": [
+                    {"user_id": user_id},
+                    {"user_id": str(user_id)}
+                ]
             },
             {"$set": {"read": True, "read_at": datetime.utcnow()}}
         )
@@ -3037,9 +3042,14 @@ async def delete_notification(
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     try:
+        user_id = user["_id"]
+        # Buscar per user_id com ObjectId O com string (per compatibilitat)
         result = await db.notifications.delete_one({
             "_id": ObjectId(notification_id),
-            "user_id": str(user["_id"])
+            "$or": [
+                {"user_id": user_id},
+                {"user_id": str(user_id)}
+            ]
         })
         
         if result.deleted_count == 0:
