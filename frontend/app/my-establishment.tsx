@@ -366,6 +366,46 @@ export default function MyEstablishmentScreen() {
             </View>
           ))}
 
+          {/* Secció de Vídeos Curts */}
+          <Text style={[styles.label, { marginTop: Spacing.xl }]}>
+            <MaterialIcons name="videocam" size={18} color={Colors.primary} /> Vídeos Curts (fins a 3)
+          </Text>
+          <Text style={styles.helperText}>
+            Afegeix enllaços a vídeos curts (YouTube, Instagram, TikTok, etc.)
+          </Text>
+          
+          {videos.map((item, index) => (
+            <View key={`video-${index}`} style={styles.galleryItem}>
+              <Text style={styles.galleryLabel}>Vídeo {index + 1}</Text>
+              
+              <TextInput
+                style={styles.input}
+                value={item.video_url}
+                onChangeText={(text) => {
+                  const newVideos = [...videos];
+                  newVideos[index] = { ...newVideos[index], video_url: text };
+                  setVideos(newVideos);
+                }}
+                placeholder="https://youtube.com/watch?v=... o https://instagram.com/reel/..."
+                autoCapitalize="none"
+                keyboardType="url"
+              />
+              
+              <TextInput
+                style={[styles.galleryDescriptionInput, { marginTop: Spacing.sm }]}
+                value={item.description}
+                onChangeText={(text) => {
+                  const newVideos = [...videos];
+                  newVideos[index] = { ...newVideos[index], description: text };
+                  setVideos(newVideos);
+                }}
+                placeholder="Descripció del vídeo..."
+                maxLength={100}
+              />
+              <Text style={styles.charCount}>{item.description.length}/100</Text>
+            </View>
+          ))}
+
         </View>
 
         {/* Ubicació */}
