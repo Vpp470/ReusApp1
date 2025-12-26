@@ -64,10 +64,12 @@ export default function AgendaPage() {
         api.get('/consell/agenda', { headers: { Authorization: token } }),
         api.get('/consell/members', { headers: { Authorization: token } }),
       ]);
-      setEvents(eventsRes.data);
-      setMembers(membersRes.data);
+      setEvents(Array.isArray(eventsRes.data) ? eventsRes.data : []);
+      setMembers(Array.isArray(membersRes.data) ? membersRes.data : []);
     } catch (error) {
       console.error('Error loading data:', error);
+      setEvents([]);
+      setMembers([]);
     } finally {
       setLoading(false);
     }
