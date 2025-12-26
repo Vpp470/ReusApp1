@@ -338,6 +338,8 @@ export default function AdminNotificationsScreen() {
       ageMax: '',
       campaigns: [],
       events: [],
+      city: '',
+      postalCode: '',
     });
     setEstimatedRecipients(null);
   };
