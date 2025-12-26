@@ -3234,15 +3234,23 @@ async def serve_noticies_page():
         return FileResponse(file_path, media_type="text/html")
     raise HTTPException(status_code=404, detail="Page not found")
 
-# Service Worker route - servir des de frontend/public
+# Service Worker route - servir des de dist (producció) o frontend/public (desenvolupament)
+dist_path_for_sw = Path(__file__).parent / "dist"
 frontend_public_path = Path(__file__).parent.parent / "frontend" / "public"
 
 @app.get("/sw.js")
 async def serve_service_worker():
     """Servir el Service Worker per Web Push"""
+    # Primer intentar des de dist (producció)
+    sw_path = dist_path_for_sw / "sw.js"
+    if sw_path.exists():
+        return FileResponse(sw_path, media_type="application/javascript")
+    
+    # Fallback a frontend/public (desenvolupament)
     sw_path = frontend_public_path / "sw.js"
     if sw_path.exists():
         return FileResponse(sw_path, media_type="application/javascript")
+    
     raise HTTPException(status_code=404, detail="Service Worker not found")
 
 @app.get("/manifest.json")
