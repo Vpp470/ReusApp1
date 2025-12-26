@@ -133,6 +133,47 @@ export default function AdminDashboard() {
       ],
     },
     {
+      title: 'Consell Rector',
+      items: [
+        {
+          icon: 'event-note',
+          label: 'Agenda',
+          route: '/consell/agenda',
+          color: Colors.primary,
+        },
+        {
+          icon: 'add-alert',
+          label: 'Assumptes Sobrevinguts',
+          route: '/consell/assumptes',
+          color: '#FF9800',
+        },
+        {
+          icon: 'campaign',
+          label: 'Campanyes Futures',
+          route: '/consell/campanyes-futures',
+          color: '#9C27B0',
+        },
+        {
+          icon: 'account-balance',
+          label: 'Estat de Comptes',
+          route: '/consell/comptes',
+          color: '#4CAF50',
+        },
+        {
+          icon: 'shopping-cart',
+          label: 'Campanyes Publicitàries',
+          route: '/consell/campanyes-contractades',
+          color: '#2196F3',
+        },
+        {
+          icon: 'description',
+          label: 'Actes del Consell',
+          route: '/consell/acta',
+          color: Colors.error,
+        },
+      ],
+    },
+    {
       title: 'Estadístiques',
       items: [
         {
