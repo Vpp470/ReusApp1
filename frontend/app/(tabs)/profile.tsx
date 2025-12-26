@@ -139,8 +139,11 @@ export default function ProfileScreen() {
     
     // Obtenir token - primer de l'store, després del localStorage
     let authToken = token;
+    console.log('[WebPush] Token de store:', authToken ? 'SÍ' : 'NO');
+    
     if (!authToken && typeof localStorage !== 'undefined') {
       authToken = localStorage.getItem('reusapp_auth_token');
+      console.log('[WebPush] Token de localStorage:', authToken ? 'SÍ' : 'NO');
     }
     
     if (!authToken) {
