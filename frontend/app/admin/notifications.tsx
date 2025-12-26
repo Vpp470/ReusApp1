@@ -61,6 +61,8 @@ interface SegmentationFilters {
   ageMax: string;
   campaigns: string[];
   events: string[];
+  city: string;
+  postalCode: string;
 }
 
 export default function AdminNotificationsScreen() {
@@ -90,6 +92,8 @@ export default function AdminNotificationsScreen() {
     ageMax: '',
     campaigns: [],
     events: [],
+    city: '',
+    postalCode: '',
   });
   const [estimatedRecipients, setEstimatedRecipients] = useState<number | null>(null);
   const [loadingEstimate, setLoadingEstimate] = useState(false);
