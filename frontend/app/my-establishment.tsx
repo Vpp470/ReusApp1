@@ -319,9 +319,9 @@ export default function MyEstablishmentScreen() {
             )}
           </Pressable>
 
-          {/* Galeria d'Imatges (3 fotos verticals 9:16) */}
-          <Text style={[styles.label, { marginTop: Spacing.lg }]}>Galeria d'Imatges (3 fotos format 9:16)</Text>
-          <Text style={styles.helperText}>Puja fins a 3 fotografies verticals amb descripció</Text>
+          {/* Galeria d'Imatges (6 fotos verticals 9:16) */}
+          <Text style={[styles.label, { marginTop: Spacing.lg }]}>Galeria d'Imatges (fins a 6 fotos format 9:16)</Text>
+          <Text style={styles.helperText}>Puja fins a 6 fotografies verticals amb descripció</Text>
           
           {gallery.map((item, index) => (
             <View key={index} style={styles.galleryItem}>
