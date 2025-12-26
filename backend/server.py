@@ -2974,13 +2974,21 @@ async def get_user_notifications(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     try:
-        notifications = await db.notifications.find(
-            {"user_id": str(user["_id"])}
-        ).sort("created_at", -1).to_list(100)
+        user_id = user["_id"]
+        # Buscar per user_id com ObjectId O com string (per compatibilitat)
+        notifications = await db.notifications.find({
+            "$or": [
+                {"user_id": user_id},
+                {"user_id": str(user_id)}
+            ]
+        }).sort("created_at", -1).to_list(100)
         
         for notification in notifications:
             notification['_id'] = str(notification['_id'])
             notification['id'] = str(notification['_id'])
+            # Convertir user_id a string també
+            if notification.get('user_id'):
+                notification['user_id'] = str(notification['user_id'])
         
         return notifications
     except Exception as e:
