@@ -62,10 +62,12 @@ export default function CampanyesFuturesPage() {
         api.get('/consell/campanyes-futures', { headers: { Authorization: token } }),
         api.get('/consell/members', { headers: { Authorization: token } }),
       ]);
-      setCampaigns(campaignsRes.data);
-      setMembers(membersRes.data);
+      setCampaigns(Array.isArray(campaignsRes.data) ? campaignsRes.data : []);
+      setMembers(Array.isArray(membersRes.data) ? membersRes.data : []);
     } catch (error) {
       console.error('Error loading data:', error);
+      setCampaigns([]);
+      setMembers([]);
     } finally {
       setLoading(false);
     }
