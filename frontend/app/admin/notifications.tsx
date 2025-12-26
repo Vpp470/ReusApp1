@@ -113,6 +113,32 @@ export default function AdminNotificationsScreen() {
     }
   };
 
+  const loadCampaigns = async () => {
+    try {
+      const response = await api.get('/admin/tickets/campaigns', {
+        headers: { Authorization: token }
+      });
+      if (Array.isArray(response.data)) {
+        // Afegir el nombre de participants per cada campanya
+        const campaignsWithCount = await Promise.all(
+          response.data.map(async (campaign: TicketCampaign) => {
+            try {
+              const countResponse = await api.get(`/admin/tickets/campaigns/${campaign._id}/participants/count`, {
+                headers: { Authorization: token }
+              });
+              return { ...campaign, participant_count: countResponse.data.count || 0 };
+            } catch {
+              return { ...campaign, participant_count: 0 };
+            }
+          })
+        );
+        setCampaigns(campaignsWithCount);
+      }
+    } catch (error) {
+      console.error('Error carregant campanyes:', error);
+    }
+  };
+
   const handleSendBroadcast = async () => {
     if (!broadcastTitle || !broadcastBody) {
       Alert.alert('Error', 'Títol i missatge són obligatoris');
