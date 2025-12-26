@@ -3273,14 +3273,6 @@ if dist_path.exists():
     if (dist_path / "_expo").exists():
         app.mount("/_expo", StaticFiles(directory=str(dist_path / "_expo")), name="expo-assets")
     
-    # Servir Service Worker explícitament
-    @app.get("/sw.js")
-    async def serve_service_worker():
-        sw_path = dist_path / "sw.js"
-        if sw_path.exists():
-            return FileResponse(sw_path, media_type="application/javascript")
-        raise HTTPException(status_code=404, detail="Service Worker not found")
-    
     # Ruta principal - servir index.html
     @app.get("/")
     async def serve_frontend():
