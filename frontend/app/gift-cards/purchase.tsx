@@ -28,7 +28,7 @@ export default function PurchaseGiftCardScreen() {
 
   const handlePayPalPayment = async () => {
     if (!selectedAmount) {
-      Alert.alert('Error', 'Por favor selecciona un monto');
+      Alert.alert('Error', 'Si us plau, selecciona un import');
       return;
     }
 
@@ -48,18 +48,18 @@ export default function PurchaseGiftCardScreen() {
       const result = await WebBrowser.openBrowserAsync(response.approval_url);
 
       if (result.type === 'cancel') {
-        Alert.alert('Pago cancelado', 'Has cancelado el pago');
+        Alert.alert('Pagament cancel·lat', 'Has cancel·lat el pagament');
       } else if (result.type === 'dismiss') {
         // User closed the browser, check payment status
         Alert.alert(
-          'Verificando pago',
-          'Estamos verificando el estado de tu pago. Por favor revisa tu perfil en unos momentos.'
+          'Verificant pagament',
+          'Estem verificant l\'estat del teu pagament. Si us plau, revisa el teu perfil en uns moments.'
         );
       }
     } catch (error: any) {
       Alert.alert(
         'Error',
-        error.response?.data?.detail || 'No se pudo procesar el pago'
+        error.response?.data?.detail || 'No s\'ha pogut processar el pagament'
       );
     } finally {
       setProcessing(false);
@@ -68,35 +68,33 @@ export default function PurchaseGiftCardScreen() {
 
   const handleRedsysPayment = async () => {
     if (!selectedAmount) {
-      Alert.alert('Error', 'Por favor selecciona un monto');
+      Alert.alert('Error', 'Si us plau, selecciona un import');
       return;
     }
 
     Alert.alert(
-      'Próximamente',
-      'La integración con Redsys estará disponible pronto. Por favor usa PayPal.'
+      'Properament',
+      'La integració amb Redsys estarà disponible aviat. Si us plau, utilitza PayPal.'
     );
   };
 
   const handleBizumPayment = async () => {
     if (!selectedAmount) {
-      Alert.alert('Error', 'Por favor selecciona un monto');
+      Alert.alert('Error', 'Si us plau, selecciona un import');
       return;
     }
 
-    // TODO: Integrate with Bizum API when credentials are available
-    // This is a mockup - replace with real Bizum integration
     Alert.alert(
-      'Pago con Bizum',
-      `Funcionalidad preparada para integración.\n\nMonto: ${selectedAmount}€\n\nPara activar:\n1. Obtén credenciales de Bizum\n2. Configura el endpoint /api/payments/bizum/create\n3. Implementa el flujo de pago`,
+      'Pagament amb Bizum',
+      `Funcionalitat preparada per a integració.\n\nImport: ${selectedAmount}€\n\nPer activar:\n1. Obtén credencials de Bizum\n2. Configura l'endpoint /api/payments/bizum/create\n3. Implementa el flux de pagament`,
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cancel·lar', style: 'cancel' },
         {
-          text: 'Simular pago (Demo)',
+          text: 'Simular pagament (Demo)',
           onPress: () => {
             Alert.alert(
               'Demo',
-              'En producción, aquí se abriría la app de Bizum o se mostraría un código QR para completar el pago.'
+              'En producció, aquí s\'obriria l\'app de Bizum o es mostraria un codi QR per completar el pagament.'
             );
           },
         },
@@ -118,7 +116,7 @@ export default function PurchaseGiftCardScreen() {
           >
             <MaterialIcons name="arrow-back" size={24} color={Colors.text} />
           </Pressable>
-          <Text style={styles.title}>Comprar Tarjeta Regalo</Text>
+          <Text style={styles.title}>Comprar Targeta Regal</Text>
           <View style={{ width: 24 }} />
         </View>
 
@@ -126,14 +124,14 @@ export default function PurchaseGiftCardScreen() {
         <View style={styles.infoCard}>
           <MaterialIcons name="info" size={24} color={Colors.info} />
           <Text style={styles.infoText}>
-            Las tarjetas regalo pueden ser usadas en cualquier establecimiento
-            asociado a REUS COMERÇ i FUTUR
+            Les targetes regal es poden utilitzar a qualsevol establiment
+            associat a REUS COMERÇ i FUTUR
           </Text>
         </View>
 
         {/* Amount Selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Selecciona el monto</Text>
+          <Text style={styles.sectionTitle}>Selecciona l'import</Text>
           <View style={styles.amountGrid}>
             {PRESET_AMOUNTS.map((amount) => (
               <Pressable
@@ -161,7 +159,7 @@ export default function PurchaseGiftCardScreen() {
         {selectedAmount && (
           <View style={styles.selectedAmountCard}>
             <View style={styles.selectedAmountRow}>
-              <Text style={styles.selectedAmountLabel}>Monto seleccionado</Text>
+              <Text style={styles.selectedAmountLabel}>Import seleccionat</Text>
               <Text style={styles.selectedAmountValue}>{selectedAmount} €</Text>
             </View>
           </View>
@@ -169,7 +167,7 @@ export default function PurchaseGiftCardScreen() {
 
         {/* Payment Methods */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Método de pago</Text>
+          <Text style={styles.sectionTitle}>Mètode de pagament</Text>
 
           <Pressable
             style={[styles.paymentButton, processing && styles.paymentButtonDisabled]}
@@ -181,7 +179,7 @@ export default function PurchaseGiftCardScreen() {
               <View style={styles.paymentButtonText}>
                 <Text style={styles.paymentButtonTitle}>PayPal</Text>
                 <Text style={styles.paymentButtonSubtitle}>
-                  Pago seguro con PayPal
+                  Pagament segur amb PayPal
                 </Text>
               </View>
             </View>
@@ -201,10 +199,10 @@ export default function PurchaseGiftCardScreen() {
               <MaterialIcons name="credit-card" size={32} color={Colors.secondary} />
               <View style={styles.paymentButtonText}>
                 <Text style={[styles.paymentButtonTitle, styles.redsysText]}>
-                  Tarjeta de crédito/débito
+                  Targeta de crèdit/dèbit
                 </Text>
                 <Text style={[styles.paymentButtonSubtitle, styles.redsysText]}>
-                  Pago con Redsys
+                  Pagament amb Redsys
                 </Text>
               </View>
             </View>
@@ -223,7 +221,7 @@ export default function PurchaseGiftCardScreen() {
                   Bizum
                 </Text>
                 <Text style={[styles.paymentButtonSubtitle, styles.bizumText]}>
-                  Pago instantáneo con tu móvil
+                  Pagament instantani amb el teu mòbil
                 </Text>
               </View>
             </View>
@@ -235,8 +233,8 @@ export default function PurchaseGiftCardScreen() {
         <View style={styles.termsContainer}>
           <MaterialIcons name="check-circle" size={16} color={Colors.success} />
           <Text style={styles.termsText}>
-            Al completar la compra, aceptas los términos y condiciones de uso
-            de las tarjetas regalo
+            En completar la compra, acceptes els termes i condicions d'ús
+            de les targetes regal
           </Text>
         </View>
       </ScrollView>
