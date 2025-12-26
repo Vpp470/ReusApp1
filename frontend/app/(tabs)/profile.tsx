@@ -37,6 +37,9 @@ export default function ProfileScreen() {
   const [currentLanguage, setCurrentLanguage] = useState(getCurrentLanguage());
   const [userEstablishment, setUserEstablishment] = useState<any>(null);
   const [availableEstablishments, setAvailableEstablishments] = useState<any[]>([]);
+  
+  // Web Push state
+  const [webPushStatus, setWebPushStatus] = useState<'loading' | 'subscribed' | 'not-subscribed' | 'denied' | 'unsupported'>('loading');
 
   const languages = [
     { code: 'ca', name: 'Català', flag: '🇪🇸' },
@@ -53,6 +56,7 @@ export default function ProfileScreen() {
       console.log('Full user:', user);
       loadGiftCards();
       loadUserEstablishment();
+      checkWebPushStatus();;
       checkAvailableEstablishments();
     }
   }, [user]);
