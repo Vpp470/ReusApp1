@@ -145,7 +145,13 @@ export default function AdminNotificationsScreen() {
       return;
     }
 
-    const finalTarget = selectedTag ? `tag:${selectedTag}` : broadcastTarget;
+    // Determinar el target final
+    let finalTarget = broadcastTarget;
+    if (selectedTag) {
+      finalTarget = `tag:${selectedTag}`;
+    } else if (selectedCampaign) {
+      finalTarget = `campaign:${selectedCampaign}`;
+    }
 
     const confirmSend = async () => {
       try {
