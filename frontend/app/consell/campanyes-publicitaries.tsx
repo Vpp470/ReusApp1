@@ -18,73 +18,68 @@ import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/co
 import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/services/api';
 
-interface Campaign {
+interface AdCampaign {
   _id: string;
   name: string;
-  description: string;
   start_date: string;
   end_date: string;
-  managers: string[];
-  manager_names?: string[];
-  status: string;
+  budget: number;
+  media: string;
+  notes: string;
+  created_at: string;
 }
 
-interface Member {
-  id: string;
-  name: string;
-  email: string;
-}
-
-export default function CampanyesFuturesPage() {
+export default function CampanyesPublicitariesPage() {
   const router = useRouter();
   const { token } = useAuthStore();
   
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [members, setMembers] = useState<Member[]>([]);
+  const [campaigns, setCampaigns] = useState<AdCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
     start_date: '',
     end_date: '',
-    managers: [] as string[],
+    budget: '',
+    media: '',
+    notes: '',
   });
 
   useEffect(() => {
-    loadData();
+    loadCampaigns();
   }, []);
 
-  const loadData = async () => {
+  const loadCampaigns = async () => {
     try {
-      const [campaignsRes, membersRes] = await Promise.all([
-        api.get('/consell/campanyes-futures', { headers: { Authorization: token } }),
-        api.get('/consell/members', { headers: { Authorization: token } }),
-      ]);
-      setCampaigns(campaignsRes.data);
-      setMembers(membersRes.data);
+      const response = await api.get('/consell/campanyes-publicitaries', {
+        headers: { Authorization: token },
+      });
+      setCampaigns(response.data);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Error loading campaigns:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreate = async () => {
-    if (!formData.name || !formData.start_date || !formData.end_date) {
-      const msg = 'El nom i les dates són obligatoris';
+    if (!formData.name || !formData.start_date || !formData.budget || !formData.media) {
+      const msg = 'El nom, data, pressupost i mitjà són obligatoris';
       Platform.OS === 'web' ? window.alert(msg) : Alert.alert('Error', msg);
       return;
     }
 
     try {
-      await api.post('/consell/campanyes-futures', formData, {
+      await api.post('/consell/campanyes-publicitaries', {
+        ...formData,
+        budget: parseFloat(formData.budget),
+      }, {
         headers: { Authorization: token },
       });
       setShowModal(false);
-      setFormData({ name: '', description: '', start_date: '', end_date: '', managers: [] });
-      loadData();
+      setFormData({ name: '', start_date: '', end_date: '', budget: '', media: '', notes: '' });
+      loadCampaigns();
     } catch (error) {
       console.error('Error creating campaign:', error);
     }
@@ -93,34 +88,23 @@ export default function CampanyesFuturesPage() {
   const handleDelete = async (campaignId: string) => {
     const confirmDelete = async () => {
       try {
-        await api.delete(`/consell/campanyes-futures/${campaignId}`, {
+        await api.delete(`/consell/campanyes-publicitaries/${campaignId}`, {
           headers: { Authorization: token },
         });
-        loadData();
+        loadCampaigns();
       } catch (error) {
         console.error('Error deleting campaign:', error);
       }
     };
 
     if (Platform.OS === 'web') {
-      if (window.confirm('Estàs segur que vols eliminar aquesta campanya?')) {
-        confirmDelete();
-      }
+      if (window.confirm('Estàs segur?')) confirmDelete();
     } else {
       Alert.alert('Confirmar', 'Estàs segur?', [
         { text: 'Cancel·lar', style: 'cancel' },
         { text: 'Eliminar', style: 'destructive', onPress: confirmDelete },
       ]);
     }
-  };
-
-  const toggleManager = (memberId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      managers: prev.managers.includes(memberId)
-        ? prev.managers.filter(m => m !== memberId)
-        : [...prev.managers, memberId]
-    }));
   };
 
   const formatDate = (dateStr: string) => {
@@ -131,6 +115,13 @@ export default function CampanyesFuturesPage() {
     }
   };
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ca-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+  };
+
+  // Calculate totals
+  const totalBudget = campaigns.reduce((sum, c) => sum + (c.budget || 0), 0);
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
@@ -138,11 +129,11 @@ export default function CampanyesFuturesPage() {
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={28} color={Colors.white} />
           </Pressable>
-          <Text style={styles.headerTitle}>Campanyes Futures</Text>
+          <Text style={styles.headerTitle}>Campanyes Publicitàries</Text>
           <View style={{ width: 44 }} />
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#9C27B0" />
+          <ActivityIndicator size="large" color="#E91E63" />
         </View>
       </SafeAreaView>
     );
@@ -154,18 +145,31 @@ export default function CampanyesFuturesPage() {
         <Pressable style={styles.backButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={28} color={Colors.white} />
         </Pressable>
-        <Text style={styles.headerTitle}>Campanyes Futures</Text>
+        <Text style={styles.headerTitle}>Campanyes Publicitàries</Text>
         <Pressable style={styles.addButton} onPress={() => setShowModal(true)}>
           <MaterialIcons name="add" size={28} color={Colors.white} />
         </Pressable>
       </View>
 
       <ScrollView style={styles.content}>
+        {/* Summary Card */}
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>Resum</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Total Campanyes:</Text>
+            <Text style={styles.summaryValue}>{campaigns.length}</Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Pressupost Total:</Text>
+            <Text style={[styles.summaryValue, { color: '#E91E63' }]}>{formatCurrency(totalBudget)}</Text>
+          </View>
+        </View>
+
         {campaigns.length === 0 ? (
           <View style={styles.emptyState}>
             <MaterialIcons name="campaign" size={64} color={Colors.gray} />
             <Text style={styles.emptyTitle}>No hi ha campanyes</Text>
-            <Text style={styles.emptyText}>Clica + per crear una nova campanya</Text>
+            <Text style={styles.emptyText}>Clica + per afegir una campanya publicitària</Text>
           </View>
         ) : (
           campaigns.map(campaign => (
@@ -177,21 +181,25 @@ export default function CampanyesFuturesPage() {
                 </Pressable>
               </View>
               
-              <Text style={styles.campaignDescription}>{campaign.description}</Text>
-              
-              <View style={styles.dateRow}>
-                <MaterialIcons name="date-range" size={18} color="#9C27B0" />
-                <Text style={styles.dateText}>
-                  {formatDate(campaign.start_date)} - {formatDate(campaign.end_date)}
+              <View style={styles.infoRow}>
+                <MaterialIcons name="date-range" size={18} color="#E91E63" />
+                <Text style={styles.infoText}>
+                  {formatDate(campaign.start_date)}
+                  {campaign.end_date && ` - ${formatDate(campaign.end_date)}`}
                 </Text>
               </View>
               
-              <View style={styles.managersSection}>
-                <Text style={styles.managersTitle}>Gestors:</Text>
-                <Text style={styles.managersList}>
-                  {campaign.manager_names?.join(', ') || 'Sense assignar'}
-                </Text>
+              <View style={styles.infoRow}>
+                <MaterialIcons name="tv" size={18} color="#E91E63" />
+                <Text style={styles.infoText}>{campaign.media}</Text>
               </View>
+              
+              <View style={styles.budgetRow}>
+                <MaterialIcons name="euro" size={20} color="#E91E63" />
+                <Text style={styles.budgetText}>{formatCurrency(campaign.budget)}</Text>
+              </View>
+              
+              {campaign.notes && <Text style={styles.notesText}>{campaign.notes}</Text>}
             </View>
           ))
         )}
@@ -208,12 +216,12 @@ export default function CampanyesFuturesPage() {
             </View>
             
             <ScrollView style={styles.modalBody}>
-              <Text style={styles.label}>Nom *</Text>
+              <Text style={styles.label}>Nom de la Campanya *</Text>
               <TextInput
                 style={styles.input}
                 value={formData.name}
                 onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-                placeholder="Nom de la campanya"
+                placeholder="Ex: Nadal 2025"
               />
               
               <Text style={styles.label}>Data Inici *</Text>
@@ -224,7 +232,7 @@ export default function CampanyesFuturesPage() {
                 placeholder="YYYY-MM-DD"
               />
               
-              <Text style={styles.label}>Data Final *</Text>
+              <Text style={styles.label}>Data Final</Text>
               <TextInput
                 style={styles.input}
                 value={formData.end_date}
@@ -232,43 +240,39 @@ export default function CampanyesFuturesPage() {
                 placeholder="YYYY-MM-DD"
               />
               
-              <Text style={styles.label}>Descripció</Text>
+              <Text style={styles.label}>Pressupost (€) *</Text>
               <TextInput
-                style={[styles.input, styles.textArea]}
-                value={formData.description}
-                onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
-                placeholder="Descripció..."
-                multiline
-                numberOfLines={4}
+                style={styles.input}
+                value={formData.budget}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, budget: text }))}
+                placeholder="Ex: 500"
+                keyboardType="numeric"
               />
               
-              <Text style={styles.label}>Gestors</Text>
-              <View style={styles.membersGrid}>
-                {members.map(member => (
-                  <Pressable
-                    key={member.id}
-                    style={[
-                      styles.memberChip,
-                      formData.managers.includes(member.id) && styles.memberChipSelected
-                    ]}
-                    onPress={() => toggleManager(member.id)}
-                  >
-                    <Text style={[
-                      styles.memberChipText,
-                      formData.managers.includes(member.id) && styles.memberChipTextSelected
-                    ]}>
-                      {member.name || member.email}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
+              <Text style={styles.label}>Mitjà de Comunicació *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.media}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, media: text }))}
+                placeholder="Ex: Ràdio Reus, Diari de Tarragona"
+              />
+              
+              <Text style={styles.label}>Notes</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={formData.notes}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, notes: text }))}
+                placeholder="Notes addicionals..."
+                multiline
+                numberOfLines={3}
+              />
             </ScrollView>
             
             <View style={styles.modalFooter}>
               <Pressable style={styles.cancelButton} onPress={() => setShowModal(false)}>
                 <Text style={styles.cancelButtonText}>Cancel·lar</Text>
               </Pressable>
-              <Pressable style={[styles.saveButton, { backgroundColor: '#9C27B0' }]} onPress={handleCreate}>
+              <Pressable style={[styles.saveButton, { backgroundColor: '#E91E63' }]} onPress={handleCreate}>
                 <Text style={styles.saveButtonText}>Crear</Text>
               </Pressable>
             </View>
@@ -281,24 +285,28 @@ export default function CampanyesFuturesPage() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#9C27B0', paddingHorizontal: Spacing.md, paddingVertical: Spacing.md },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#E91E63', paddingHorizontal: Spacing.md, paddingVertical: Spacing.md },
   backButton: { padding: Spacing.xs },
   headerTitle: { fontSize: FontSizes.lg, fontWeight: 'bold', color: Colors.white },
   addButton: { padding: Spacing.xs },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   content: { flex: 1, padding: Spacing.md },
+  summaryCard: { backgroundColor: Colors.white, borderRadius: BorderRadius.lg, padding: Spacing.md, marginBottom: Spacing.md },
+  summaryTitle: { fontSize: FontSizes.lg, fontWeight: 'bold', color: Colors.textDark, marginBottom: Spacing.sm },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: Spacing.xs },
+  summaryLabel: { fontSize: FontSizes.md, color: Colors.darkGray },
+  summaryValue: { fontSize: FontSizes.md, fontWeight: 'bold', color: Colors.textDark },
   emptyState: { backgroundColor: Colors.white, borderRadius: BorderRadius.lg, padding: Spacing.xl, alignItems: 'center', marginTop: Spacing.xl },
   emptyTitle: { fontSize: FontSizes.xl, fontWeight: 'bold', color: Colors.textDark, marginTop: Spacing.md },
   emptyText: { fontSize: FontSizes.md, color: Colors.gray, textAlign: 'center', marginTop: Spacing.sm },
   campaignCard: { backgroundColor: Colors.white, borderRadius: BorderRadius.lg, padding: Spacing.md, marginBottom: Spacing.md },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm },
   campaignName: { fontSize: FontSizes.lg, fontWeight: 'bold', color: Colors.textDark, flex: 1 },
-  campaignDescription: { fontSize: FontSizes.md, color: Colors.darkGray, marginBottom: Spacing.md },
-  dateRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, marginBottom: Spacing.sm },
-  dateText: { fontSize: FontSizes.sm, color: '#9C27B0', fontWeight: '600' },
-  managersSection: { borderTopWidth: 1, borderTopColor: Colors.lightGray, paddingTop: Spacing.sm },
-  managersTitle: { fontSize: FontSizes.sm, fontWeight: 'bold', color: Colors.textDark },
-  managersList: { fontSize: FontSizes.sm, color: Colors.darkGray, marginTop: Spacing.xs },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, marginVertical: Spacing.xs },
+  infoText: { fontSize: FontSizes.sm, color: Colors.darkGray },
+  budgetRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, marginTop: Spacing.sm, paddingTop: Spacing.sm, borderTopWidth: 1, borderTopColor: Colors.lightGray },
+  budgetText: { fontSize: FontSizes.xl, fontWeight: 'bold', color: '#E91E63' },
+  notesText: { fontSize: FontSizes.sm, color: Colors.gray, marginTop: Spacing.sm, fontStyle: 'italic' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', padding: Spacing.lg },
   modalContent: { backgroundColor: Colors.white, borderRadius: BorderRadius.lg, maxHeight: '85%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.lightGray },
@@ -307,12 +315,7 @@ const styles = StyleSheet.create({
   modalFooter: { flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.md, padding: Spacing.lg, borderTopWidth: 1, borderTopColor: Colors.lightGray },
   label: { fontSize: FontSizes.sm, fontWeight: 'bold', color: Colors.textDark, marginBottom: Spacing.xs, marginTop: Spacing.md },
   input: { backgroundColor: Colors.background, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: FontSizes.md, color: Colors.textDark },
-  textArea: { height: 100, textAlignVertical: 'top' },
-  membersGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
-  memberChip: { paddingVertical: Spacing.sm, paddingHorizontal: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1, borderColor: '#9C27B0' },
-  memberChipSelected: { backgroundColor: '#9C27B0' },
-  memberChipText: { fontSize: FontSizes.sm, color: '#9C27B0' },
-  memberChipTextSelected: { color: Colors.white },
+  textArea: { height: 80, textAlignVertical: 'top' },
   cancelButton: { paddingVertical: Spacing.md, paddingHorizontal: Spacing.xl, borderRadius: BorderRadius.md, borderWidth: 1, borderColor: Colors.gray },
   cancelButtonText: { color: Colors.gray, fontSize: FontSizes.md },
   saveButton: { paddingVertical: Spacing.md, paddingHorizontal: Spacing.xl, borderRadius: BorderRadius.md },
