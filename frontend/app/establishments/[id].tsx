@@ -577,4 +577,34 @@ const styles = StyleSheet.create({
   actionButtonTextSecondary: {
     color: Colors.primary,
   },
+  videoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+    gap: Spacing.md,
+  },
+  videoThumbnail: {
+    width: 80,
+    height: 80,
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  videoInfo: {
+    flex: 1,
+  },
+  videoTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    color: Colors.textDark,
+    marginBottom: Spacing.xs,
+  },
+  videoDescription: {
+    fontSize: FontSizes.sm,
+    color: Colors.darkGray,
+    lineHeight: 18,
+  },
 });
