@@ -2607,49 +2607,41 @@ async def send_broadcast_notification(
         elif request.target == "admins":
             base_query = {"role": "admin"}
         elif request.target == "users":
-            base_query = {"role": "user"}
+            # "users" = tots els usuaris que NO són admin ni local_associat
+            base_query = {"role": {"$nin": ["admin", "local_associat"]}}
+        elif request.target == "local_associat":
+            base_query = {"role": "local_associat"}
         elif request.target.startswith("role:"):
             role = request.target.split(":", 1)[1]
             base_query = {"role": role}
         # "all" no afegeix filtre addicional
         
-        # Obtenir usuaris amb dispositius de notificació
-        if base_query:
-            full_query = {
-                "$and": [
-                    base_query,
-                    {
-                        "$or": [
-                            {"push_token": {"$exists": True, "$ne": None, "$ne": ""}},
-                            {"web_push_subscription": {"$exists": True, "$ne": None}}
-                        ]
-                    }
-                ]
-            }
-        else:
-            full_query = {
-                "$or": [
-                    {"push_token": {"$exists": True, "$ne": None, "$ne": ""}},
-                    {"web_push_subscription": {"$exists": True, "$ne": None}}
-                ]
-            }
+        # 1. Obtenir TOTS els usuaris que compleixen el filtre (per guardar notificacions)
+        all_users_query = base_query if base_query else {}
+        all_users = await db.users.find(all_users_query).to_list(50000)
         
-        users = await db.users.find(full_query).to_list(10000)
-        
-        if not users:
+        if not all_users:
             return {
                 "success": True,
                 "expo_sent": 0,
                 "web_sent": 0,
-                "message": "No hi ha usuaris per aquest filtre amb dispositius subscrits"
+                "users_notified": 0,
+                "message": "No hi ha usuaris per aquest filtre"
             }
         
+        # 2. Filtrar només els que tenen dispositius per enviar push
+        users_with_push = [
+            user for user in all_users
+            if (user.get("push_token") and user.get("push_token").startswith("ExponentPushToken")) or
+               (user.get("web_push_subscription") and isinstance(user.get("web_push_subscription"), dict))
+        ]
+        
         # ==============================
-        # 1. EXPO PUSH NOTIFICATIONS
+        # 3. EXPO PUSH NOTIFICATIONS
         # ==============================
         expo_tokens = [
             user.get("push_token") 
-            for user in users 
+            for user in users_with_push 
             if user.get("push_token") and user.get("push_token").startswith("ExponentPushToken")
         ]
         
@@ -2677,11 +2669,11 @@ async def send_broadcast_notification(
                 expo_sent = len(expo_tokens)
         
         # ==============================
-        # 2. WEB PUSH NOTIFICATIONS
+        # 4. WEB PUSH NOTIFICATIONS
         # ==============================
         web_subscriptions = [
             user.get("web_push_subscription") 
-            for user in users 
+            for user in users_with_push 
             if user.get("web_push_subscription") and isinstance(user.get("web_push_subscription"), dict)
         ]
         
@@ -2699,13 +2691,12 @@ async def send_broadcast_notification(
             web_failed = web_result.get("failed_count", 0)
         
         # ==============================
-        # 3. GUARDAR NOTIFICACIONS PER CADA USUARI
+        # 5. GUARDAR NOTIFICACIONS PER A TOTS ELS USUARIS FILTRATS
         # ==============================
-        # Guardar la notificació a la col·lecció "notifications" per a cada usuari
-        # Això permet que els usuaris vegin les notificacions a la seva pantalla
+        # Guardar la notificació per a TOTS els usuaris (no només els amb push)
         now = datetime.utcnow()
         user_notifications = []
-        for user in users:
+        for user in all_users:
             user_notifications.append({
                 "user_id": user["_id"],
                 "title": request.title,
