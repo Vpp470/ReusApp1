@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   imageButton: {
-    height: 150,
+    minHeight: 150,
     borderRadius: BorderRadius.md,
     borderWidth: 2,
     borderColor: Colors.lightGray,
@@ -563,11 +563,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.background,
+    padding: Spacing.sm,
   },
   imagePreview: {
     width: '100%',
-    height: '100%',
+    height: 200,
     borderRadius: BorderRadius.md,
+    resizeMode: 'contain',
   },
   imageButtonText: {
     marginTop: Spacing.xs,
