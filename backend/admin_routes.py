@@ -2386,3 +2386,340 @@ async def get_notification_stats(authorization: str = Header(None)):
         "notifications_last_30_days": notifications_sent
     }
 
+
+# ============================================================================
+# NOTIFICACIONS AMB FILTRATGE AVANÇAT
+# ============================================================================
+
+class SegmentationFilters(BaseModel):
+    """Filtres de segmentació per notificacions"""
+    tags: Optional[List[str]] = []
+    gender: Optional[str] = None
+    ageMin: Optional[str] = None
+    ageMax: Optional[str] = None
+    campaigns: Optional[List[str]] = []
+    events: Optional[List[str]] = []
+
+class BroadcastRequest(BaseModel):
+    """Petició per enviar notificació broadcast amb filtres"""
+    title: str
+    body: str
+    target: str = "all"
+    filters: Optional[SegmentationFilters] = None
+    data: Optional[dict] = None
+
+async def build_segmentation_query(filters: SegmentationFilters) -> dict:
+    """Construir la consulta MongoDB a partir dels filtres de segmentació"""
+    query = {}
+    conditions = []
+    
+    # Filtre per tags/marcadors
+    if filters.tags and len(filters.tags) > 0:
+        # Buscar usuaris que tenen almenys un dels marcadors seleccionats
+        participations = await db.participations.find({
+            "tag": {"$in": filters.tags}
+        }).to_list(100000)
+        user_ids_from_tags = list(set([str(p.get("user_id")) for p in participations if p.get("user_id")]))
+        
+        if user_ids_from_tags:
+            conditions.append({
+                "_id": {"$in": [ObjectId(uid) for uid in user_ids_from_tags]}
+            })
+        else:
+            # Si no hi ha usuaris amb aquests tags, retornar consulta buida
+            return {"_id": {"$exists": False}}
+    
+    # Filtre per gènere
+    if filters.gender:
+        conditions.append({"gender": filters.gender})
+    
+    # Filtre per edat
+    if filters.ageMin or filters.ageMax:
+        now = datetime.utcnow()
+        age_condition = {}
+        
+        if filters.ageMin:
+            try:
+                min_age = int(filters.ageMin)
+                # Edat mínima = data de naixement màxima
+                max_birth_date = now.replace(year=now.year - min_age)
+                age_condition["$lte"] = max_birth_date
+            except ValueError:
+                pass
+        
+        if filters.ageMax:
+            try:
+                max_age = int(filters.ageMax)
+                # Edat màxima = data de naixement mínima
+                min_birth_date = now.replace(year=now.year - max_age - 1)
+                age_condition["$gte"] = min_birth_date
+            except ValueError:
+                pass
+        
+        if age_condition:
+            conditions.append({"birth_date": age_condition})
+    
+    # Filtre per campanyes de sorteig
+    if filters.campaigns and len(filters.campaigns) > 0:
+        campaign_participations = await db.draw_participations.find({
+            "campaign_id": {"$in": [ObjectId(cid) for cid in filters.campaigns]},
+            "participations": {"$gt": 0}
+        }).to_list(100000)
+        user_ids_from_campaigns = list(set([
+            str(p.get("user_id")) for p in campaign_participations if p.get("user_id")
+        ]))
+        
+        if user_ids_from_campaigns:
+            conditions.append({
+                "_id": {"$in": [ObjectId(uid) for uid in user_ids_from_campaigns]}
+            })
+        else:
+            return {"_id": {"$exists": False}}
+    
+    # Filtre per events (participació)
+    if filters.events and len(filters.events) > 0:
+        event_participations = await db.participations.find({
+            "activity_type": "event",
+            "activity_id": {"$in": filters.events}
+        }).to_list(100000)
+        user_ids_from_events = list(set([
+            str(p.get("user_id")) for p in event_participations if p.get("user_id")
+        ]))
+        
+        if user_ids_from_events:
+            conditions.append({
+                "_id": {"$in": [ObjectId(uid) for uid in user_ids_from_events]}
+            })
+        else:
+            return {"_id": {"$exists": False}}
+    
+    # Combinar totes les condicions amb AND
+    if len(conditions) == 1:
+        query = conditions[0]
+    elif len(conditions) > 1:
+        query = {"$and": conditions}
+    
+    return query
+
+
+@admin_router.post("/notifications/estimate")
+async def estimate_notification_recipients(
+    request: dict,
+    authorization: str = Header(None)
+):
+    """
+    Estimar el nombre de destinataris segons els filtres de segmentació.
+    Retorna el nombre d'usuaris que rebrien la notificació.
+    """
+    await verify_admin(authorization)
+    
+    try:
+        filters_data = request.get("filters", {})
+        filters = SegmentationFilters(**filters_data)
+        
+        # Construir la consulta de segmentació
+        query = await build_segmentation_query(filters)
+        
+        # Comptar usuaris que compleixen els filtres I tenen dispositiu de notificacions
+        # (Expo push token O Web push subscription)
+        if query:
+            full_query = {
+                "$and": [
+                    query,
+                    {
+                        "$or": [
+                            {"push_token": {"$exists": True, "$ne": None, "$ne": ""}},
+                            {"web_push_subscription": {"$exists": True, "$ne": None}}
+                        ]
+                    }
+                ]
+            }
+        else:
+            full_query = {
+                "$or": [
+                    {"push_token": {"$exists": True, "$ne": None, "$ne": ""}},
+                    {"web_push_subscription": {"$exists": True, "$ne": None}}
+                ]
+            }
+        
+        count = await db.users.count_documents(full_query)
+        
+        return {
+            "success": True,
+            "count": count,
+            "filters_applied": {
+                "tags": len(filters.tags) if filters.tags else 0,
+                "gender": filters.gender,
+                "age_range": f"{filters.ageMin or '*'}-{filters.ageMax or '*'}",
+                "campaigns": len(filters.campaigns) if filters.campaigns else 0,
+                "events": len(filters.events) if filters.events else 0
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "count": 0,
+            "error": str(e)
+        }
+
+
+@admin_router.post("/notifications/broadcast")
+async def send_broadcast_notification(
+    request: BroadcastRequest,
+    authorization: str = Header(None)
+):
+    """
+    Enviar notificació broadcast amb filtres de segmentació opcionals.
+    """
+    await verify_admin(authorization)
+    
+    try:
+        # Construir la consulta base
+        base_query = {}
+        
+        # Si el target és "segmented" o hi ha filtres, aplicar segmentació
+        if request.target == "segmented" and request.filters:
+            base_query = await build_segmentation_query(request.filters)
+        elif request.target == "admins":
+            base_query = {"role": "admin"}
+        elif request.target == "users":
+            base_query = {"role": "user"}
+        elif request.target.startswith("role:"):
+            role = request.target.split(":", 1)[1]
+            base_query = {"role": role}
+        # "all" no afegeix filtre addicional
+        
+        # Obtenir usuaris amb dispositius de notificació
+        if base_query:
+            full_query = {
+                "$and": [
+                    base_query,
+                    {
+                        "$or": [
+                            {"push_token": {"$exists": True, "$ne": None, "$ne": ""}},
+                            {"web_push_subscription": {"$exists": True, "$ne": None}}
+                        ]
+                    }
+                ]
+            }
+        else:
+            full_query = {
+                "$or": [
+                    {"push_token": {"$exists": True, "$ne": None, "$ne": ""}},
+                    {"web_push_subscription": {"$exists": True, "$ne": None}}
+                ]
+            }
+        
+        users = await db.users.find(full_query).to_list(10000)
+        
+        if not users:
+            return {
+                "success": True,
+                "expo_sent": 0,
+                "web_sent": 0,
+                "message": "No hi ha usuaris per aquest filtre amb dispositius subscrits"
+            }
+        
+        # ==============================
+        # 1. EXPO PUSH NOTIFICATIONS
+        # ==============================
+        expo_tokens = [
+            user.get("push_token") 
+            for user in users 
+            if user.get("push_token") and user.get("push_token").startswith("ExponentPushToken")
+        ]
+        
+        expo_sent = 0
+        expo_failed = 0
+        
+        if expo_tokens:
+            result = send_push_notification(
+                push_tokens=expo_tokens,
+                title=request.title,
+                body=request.body,
+                data=request.data
+            )
+            
+            if isinstance(result, dict):
+                if "data" in result:
+                    for item in result.get("data", []):
+                        if item.get("status") == "ok":
+                            expo_sent += 1
+                        else:
+                            expo_failed += 1
+                elif "error" in result:
+                    expo_failed = len(expo_tokens)
+            else:
+                expo_sent = len(expo_tokens)
+        
+        # ==============================
+        # 2. WEB PUSH NOTIFICATIONS
+        # ==============================
+        web_subscriptions = [
+            user.get("web_push_subscription") 
+            for user in users 
+            if user.get("web_push_subscription") and isinstance(user.get("web_push_subscription"), dict)
+        ]
+        
+        web_sent = 0
+        web_failed = 0
+        
+        if web_subscriptions:
+            web_result = send_web_push_to_many(
+                subscriptions=web_subscriptions,
+                title=request.title,
+                body=request.body,
+                data=request.data
+            )
+            web_sent = web_result.get("sent_count", 0)
+            web_failed = web_result.get("failed_count", 0)
+        
+        # ==============================
+        # GUARDAR HISTORIAL
+        # ==============================
+        filters_summary = None
+        if request.filters:
+            filters_summary = {
+                "tags": request.filters.tags,
+                "gender": request.filters.gender,
+                "age_range": f"{request.filters.ageMin or '*'}-{request.filters.ageMax or '*'}",
+                "campaigns": request.filters.campaigns,
+                "events": request.filters.events
+            }
+        
+        notification_log = {
+            "title": request.title,
+            "body": request.body,
+            "target": request.target,
+            "filters": filters_summary,
+            "data": request.data,
+            "expo_tokens_count": len(expo_tokens),
+            "web_subscriptions_count": len(web_subscriptions),
+            "expo_sent": expo_sent,
+            "expo_failed": expo_failed,
+            "web_sent": web_sent,
+            "web_failed": web_failed,
+            "sent_at": datetime.utcnow(),
+            "sent_by": authorization
+        }
+        await db.notification_history.insert_one(notification_log)
+        
+        total_sent = expo_sent + web_sent
+        
+        return {
+            "success": True,
+            "expo_sent": expo_sent,
+            "web_sent": web_sent,
+            "total_sent": total_sent,
+            "message": f"Notificació enviada: {expo_sent} Expo, {web_sent} Web Push"
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "expo_sent": 0,
+            "web_sent": 0,
+            "error": str(e)
+        }
+
