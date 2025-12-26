@@ -2422,6 +2422,8 @@ class SegmentationFilters(BaseModel):
     ageMax: Optional[str] = None
     campaigns: Optional[List[str]] = []
     events: Optional[List[str]] = []
+    city: Optional[str] = None
+    postalCode: Optional[str] = None
 
 class BroadcastRequest(BaseModel):
     """Petició per enviar notificació broadcast amb filtres"""
