@@ -117,33 +117,52 @@ export async function getVapidPublicKey(): Promise<string | null> {
 /**
  * Subscriu l'usuari a les notificacions Web Push
  */
-export async function subscribeToWebPush(authToken: string): Promise<boolean> {
+export async function subscribeToWebPush(authToken?: string): Promise<boolean> {
   if (!isWebPushSupported()) {
     console.log('[WebPush] Web Push no suportat');
     return false;
   }
   
+  // Obtenir token - si no es passa, intentar del localStorage
+  let token = authToken;
+  if (!token && typeof localStorage !== 'undefined') {
+    token = localStorage.getItem('reusapp_auth_token') || undefined;
+    console.log('[WebPush] Token obtingut de localStorage:', token ? 'SÍ' : 'NO');
+  }
+  
+  if (!token) {
+    console.error('[WebPush] No hi ha token d\'autenticació!');
+    return false;
+  }
+  
   try {
     // 1. Registrar Service Worker
+    console.log('[WebPush] 1. Registrant Service Worker...');
     const registration = await registerServiceWorker();
     if (!registration) {
       throw new Error('No s\'ha pogut registrar el Service Worker');
     }
+    console.log('[WebPush] Service Worker registrat correctament');
     
     // 2. Sol·licitar permís
+    console.log('[WebPush] 2. Sol·licitant permís...');
     const permission = await requestNotificationPermission();
     if (permission !== 'granted') {
-      console.log('[WebPush] Permís de notificacions no concedit');
+      console.log('[WebPush] Permís de notificacions no concedit:', permission);
       return false;
     }
+    console.log('[WebPush] Permís concedit!');
     
     // 3. Obtenir clau VAPID
+    console.log('[WebPush] 3. Obtenint clau VAPID...');
     const vapidPublicKey = await getVapidPublicKey();
     if (!vapidPublicKey) {
       throw new Error('No s\'ha pogut obtenir la clau VAPID');
     }
+    console.log('[WebPush] Clau VAPID obtinguda');
     
     // 4. Crear subscripció push
+    console.log('[WebPush] 4. Creant subscripció push...');
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
@@ -152,13 +171,17 @@ export async function subscribeToWebPush(authToken: string): Promise<boolean> {
     console.log('[WebPush] Subscripció creada:', subscription.endpoint);
     
     // 5. Enviar subscripció al servidor
+    console.log('[WebPush] 5. Enviant subscripció al servidor...');
     const subscriptionJson = subscription.toJSON();
     const apiBase = getApiBase();
+    console.log('[WebPush] API Base:', apiBase);
+    console.log('[WebPush] Token (primers 20 chars):', token.substring(0, 20) + '...');
+    
     const response = await fetch(`${apiBase}/web-push/subscribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authToken
+        'Authorization': token
       },
       body: JSON.stringify({
         endpoint: subscription.endpoint,
@@ -169,8 +192,12 @@ export async function subscribeToWebPush(authToken: string): Promise<boolean> {
       })
     });
     
+    console.log('[WebPush] Resposta del servidor:', response.status);
+    
     if (!response.ok) {
-      throw new Error('Error guardant subscripció al servidor');
+      const errorText = await response.text();
+      console.error('[WebPush] Error del servidor:', errorText);
+      throw new Error('Error guardant subscripció al servidor: ' + errorText);
     }
     
     // 6. Guardar estat local
