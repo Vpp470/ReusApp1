@@ -2196,7 +2196,10 @@ async def send_notification_to_users(
         if notification.target == "admins":
             query["role"] = "admin"
         elif notification.target == "users":
-            query["role"] = "user"
+            # "users" = tots els usuaris que NO són admin ni local_associat
+            query["role"] = {"$nin": ["admin", "local_associat"]}
+        elif notification.target == "local_associat":
+            query["role"] = "local_associat"
         elif notification.target.startswith("role:"):
             role = notification.target.split(":", 1)[1]
             query["role"] = role
