@@ -697,6 +697,154 @@ async def login(email: str, password: str):
     user['token'] = token
     return {"user": user, "token": token}
 
+
+# Password Recovery Endpoints
+from pydantic import BaseModel as PydanticBaseModel
+
+class ForgotPasswordRequest(PydanticBaseModel):
+    email: str
+
+class ResetPasswordRequest(PydanticBaseModel):
+    token: str
+    new_password: str
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    """
+    Envia un correu amb un enllaç per restablir la contrasenya
+    """
+    from email_service import send_email
+    import secrets
+    from datetime import datetime, timedelta
+    
+    email = request.email.lower().strip()
+    user = await db.users.find_one({"email": email})
+    
+    if not user:
+        # Per seguretat, no revelar si l'email existeix o no
+        return {"message": "Si el correu existeix, rebràs un enllaç per restablir la contrasenya"}
+    
+    # Generar token de reset
+    reset_token = secrets.token_urlsafe(32)
+    reset_expiry = datetime.utcnow() + timedelta(hours=1)  # Vàlid durant 1 hora
+    
+    # Guardar token a la base de dades
+    await db.users.update_one(
+        {"_id": user['_id']},
+        {"$set": {
+            "reset_token": reset_token,
+            "reset_token_expiry": reset_expiry
+        }}
+    )
+    
+    # Crear enllaç de reset (URL de producció)
+    reset_link = f"https://www.reusapp.com/auth/reset-password?token={reset_token}"
+    
+    # Enviar email
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background-color: #88C057; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+            .content {{ background-color: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }}
+            .button {{ display: inline-block; background-color: #88C057; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+            .footer {{ text-align: center; color: #888; font-size: 12px; margin-top: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🔐 Restablir Contrasenya</h1>
+            </div>
+            <div class="content">
+                <p>Hola {user.get('name', 'Usuari')},</p>
+                <p>Has sol·licitat restablir la teva contrasenya. Fes clic al botó següent per crear-ne una de nova:</p>
+                <p style="text-align: center;">
+                    <a href="{reset_link}" class="button">Restablir Contrasenya</a>
+                </p>
+                <p>O copia i enganxa aquest enllaç al teu navegador:</p>
+                <p style="word-break: break-all; font-size: 12px; color: #666;">{reset_link}</p>
+                <p><strong>Aquest enllaç serà vàlid durant 1 hora.</strong></p>
+                <p>Si no has sol·licitat aquest canvi, ignora aquest correu.</p>
+            </div>
+            <div class="footer">
+                <p>El Tomb de Reus - REUS COMERÇ i FUTUR</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    text_content = f"""
+    Hola {user.get('name', 'Usuari')},
+    
+    Has sol·licitat restablir la teva contrasenya.
+    
+    Fes clic a aquest enllaç per crear-ne una de nova:
+    {reset_link}
+    
+    Aquest enllaç serà vàlid durant 1 hora.
+    
+    Si no has sol·licitat aquest canvi, ignora aquest correu.
+    
+    El Tomb de Reus - REUS COMERÇ i FUTUR
+    """
+    
+    success = send_email(email, "Restablir Contrasenya - El Tomb de Reus", html_content, text_content)
+    
+    if success:
+        logger.info(f"Email de reset enviat a {email}")
+        return {"message": "Si el correu existeix, rebràs un enllaç per restablir la contrasenya"}
+    else:
+        logger.error(f"Error enviant email de reset a {email}")
+        raise HTTPException(status_code=500, detail="Error enviant el correu")
+
+
+@api_router.post("/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """
+    Restableix la contrasenya amb el token rebut per correu
+    """
+    from passlib.context import CryptContext
+    from datetime import datetime
+    
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    # Buscar usuari amb aquest token
+    user = await db.users.find_one({"reset_token": request.token})
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Enllaç invàlid o caducat")
+    
+    # Verificar que el token no ha caducat
+    expiry = user.get('reset_token_expiry')
+    if not expiry or datetime.utcnow() > expiry:
+        raise HTTPException(status_code=400, detail="L'enllaç ha caducat. Sol·licita'n un de nou.")
+    
+    # Validar nova contrasenya
+    if len(request.new_password) < 6:
+        raise HTTPException(status_code=400, detail="La contrasenya ha de tenir almenys 6 caràcters")
+    
+    # Hash de la nova contrasenya
+    hashed_password = pwd_context.hash(request.new_password)
+    
+    # Actualitzar contrasenya i eliminar token de reset
+    await db.users.update_one(
+        {"_id": user['_id']},
+        {
+            "$set": {"password": hashed_password},
+            "$unset": {"reset_token": "", "reset_token_expiry": ""}
+        }
+    )
+    
+    logger.info(f"Contrasenya restablerta per {user.get('email')}")
+    return {"message": "Contrasenya restablerta correctament. Ja pots iniciar sessió."}
+
+
 # Neuromobile Integration endpoints
 @api_router.get("/my-establishment")
 async def get_my_establishment(authorization: str = Header(None)):
