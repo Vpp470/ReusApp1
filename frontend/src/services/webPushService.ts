@@ -264,6 +264,71 @@ export async function isSubscribedToWebPush(): Promise<boolean> {
 }
 
 /**
+ * Re-sincronitza la subscripció existent amb el servidor
+ * Útil quan la subscripció existeix al navegador però no s'ha guardat al servidor
+ */
+export async function resyncWebPushSubscription(authToken?: string): Promise<boolean> {
+  if (!isWebPushSupported()) {
+    console.log('[WebPush] Web Push no suportat');
+    return false;
+  }
+  
+  // Obtenir token
+  let token = authToken;
+  if (!token && typeof localStorage !== 'undefined') {
+    token = localStorage.getItem('reusapp_auth_token') || undefined;
+  }
+  
+  if (!token) {
+    console.error('[WebPush] No hi ha token d\'autenticació per re-sincronitzar!');
+    return false;
+  }
+  
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    
+    if (!subscription) {
+      console.log('[WebPush] No hi ha subscripció existent per re-sincronitzar');
+      return false;
+    }
+    
+    console.log('[WebPush] Re-sincronitzant subscripció existent...');
+    
+    const subscriptionJson = subscription.toJSON();
+    const apiBase = getApiBase();
+    
+    const response = await fetch(`${apiBase}/web-push/subscribe`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token
+      },
+      body: JSON.stringify({
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: subscriptionJson.keys?.p256dh,
+          auth: subscriptionJson.keys?.auth
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[WebPush] Error re-sincronitzant:', errorText);
+      return false;
+    }
+    
+    console.log('[WebPush] ✅ Re-sincronització completada');
+    return true;
+    
+  } catch (error) {
+    console.error('[WebPush] Error re-sincronitzant:', error);
+    return false;
+  }
+}
+
+/**
  * Inicialitza Web Push automàticament si l'usuari ja ha donat permís
  */
 export async function initWebPushIfPermitted(authToken: string): Promise<void> {
