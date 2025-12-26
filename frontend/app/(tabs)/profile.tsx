@@ -489,6 +489,38 @@ export default function ProfileScreen() {
           <MaterialIcons name="chevron-right" size={24} color={Colors.gray} />
         </Pressable>
 
+        {/* Web Push - només mostrar a web */}
+        {Platform.OS === 'web' && webPushStatus !== 'unsupported' && (
+          <Pressable 
+            style={[styles.menuItem, webPushStatus === 'subscribed' && styles.menuItemSuccess]}
+            onPress={webPushStatus !== 'subscribed' ? handleEnableWebPush : undefined}
+          >
+            <MaterialIcons 
+              name={webPushStatus === 'subscribed' ? 'notifications-active' : 'notifications-off'} 
+              size={24} 
+              color={webPushStatus === 'subscribed' ? Colors.success : Colors.warning} 
+            />
+            <View style={styles.menuTextContainer}>
+              <Text style={styles.menuText}>
+                {webPushStatus === 'subscribed' ? 'Notificacions activades' : 'Activar notificacions push'}
+              </Text>
+              <Text style={styles.menuSubtext}>
+                {webPushStatus === 'subscribed' 
+                  ? 'Rebràs ofertes i novetats' 
+                  : webPushStatus === 'denied'
+                    ? 'Bloquejades - ves a configuració del navegador'
+                    : 'Activa-les per no perdre\'t res'}
+              </Text>
+            </View>
+            {webPushStatus !== 'subscribed' && webPushStatus !== 'denied' && (
+              <MaterialIcons name="chevron-right" size={24} color={Colors.warning} />
+            )}
+            {webPushStatus === 'subscribed' && (
+              <MaterialIcons name="check-circle" size={24} color={Colors.success} />
+            )}
+          </Pressable>
+        )}
+
         <Pressable style={styles.menuItem}>
           <MaterialIcons name="settings" size={24} color={Colors.text} />
           <Text style={styles.menuText}>{i18n.t('profile.menu.settings')}</Text>
