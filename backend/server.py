@@ -3070,6 +3070,8 @@ async def root():
 app.include_router(api_router)
 # Include admin routes
 app.include_router(admin_router, prefix="/api")
+# Include consell routes
+app.include_router(consell_router)
 
 # Routes included above
 
