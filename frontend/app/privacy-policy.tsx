@@ -122,7 +122,7 @@ export default function PrivacyPolicyScreen() {
           <MaterialIcons name="info" size={24} color={Colors.primary} />
           <Text style={styles.infoText}>
             Per exercir els teus drets de protecció de dades (accés, rectificació, supressió, etc.),
-            pots contactar-nos a protecciodades@eltombdereus.com
+            pots contactar-nos a gestio@eltombdereus.com
           </Text>
         </View>
       </ScrollView>
