@@ -95,11 +95,27 @@ export default function MyEstablishmentScreen() {
         
         // Carregar galeria si existeix
         if (response.data.gallery && Array.isArray(response.data.gallery)) {
-          const loadedGallery = response.data.gallery;
-          while (loadedGallery.length < 3) {
-            loadedGallery.push({ image_url: '', description: '' });
+          const loadedGallery = response.data.gallery.map((item: any) => ({
+            image_url: item.image_url || '',
+            description: item.description || '',
+            type: item.type || 'image'
+          }));
+          while (loadedGallery.length < 6) {
+            loadedGallery.push({ image_url: '', description: '', type: 'image' });
           }
-          setGallery(loadedGallery.slice(0, 3));
+          setGallery(loadedGallery.slice(0, 6));
+        }
+        
+        // Carregar videos si existeixen
+        if (response.data.videos && Array.isArray(response.data.videos)) {
+          const loadedVideos = response.data.videos.map((item: any) => ({
+            video_url: item.video_url || '',
+            description: item.description || ''
+          }));
+          while (loadedVideos.length < 3) {
+            loadedVideos.push({ video_url: '', description: '' });
+          }
+          setVideos(loadedVideos.slice(0, 3));
         }
       }
     } catch (error) {
