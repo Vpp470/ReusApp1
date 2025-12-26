@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Import admin routes
 from admin_routes import admin_router, OfferCreate, OfferUpdate
+from consell_routes import consell_router
 from news_scheduler import start_news_scheduler
 
 # MongoDB connection
