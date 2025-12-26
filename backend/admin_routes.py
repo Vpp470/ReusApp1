@@ -878,11 +878,20 @@ async def get_all_users(
     
     # Obtenir usuaris paginats
     users = await db.users.find(query).skip(skip).limit(limit).to_list(limit)
+    
+    # Enriquir usuaris amb nom d'establiment (si són propietaris)
     for user in users:
         user['id'] = str(user['_id'])
+        user_oid = user['_id']
         user['_id'] = str(user['_id'])
         # No retornar password
         user.pop('password', None)
+        
+        # Buscar si l'usuari és propietari d'algun establiment
+        establishment = await db.establishments.find_one({"owner_id": user_oid})
+        if establishment:
+            user['establishment_name'] = establishment.get('name', '')
+            user['establishment_id'] = str(establishment.get('_id', ''))
     
     return {
         "users": users,
