@@ -2320,6 +2320,98 @@ async def create_gift_card(gift_card_data: GiftCardCreate):
     
     return gift_card_dict
 
+# ============================================================================
+# LOCAL ASSOCIAT - Configuració i Targeta Regal
+# ============================================================================
+
+@api_router.get("/local-associat/my-establishment")
+async def get_my_establishment(authorization: str = Header(None)):
+    """Obtenir l'establiment del local associat actual"""
+    user = await get_user_from_token(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="No autoritzat")
+    
+    user_id = user.get('_id') or user.get('id')
+    if isinstance(user_id, str):
+        user_id = ObjectId(user_id)
+    
+    # Buscar establiment on l'usuari és propietari
+    establishment = await db.establishments.find_one({"owner_id": user_id})
+    
+    if not establishment:
+        raise HTTPException(status_code=404, detail="No tens cap establiment assignat")
+    
+    establishment['_id'] = str(establishment['_id'])
+    establishment['id'] = str(establishment['_id'])
+    if establishment.get('owner_id'):
+        establishment['owner_id'] = str(establishment['owner_id'])
+    
+    return establishment
+
+@api_router.put("/local-associat/config")
+async def update_local_associat_config(
+    config: dict,
+    authorization: str = Header(None)
+):
+    """Actualitzar configuració del local associat (targeta regal, compte bancari)"""
+    user = await get_user_from_token(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="No autoritzat")
+    
+    user_id = user.get('_id') or user.get('id')
+    if isinstance(user_id, str):
+        user_id = ObjectId(user_id)
+    
+    # Buscar establiment on l'usuari és propietari
+    establishment = await db.establishments.find_one({"owner_id": user_id})
+    
+    if not establishment:
+        raise HTTPException(status_code=404, detail="No tens cap establiment assignat")
+    
+    # Actualitzar configuració
+    update_data = {
+        "updated_at": datetime.utcnow()
+    }
+    
+    if "accepts_gift_cards" in config:
+        update_data["accepts_gift_cards"] = config["accepts_gift_cards"]
+    
+    if "bank_account_iban" in config:
+        update_data["bank_account_iban"] = config["bank_account_iban"]
+    
+    if "bank_account_holder" in config:
+        update_data["bank_account_holder"] = config["bank_account_holder"]
+    
+    await db.establishments.update_one(
+        {"_id": establishment['_id']},
+        {"$set": update_data}
+    )
+    
+    return {"success": True, "message": "Configuració actualitzada"}
+
+@api_router.get("/local-associat/balance")
+async def get_local_associat_balance(authorization: str = Header(None)):
+    """Obtenir el saldo acumulat de targetes regal"""
+    user = await get_user_from_token(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="No autoritzat")
+    
+    user_id = user.get('_id') or user.get('id')
+    if isinstance(user_id, str):
+        user_id = ObjectId(user_id)
+    
+    # Buscar establiment
+    establishment = await db.establishments.find_one({"owner_id": user_id})
+    
+    if not establishment:
+        raise HTTPException(status_code=404, detail="No tens cap establiment assignat")
+    
+    return {
+        "balance": establishment.get("gift_card_balance", 0),
+        "accepts_gift_cards": establishment.get("accepts_gift_cards", False),
+        "has_bank_account": bool(establishment.get("bank_account_iban"))
+    }
+
 @api_router.get("/gift-cards/user/{user_id}")
 async def get_user_gift_cards(user_id: str):
     gift_cards = await db.gift_cards.find({"user_id": user_id}).to_list(100)
