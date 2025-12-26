@@ -215,22 +215,25 @@ export default function MyEstablishmentScreen() {
     try {
       // Filtrar galeria buida
       const validGallery = gallery.filter(item => item.image_url !== '');
+      // Filtrar videos buits
+      const validVideos = videos.filter(item => item.video_url !== '');
       
       const dataToSave = {
         ...formData,
         gallery: validGallery,
+        videos: validVideos,
       };
       
       if (hasEstablishment) {
         await api.put('/my-establishment', dataToSave, {
           headers: { Authorization: token },
         });
-        Alert.alert('Èxit', 'Establiment i galeria actualitzats correctament');
+        Alert.alert('Èxit', 'Establiment actualitzat correctament');
       } else {
         await api.post('/my-establishment', dataToSave, {
           headers: { Authorization: token },
         });
-        Alert.alert('Èxit', 'Establiment i galeria creats correctament');
+        Alert.alert('Èxit', 'Establiment creat correctament');
         setHasEstablishment(true);
       }
     } catch (error: any) {
