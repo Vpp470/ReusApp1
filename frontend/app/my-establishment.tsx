@@ -177,29 +177,43 @@ export default function MyEstablishmentScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [9, 16], // Format vertical 9:16
-      quality: 0.8,
+      quality: 0.5, // Reduïda qualitat per evitar errors
     });
 
     if (!result.canceled && result.assets[0]) {
       try {
-        // Redimensionar la imatge a format 9:16
+        // Redimensionar la imatge a format 9:16 (més petita)
         const manipResult = await ImageManipulator.manipulateAsync(
           result.assets[0].uri,
-          [{ resize: { width: 1080 } }],
-          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+          [{ resize: { width: 540 } }], // Reduïda de 1080 a 540
+          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } // Compressió més alta
         );
         
         // Convertir a base64
         const base64Image = await convertImageToBase64(manipResult.uri);
         
+        // Verificar que no sigui massa gran (límit ~500KB en base64)
+        if (base64Image.length > 700000) {
+          Alert.alert('Error', 'La imatge és massa gran. Prova amb una imatge més petita.');
+          return;
+        }
+        
         const newGallery = [...gallery];
         newGallery[index] = { ...newGallery[index], image_url: base64Image };
         setGallery(newGallery);
         
-        Alert.alert('Èxit', 'Imatge seleccionada correctament');
+        if (Platform.OS === 'web') {
+          window.alert('Imatge seleccionada correctament');
+        } else {
+          Alert.alert('Èxit', 'Imatge seleccionada correctament');
+        }
       } catch (error) {
         console.error('Error processing gallery image:', error);
-        Alert.alert('Error', 'No s\'ha pogut processar la imatge');
+        if (Platform.OS === 'web') {
+          window.alert('No s\'ha pogut processar la imatge');
+        } else {
+          Alert.alert('Error', 'No s\'ha pogut processar la imatge');
+        }
       }
     }
   };
