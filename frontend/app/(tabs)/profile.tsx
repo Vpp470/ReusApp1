@@ -811,11 +811,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.lightGray,
   },
+  menuItemSuccess: {
+    backgroundColor: Colors.success + '10',
+  },
   menuText: {
     flex: 1,
     fontSize: FontSizes.md,
     color: Colors.textDark, // Text fosc per fons blanc
     marginLeft: Spacing.md,
+  },
+  menuTextContainer: {
+    flex: 1,
+    marginLeft: Spacing.md,
+  },
+  menuSubtext: {
+    fontSize: FontSizes.xs,
+    color: Colors.gray,
+    marginTop: 2,
   },
   logoutButton: {
     flexDirection: 'row',
