@@ -2676,7 +2676,28 @@ async def send_broadcast_notification(
             web_failed = web_result.get("failed_count", 0)
         
         # ==============================
-        # GUARDAR HISTORIAL
+        # 3. GUARDAR NOTIFICACIONS PER CADA USUARI
+        # ==============================
+        # Guardar la notificació a la col·lecció "notifications" per a cada usuari
+        # Això permet que els usuaris vegin les notificacions a la seva pantalla
+        now = datetime.utcnow()
+        user_notifications = []
+        for user in users:
+            user_notifications.append({
+                "user_id": user["_id"],
+                "title": request.title,
+                "body": request.body,
+                "data": request.data or {},
+                "read": False,
+                "created_at": now
+            })
+        
+        # Inserció massiva per eficiència
+        if user_notifications:
+            await db.notifications.insert_many(user_notifications)
+        
+        # ==============================
+        # GUARDAR HISTORIAL ADMIN
         # ==============================
         filters_summary = None
         if request.filters:
@@ -2700,7 +2721,8 @@ async def send_broadcast_notification(
             "expo_failed": expo_failed,
             "web_sent": web_sent,
             "web_failed": web_failed,
-            "sent_at": datetime.utcnow(),
+            "users_notified": len(user_notifications),
+            "sent_at": now,
             "sent_by": authorization
         }
         await db.notification_history.insert_one(notification_log)
@@ -2712,7 +2734,8 @@ async def send_broadcast_notification(
             "expo_sent": expo_sent,
             "web_sent": web_sent,
             "total_sent": total_sent,
-            "message": f"Notificació enviada: {expo_sent} Expo, {web_sent} Web Push"
+            "users_notified": len(user_notifications),
+            "message": f"Notificació enviada: {expo_sent} Expo, {web_sent} Web Push. {len(user_notifications)} usuaris notificats."
         }
         
     except Exception as e:
