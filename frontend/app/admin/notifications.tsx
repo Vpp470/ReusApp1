@@ -73,6 +73,7 @@ export default function AdminNotificationsScreen() {
     loadStats();
     loadHistory();
     loadTags();
+    loadCampaigns();
   }, []);
 
   const loadStats = async () => {
