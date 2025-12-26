@@ -1237,4 +1237,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.white,
   },
+  textInputFilter: {
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: FontSizes.md,
+    color: Colors.textDark,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginTop: Spacing.xs,
+  },
 });
