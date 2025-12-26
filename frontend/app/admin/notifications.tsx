@@ -55,13 +55,19 @@ export default function AdminNotificationsScreen() {
   const [broadcastBody, setBroadcastBody] = useState('');
   const [broadcastTarget, setBroadcastTarget] = useState('all');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [broadcastLoading, setBroadcastLoading] = useState(false);
   
-  // Stats, history and tags
+  // Stats, history, tags and campaigns
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [history, setHistory] = useState<NotificationHistoryItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [campaigns, setCampaigns] = useState<TicketCampaign[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
+  
+  // Modal per seleccionar criteri
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filterType, setFilterType] = useState<'tag' | 'campaign' | null>(null);
 
   useEffect(() => {
     loadStats();
