@@ -10,19 +10,27 @@ import {
   RefreshControl,
   Modal,
   SafeAreaView,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../../src/store/authStore';
 import { giftCardsService, authService, establishmentsService } from '../../src/services/api';
 import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
 import type { GiftCard } from '../../src/types';
 import i18n, { changeLanguage, getCurrentLanguage } from '../../src/i18n';
+import { 
+  isWebPushSupported, 
+  subscribeToWebPush, 
+  isSubscribedToWebPush,
+  getNotificationPermission 
+} from '../../src/services/webPushService';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, token } = useAuthStore();
   const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
