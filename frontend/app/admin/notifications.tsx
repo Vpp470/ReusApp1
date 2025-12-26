@@ -172,6 +172,7 @@ export default function AdminNotificationsScreen() {
           setBroadcastTitle('');
           setBroadcastBody('');
           setSelectedTag(null);
+          setSelectedCampaign(null);
           loadHistory();
           loadStats();
         } else {
