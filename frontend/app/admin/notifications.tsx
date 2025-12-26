@@ -370,6 +370,62 @@ export default function AdminNotificationsScreen() {
             </View>
           )}
 
+          {/* Secció de Campanyes/Sorteigs */}
+          {campaigns.length > 0 && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>O selecciona una Campanya de Sorteig</Text>
+              <Text style={styles.sublabel}>Envia només als participants d'aquesta campanya</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tagsScroll}>
+                <View style={styles.tagsContainer}>
+                  {campaigns.map((campaign) => (
+                    <Pressable
+                      key={campaign._id}
+                      style={[
+                        styles.tagChip,
+                        styles.campaignChip,
+                        selectedCampaign === campaign._id && styles.tagChipSelected
+                      ]}
+                      onPress={() => {
+                        if (selectedCampaign === campaign._id) {
+                          setSelectedCampaign(null);
+                        } else {
+                          setSelectedCampaign(campaign._id);
+                          setSelectedTag(null); // Deseleccionar tag si triem campanya
+                        }
+                      }}
+                    >
+                      <MaterialIcons 
+                        name="confirmation-number" 
+                        size={16} 
+                        color={selectedCampaign === campaign._id ? Colors.white : Colors.warning} 
+                      />
+                      <Text style={[
+                        styles.tagChipText,
+                        selectedCampaign === campaign._id && styles.tagChipTextSelected
+                      ]}>
+                        {campaign.name}
+                      </Text>
+                      <Text style={[
+                        styles.tagChipCount,
+                        selectedCampaign === campaign._id && styles.tagChipCountSelected
+                      ]}>
+                        {campaign.participant_count || 0}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+              {selectedCampaign && (
+                <View style={styles.selectedTagInfo}>
+                  <MaterialIcons name="check-circle" size={18} color={Colors.success} />
+                  <Text style={styles.selectedTagText}>
+                    Enviaràs a {campaigns.find(c => c._id === selectedCampaign)?.participant_count || 0} participants de la campanya
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Títol *</Text>
             <TextInput
