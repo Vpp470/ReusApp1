@@ -56,7 +56,7 @@ export default function ProfileScreen() {
       console.log('Full user:', user);
       loadGiftCards();
       loadUserEstablishment();
-      checkWebPushStatus();;
+      checkWebPushStatus();
       checkAvailableEstablishments();
     }
   }, [user]);
