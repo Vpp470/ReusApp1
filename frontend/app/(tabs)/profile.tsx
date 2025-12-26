@@ -100,6 +100,62 @@ export default function ProfileScreen() {
     }
   };
 
+  // Funció per verificar l'estat de Web Push
+  const checkWebPushStatus = async () => {
+    if (Platform.OS !== 'web') {
+      setWebPushStatus('unsupported');
+      return;
+    }
+    
+    if (!isWebPushSupported()) {
+      setWebPushStatus('unsupported');
+      return;
+    }
+    
+    const permission = getNotificationPermission();
+    if (permission === 'denied') {
+      setWebPushStatus('denied');
+      return;
+    }
+    
+    const subscribed = await isSubscribedToWebPush();
+    setWebPushStatus(subscribed ? 'subscribed' : 'not-subscribed');
+  };
+
+  // Funció per activar Web Push
+  const handleEnableWebPush = async () => {
+    if (!token) {
+      Alert.alert('Error', 'Has d\'iniciar sessió per activar les notificacions');
+      return;
+    }
+    
+    try {
+      // Esborrar el flag de "dismissed" per poder tornar a mostrar el prompt si cal
+      await AsyncStorage.removeItem('web_push_prompt_dismissed');
+      
+      const success = await subscribeToWebPush(token);
+      
+      if (success) {
+        setWebPushStatus('subscribed');
+        Alert.alert('Activat!', 'Les notificacions push s\'han activat correctament');
+      } else {
+        const permission = getNotificationPermission();
+        if (permission === 'denied') {
+          setWebPushStatus('denied');
+          Alert.alert(
+            'Notificacions bloquejades',
+            'Has bloquejat les notificacions per aquesta web. Per activar-les, ves a la configuració del navegador.'
+          );
+        } else {
+          Alert.alert('Error', 'No s\'ha pogut activar les notificacions. Intenta-ho de nou.');
+        }
+      }
+    } catch (error) {
+      console.error('Error activant Web Push:', error);
+      Alert.alert('Error', 'Hi ha hagut un error activant les notificacions');
+    }
+  };
+
   const associateWithEstablishment = async (establishment: any) => {
     try {
       // Confirmar amb l'usuari
