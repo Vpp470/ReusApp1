@@ -38,12 +38,17 @@ def send_web_push(subscription_info: dict, title: str, body: str, data: dict = N
     
     try:
         # Preparar payload
+        # Assegurar que data conté la URL de navegació
+        notification_data = data.copy() if data else {}
+        if 'url' not in notification_data:
+            notification_data['url'] = '/notifications'  # URL per defecte
+        
         payload = {
             "title": title,
             "body": body,
             "icon": icon or "/icons/icon-192x192.png",
             "badge": "/icons/icon-72x72.png",
-            "data": data or {},
+            "data": notification_data,
             "requireInteraction": False,
             "tag": "el-tomb-de-reus"
         }
