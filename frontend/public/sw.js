@@ -121,15 +121,15 @@ self.addEventListener('notificationclick', (event) => {
     return;
   }
   
-  // Determinar URL a obrir
-  let url = '/';
+  // Determinar URL a obrir - per defecte anar a la pantalla de notificacions
+  let url = '/notifications';
   if (event.notification.data && event.notification.data.url) {
     url = event.notification.data.url;
   }
   
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Si ja hi ha una finestra oberta, enfocar-la
+      // Si ja hi ha una finestra oberta, enfocar-la i navegar
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           client.navigate(url);
