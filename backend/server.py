@@ -2412,6 +2412,143 @@ async def get_local_associat_balance(authorization: str = Header(None)):
         "has_bank_account": bool(establishment.get("bank_account_iban"))
     }
 
+@api_router.get("/gift-cards/user/{user_id}/balance")
+async def get_user_gift_card_balance(user_id: str, authorization: str = Header(None)):
+    """Obtenir el saldo de targetes regal d'un usuari (per al botiguer)"""
+    # Verificar que el que crida és un local_associat amb establiment
+    caller = await get_user_from_token(authorization)
+    if not caller:
+        raise HTTPException(status_code=401, detail="No autoritzat")
+    
+    # Buscar l'usuari target
+    try:
+        target_user = await db.users.find_one({"_id": ObjectId(user_id)})
+    except:
+        raise HTTPException(status_code=400, detail="ID d'usuari invàlid")
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Usuari no trobat")
+    
+    # Calcular saldo total de les targetes actives
+    gift_cards = await db.gift_cards.find({
+        "user_id": user_id,
+        "status": "active"
+    }).to_list(100)
+    
+    total_balance = sum(gc.get('balance', 0) for gc in gift_cards)
+    
+    return {
+        "user_id": user_id,
+        "name": target_user.get('name', ''),
+        "email": target_user.get('email', ''),
+        "balance": total_balance,
+        "cards_count": len(gift_cards)
+    }
+
+@api_router.post("/gift-cards/charge")
+async def charge_gift_card(
+    charge_data: dict,
+    authorization: str = Header(None)
+):
+    """Cobrar d'una targeta regal (botiguer cobra a client)"""
+    # Verificar que el que crida és un local_associat amb establiment
+    shop_user = await get_user_from_token(authorization)
+    if not shop_user:
+        raise HTTPException(status_code=401, detail="No autoritzat")
+    
+    shop_user_id = shop_user.get('_id') or shop_user.get('id')
+    if isinstance(shop_user_id, str):
+        shop_user_id = ObjectId(shop_user_id)
+    
+    # Verificar que té un establiment que accepta targetes regal
+    establishment = await db.establishments.find_one({"owner_id": shop_user_id})
+    if not establishment:
+        raise HTTPException(status_code=403, detail="No tens cap establiment assignat")
+    
+    if not establishment.get('accepts_gift_cards'):
+        raise HTTPException(status_code=403, detail="El teu establiment no accepta Targetes Regal")
+    
+    customer_id = charge_data.get('user_id')
+    amount = float(charge_data.get('amount', 0))
+    
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="L'import ha de ser positiu")
+    
+    if amount > 500:
+        raise HTTPException(status_code=400, detail="Import màxim per transacció: 500€")
+    
+    # Obtenir targetes actives del client
+    gift_cards = await db.gift_cards.find({
+        "user_id": customer_id,
+        "status": "active",
+        "balance": {"$gt": 0}
+    }).sort("created_at", 1).to_list(100)  # Ordenar per antiguitat (FIFO)
+    
+    total_balance = sum(gc.get('balance', 0) for gc in gift_cards)
+    
+    if total_balance < amount:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Saldo insuficient. El client té {total_balance:.2f}€ disponibles."
+        )
+    
+    # Descomptar l'import de les targetes (FIFO)
+    remaining = amount
+    for gc in gift_cards:
+        if remaining <= 0:
+            break
+        
+        card_balance = gc.get('balance', 0)
+        to_deduct = min(card_balance, remaining)
+        new_balance = card_balance - to_deduct
+        
+        # Actualitzar targeta
+        update_data = {"balance": new_balance}
+        if new_balance <= 0:
+            update_data["status"] = "used"
+        
+        await db.gift_cards.update_one(
+            {"_id": gc['_id']},
+            {"$set": update_data}
+        )
+        
+        remaining -= to_deduct
+    
+    # Afegir l'import al saldo del botiguer
+    current_shop_balance = establishment.get('gift_card_balance', 0)
+    new_shop_balance = current_shop_balance + amount
+    
+    await db.establishments.update_one(
+        {"_id": establishment['_id']},
+        {"$set": {"gift_card_balance": new_shop_balance}}
+    )
+    
+    # Registrar la transacció
+    transaction = {
+        "type": "gift_card_charge",
+        "customer_id": customer_id,
+        "shop_id": str(establishment['_id']),
+        "shop_name": establishment.get('name', ''),
+        "amount": amount,
+        "created_at": datetime.utcnow(),
+    }
+    await db.gift_card_transactions.insert_one(transaction)
+    
+    # Calcular nou saldo del client
+    updated_cards = await db.gift_cards.find({
+        "user_id": customer_id,
+        "status": "active"
+    }).to_list(100)
+    new_customer_balance = sum(gc.get('balance', 0) for gc in updated_cards)
+    
+    return {
+        "success": True,
+        "message": f"Cobrament de {amount:.2f}€ realitzat correctament",
+        "amount": amount,
+        "new_balance": new_customer_balance,
+        "shop_balance": new_shop_balance
+    }
+
 @api_router.get("/gift-cards/user/{user_id}")
 async def get_user_gift_cards(user_id: str):
     gift_cards = await db.gift_cards.find({"user_id": user_id}).to_list(100)
