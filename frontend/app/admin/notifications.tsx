@@ -38,6 +38,14 @@ interface Tag {
   count: number;
 }
 
+interface TicketCampaign {
+  _id: string;
+  name: string;
+  description?: string;
+  is_active: boolean;
+  participant_count?: number;
+}
+
 export default function AdminNotificationsScreen() {
   const router = useRouter();
   const { token } = useAuthStore();
