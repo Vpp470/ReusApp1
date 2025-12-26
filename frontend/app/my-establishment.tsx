@@ -49,9 +49,19 @@ export default function MyEstablishmentScreen() {
   });
 
   const [gallery, setGallery] = useState([
-    { image_url: '', description: '' },
-    { image_url: '', description: '' },
-    { image_url: '', description: '' },
+    { image_url: '', description: '', type: 'image' },
+    { image_url: '', description: '', type: 'image' },
+    { image_url: '', description: '', type: 'image' },
+    { image_url: '', description: '', type: 'image' },
+    { image_url: '', description: '', type: 'image' },
+    { image_url: '', description: '', type: 'image' },
+  ]);
+
+  // Videos curts
+  const [videos, setVideos] = useState([
+    { video_url: '', description: '' },
+    { video_url: '', description: '' },
+    { video_url: '', description: '' },
   ]);
 
   useEffect(() => {
