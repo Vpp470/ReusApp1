@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, ScrollView, Linking } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSizes, BorderRadius } from '../../src/constants/colors';
 import axios from 'axios';
 import Constants from 'expo-constants';
 
 interface Establishment {
   _id: string;
+  id?: string;
   name: string;
   address?: string;
   latitude?: number;
@@ -16,17 +18,44 @@ interface Establishment {
   phone?: string;
   email?: string;
   website?: string;
+  whatsapp?: string;
 }
 
 export default function MapScreen() {
+  const router = useRouter();
   const [establishments, setEstablishments] = useState<Establishment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEstablishment, setSelectedEstablishment] = useState<Establishment | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [mapInstance, setMapInstance] = useState<any>(null);
 
   useEffect(() => {
     loadEstablishments();
+    getUserLocation();
   }, []);
+
+  const getUserLocation = async () => {
+    if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log('📍 User location obtained:', position.coords);
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.warn('Could not get user location:', error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000,
+        }
+      );
+    }
+  };
 
   const loadEstablishments = async () => {
     try {
@@ -78,6 +107,40 @@ export default function MapScreen() {
     }
   }, [establishments]);
 
+  // Actualitzar marcador d'usuari quan canvia la ubicació
+  useEffect(() => {
+    if (userLocation && mapInstance && typeof window !== 'undefined') {
+      const L = (window as any).L;
+      if (L) {
+        // Icona vermella per la ubicació de l'usuari
+        const userIcon = L.divIcon({
+          className: 'user-location-marker',
+          html: `
+            <div style="
+              width: 20px;
+              height: 20px;
+              background-color: #FF0000;
+              border: 3px solid white;
+              border-radius: 50%;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            "></div>
+          `,
+          iconSize: [20, 20],
+          iconAnchor: [10, 10],
+        });
+
+        L.marker([userLocation.latitude, userLocation.longitude], {
+          icon: userIcon,
+          zIndexOffset: 1000,
+        })
+          .addTo(mapInstance)
+          .bindPopup('<strong>📍 La teva ubicació</strong>');
+
+        console.log('✅ User location marker added');
+      }
+    }
+  }, [userLocation, mapInstance]);
+
   const initializeMap = () => {
     if (typeof window === 'undefined' || !(window as any).L) return;
     
@@ -85,25 +148,44 @@ export default function MapScreen() {
     const mapElement = document.getElementById('leaflet-map');
     if (!mapElement) return;
 
-    // Inicialitzar mapa centrat a Reus
-    const map = L.map('leaflet-map').setView([41.1556, 1.1064], 15);
+    // Evitar reinicialitzar el mapa
+    if ((mapElement as any)._leaflet_id) {
+      return;
+    }
+
+    // Inicialitzar mapa centrat a Reus o a la ubicació de l'usuari
+    const center = userLocation || { latitude: 41.1556, longitude: 1.1064 };
+    const map = L.map('leaflet-map').setView([center.latitude, center.longitude], 15);
+    setMapInstance(map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(map);
 
-    // Afegir marcadors
+    // Icona personalitzada per establiments
+    const establishmentIcon = L.icon({
+      iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNSIgaGVpZ2h0PSI0MSIgdmlld0JveD0iMCAwIDI1IDQxIj48cGF0aCBmaWxsPSIjMDA3QUZGIiBkPSJNMTIuNSAwQzUuNiAwIDAgNS42IDAgMTIuNWMwIDEuNCAwLjIgMi44IDAuNyA0LjFMOC4zIDM1bC0wLjEgMC4xQzkuNCAzNy4xIDEwLjkgMzkgMTIuNSA0MWMxLjYtMiAzLjEtMy45IDQuMy02bC0wLjEtMC4xTDI0LjMgMTYuNmMwLjUtMS4zIDAuNy0yLjcgMC43LTQuMUMyNSA1LjYgMTkuNCAwIDEyLjUgMHpNMTIuNSAxN2MtMi41IDAtNC41LTItNC41LTQuNXMyLTQuNSA0LjUtNC41IDQuNSAyIDQuNSA0LjVTMTUgMTcgMTIuNSAxN3oiLz48L3N2Zz4=',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34]
+    });
+
+    // Afegir marcadors d'establiments
     establishments.forEach((est) => {
       if (est.latitude && est.longitude) {
-        const marker = L.marker([est.latitude, est.longitude])
+        const marker = L.marker([est.latitude, est.longitude], { icon: establishmentIcon })
           .addTo(map)
           .bindPopup(`
-            <div style="min-width: 200px;">
-              <h3 style="margin: 0 0 8px 0; font-size: 16px; color: ${Colors.primary};">${est.name}</h3>
-              ${est.address ? `<p style="margin: 4px 0;"><strong>📍</strong> ${est.address}</p>` : ''}
-              ${est.category ? `<p style="margin: 4px 0;"><strong>🏷️</strong> ${est.category}</p>` : ''}
-              ${est.phone ? `<p style="margin: 4px 0;"><strong>📞</strong> ${est.phone}</p>` : ''}
+            <div style="min-width: 200px; font-family: sans-serif;">
+              <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #7EB89E;">${est.name}</h3>
+              ${est.category ? `<p style="margin: 4px 0; color: #666;"><strong>🏷️</strong> ${est.category}</p>` : ''}
+              ${est.address ? `<p style="margin: 4px 0; color: #666;"><strong>📍</strong> ${est.address}</p>` : ''}
+              ${est.phone ? `<p style="margin: 4px 0;"><strong>📞</strong> <a href="tel:${est.phone}" style="color: #4CAF50; text-decoration: none;">${est.phone}</a></p>` : ''}
+              <button onclick="window.selectEstablishment('${est._id}')" 
+                style="margin-top: 8px; padding: 8px 16px; background: #7EB89E; color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%;">
+                Veure detalls
+              </button>
             </div>
           `);
         
@@ -113,7 +195,76 @@ export default function MapScreen() {
       }
     });
 
+    // Funció global per seleccionar establiment des del popup
+    (window as any).selectEstablishment = (id: string) => {
+      const est = establishments.find(e => e._id === id);
+      if (est) {
+        setSelectedEstablishment(est);
+      }
+    };
+
+    // Afegir marcador d'ubicació d'usuari si disponible
+    if (userLocation) {
+      const userIcon = L.divIcon({
+        className: 'user-location-marker',
+        html: `
+          <div style="
+            width: 20px;
+            height: 20px;
+            background-color: #FF0000;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          "></div>
+        `,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      });
+
+      L.marker([userLocation.latitude, userLocation.longitude], {
+        icon: userIcon,
+        zIndexOffset: 1000,
+      })
+        .addTo(map)
+        .bindPopup('<strong>📍 La teva ubicació</strong>');
+    }
+
     console.log('✅ Map initialized with', establishments.length, 'markers');
+  };
+
+  const openMapsDirections = (establishment: Establishment) => {
+    if (!establishment.latitude || !establishment.longitude) return;
+    
+    const destination = `${establishment.latitude},${establishment.longitude}`;
+    let url = '';
+    
+    if (userLocation) {
+      // Amb origen i destí
+      const origin = `${userLocation.latitude},${userLocation.longitude}`;
+      url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
+    } else {
+      // Només destí
+      url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+    }
+    
+    window.open(url, '_blank');
+  };
+
+  const handlePhoneCall = (phone: string) => {
+    window.open(`tel:${phone}`, '_self');
+  };
+
+  const handleWhatsApp = (phone: string) => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/${cleanPhone}`, '_blank');
+  };
+
+  const handleWebsite = (website: string) => {
+    let url = website;
+    if (!url.startsWith('http')) {
+      url = 'https://' + url;
+    }
+    window.open(url, '_blank');
   };
 
   if (loading) {
@@ -145,6 +296,20 @@ export default function MapScreen() {
     <View style={styles.container}>
       <div id="leaflet-map" style={{ width: '100%', height: '100%' }} />
       
+      {/* Botó per centrar a la ubicació de l'usuari */}
+      {userLocation && mapInstance && (
+        <TouchableOpacity
+          style={styles.locationButton}
+          onPress={() => {
+            if (mapInstance && userLocation) {
+              mapInstance.setView([userLocation.latitude, userLocation.longitude], 16);
+            }
+          }}
+        >
+          <MaterialIcons name="my-location" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+      )}
+      
       {selectedEstablishment && (
         <Modal
           visible={true}
@@ -157,7 +322,7 @@ export default function MapScreen() {
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>{selectedEstablishment.name}</Text>
                 <TouchableOpacity onPress={() => setSelectedEstablishment(null)}>
-                  <MaterialIcons name="close" size={24} color={Colors.text} />
+                  <MaterialIcons name="close" size={24} color={Colors.textDark} />
                 </TouchableOpacity>
               </View>
               
@@ -165,35 +330,98 @@ export default function MapScreen() {
                 {selectedEstablishment.category && (
                   <View style={styles.modalRow}>
                     <MaterialIcons name="category" size={20} color={Colors.primary} />
-                    <Text style={styles.modalLabel}>Categoria:</Text>
                     <Text style={styles.modalValue}>{selectedEstablishment.category}</Text>
                   </View>
                 )}
                 
                 {selectedEstablishment.address && (
-                  <View style={styles.modalRow}>
+                  <TouchableOpacity 
+                    style={styles.modalRow}
+                    onPress={() => openMapsDirections(selectedEstablishment)}
+                  >
                     <MaterialIcons name="place" size={20} color={Colors.primary} />
-                    <Text style={styles.modalLabel}>Adreça:</Text>
-                    <Text style={styles.modalValue}>{selectedEstablishment.address}</Text>
-                  </View>
+                    <Text style={[styles.modalValue, styles.linkText]}>{selectedEstablishment.address}</Text>
+                  </TouchableOpacity>
                 )}
                 
                 {selectedEstablishment.phone && (
-                  <View style={styles.modalRow}>
-                    <MaterialIcons name="phone" size={20} color={Colors.primary} />
-                    <Text style={styles.modalLabel}>Telèfon:</Text>
-                    <Text style={styles.modalValue}>{selectedEstablishment.phone}</Text>
-                  </View>
+                  <TouchableOpacity 
+                    style={styles.modalRow}
+                    onPress={() => handlePhoneCall(selectedEstablishment.phone!)}
+                  >
+                    <MaterialIcons name="phone" size={20} color={Colors.success} />
+                    <Text style={[styles.modalValue, styles.phoneText]}>{selectedEstablishment.phone}</Text>
+                    <MaterialIcons name="call" size={18} color={Colors.success} style={styles.callIcon} />
+                  </TouchableOpacity>
+                )}
+                
+                {selectedEstablishment.whatsapp && (
+                  <TouchableOpacity 
+                    style={styles.modalRow}
+                    onPress={() => handleWhatsApp(selectedEstablishment.whatsapp!)}
+                  >
+                    <MaterialIcons name="chat" size={20} color="#25D366" />
+                    <Text style={[styles.modalValue, { color: '#25D366' }]}>WhatsApp</Text>
+                  </TouchableOpacity>
+                )}
+                
+                {selectedEstablishment.website && (
+                  <TouchableOpacity 
+                    style={styles.modalRow}
+                    onPress={() => handleWebsite(selectedEstablishment.website!)}
+                  >
+                    <MaterialIcons name="language" size={20} color={Colors.primary} />
+                    <Text style={[styles.modalValue, styles.linkText]}>Lloc web</Text>
+                  </TouchableOpacity>
                 )}
                 
                 {selectedEstablishment.description && (
-                  <View style={styles.modalRow}>
-                    <MaterialIcons name="info" size={20} color={Colors.primary} />
-                    <Text style={styles.modalLabel}>Descripció:</Text>
-                    <Text style={styles.modalValue}>{selectedEstablishment.description}</Text>
+                  <View style={styles.descriptionContainer}>
+                    <Text style={styles.descriptionText}>
+                      {selectedEstablishment.description
+                        .replace(/<\/?p[^>]*>/g, '')
+                        .replace(/<\/?br[^>]*>/g, ' ')
+                        .replace(/<\/?[a-z]+[^>]*>/g, '')
+                        .replace(/&nbsp;/g, ' ')
+                        .replace(/&amp;/g, '&')
+                        .replace(/\s+/g, ' ')
+                        .trim()}
+                    </Text>
                   </View>
                 )}
               </ScrollView>
+              
+              {/* Botons d'acció */}
+              <View style={styles.actionButtons}>
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.directionsButton]}
+                  onPress={() => openMapsDirections(selectedEstablishment)}
+                >
+                  <MaterialIcons name="directions" size={20} color={Colors.white} />
+                  <Text style={styles.actionButtonText}>Com arribar</Text>
+                </TouchableOpacity>
+                
+                {selectedEstablishment.phone && (
+                  <TouchableOpacity 
+                    style={[styles.actionButton, styles.callButton]}
+                    onPress={() => handlePhoneCall(selectedEstablishment.phone!)}
+                  >
+                    <MaterialIcons name="call" size={20} color={Colors.white} />
+                    <Text style={styles.actionButtonText}>Trucar</Text>
+                  </TouchableOpacity>
+                )}
+                
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.detailsButton]}
+                  onPress={() => {
+                    setSelectedEstablishment(null);
+                    router.push(`/establishments/${selectedEstablishment._id || selectedEstablishment.id}`);
+                  }}
+                >
+                  <MaterialIcons name="info" size={20} color={Colors.primary} />
+                  <Text style={[styles.actionButtonText, { color: Colors.primary }]}>Detalls</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>
@@ -215,7 +443,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: Spacing.md,
     fontSize: FontSizes.md,
-    color: Colors.darkGray, // Text gris per fons blanc
+    color: Colors.darkGray,
   },
   errorContainer: {
     flex: 1,
@@ -237,9 +465,25 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
   },
   retryButtonText: {
-    color: Colors.textDark, // Text fosc per fons blanc
+    color: Colors.white,
     fontSize: FontSizes.md,
     fontWeight: 'bold',
+  },
+  locationButton: {
+    position: 'absolute',
+    bottom: 100,
+    right: 16,
+    width: 48,
+    height: 48,
+    backgroundColor: Colors.white,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   modalOverlay: {
     flex: 1,
@@ -251,6 +495,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: BorderRadius.lg,
     borderTopRightRadius: BorderRadius.lg,
     maxHeight: '80%',
+    paddingBottom: 100,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -268,22 +513,73 @@ const styles = StyleSheet.create({
   },
   modalBody: {
     padding: Spacing.lg,
+    maxHeight: 300,
   },
   modalRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: Spacing.md,
-  },
-  modalLabel: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    color: Colors.textDark, // Text fosc per fons blanc
-    marginLeft: Spacing.sm,
-    marginRight: Spacing.xs,
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
   },
   modalValue: {
     fontSize: FontSizes.md,
-    color: Colors.darkGray, // Text gris per fons blanc
+    color: Colors.darkGray,
+    marginLeft: Spacing.md,
     flex: 1,
+  },
+  linkText: {
+    color: Colors.primary,
+    textDecorationLine: 'underline',
+  },
+  phoneText: {
+    color: Colors.success,
+    fontWeight: '600',
+  },
+  callIcon: {
+    marginLeft: Spacing.sm,
+  },
+  descriptionContainer: {
+    marginTop: Spacing.md,
+    padding: Spacing.md,
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.md,
+  },
+  descriptionText: {
+    fontSize: FontSizes.sm,
+    color: Colors.darkGray,
+    lineHeight: 20,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    padding: Spacing.md,
+    gap: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.lightGray,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.xs,
+  },
+  directionsButton: {
+    backgroundColor: Colors.primary,
+  },
+  callButton: {
+    backgroundColor: Colors.success,
+  },
+  detailsButton: {
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  actionButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
   },
 });
