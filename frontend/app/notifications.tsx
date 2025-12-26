@@ -323,13 +323,13 @@ const styles = StyleSheet.create({
   },
   notificationBody: {
     fontSize: FontSizes.sm,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: Colors.darkGray,
     marginBottom: Spacing.xs,
     lineHeight: 20,
   },
   notificationDate: {
     fontSize: FontSizes.xs,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: Colors.textSecondary,
   },
   deleteButton: {
     padding: Spacing.xs,
