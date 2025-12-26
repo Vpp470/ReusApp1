@@ -1856,6 +1856,25 @@ async def update_campaign(campaign_id: str, campaign_data: TicketCampaign, autho
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/admin/tickets/campaigns/{campaign_id}/participants/count")
+async def get_campaign_participants_count(
+    campaign_id: str,
+    authorization: str = Header(None)
+):
+    """Obtenir el nombre de participants d'una campanya"""
+    user = await get_user_from_token(authorization)
+    if not user or user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    try:
+        # Comptar participants amb participacions > 0
+        count = await db.draw_participations.count_documents({
+            "participations": {"$gt": 0}
+        })
+        return {"count": count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/admin/tickets/draw")
 async def conduct_draw(
     campaign_id: str,
