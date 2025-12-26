@@ -124,35 +124,62 @@ export default function ProfileScreen() {
 
   // Funció per activar Web Push
   const handleEnableWebPush = async () => {
+    console.log('[WebPush] Botó clicat, intentant activar...');
+    
     if (!token) {
-      Alert.alert('Error', 'Has d\'iniciar sessió per activar les notificacions');
+      console.log('[WebPush] No hi ha token!');
+      if (Platform.OS === 'web') {
+        window.alert('Has d\'iniciar sessió per activar les notificacions');
+      } else {
+        Alert.alert('Error', 'Has d\'iniciar sessió per activar les notificacions');
+      }
       return;
     }
     
     try {
+      console.log('[WebPush] Esborrant flag dismissed...');
       // Esborrar el flag de "dismissed" per poder tornar a mostrar el prompt si cal
       await AsyncStorage.removeItem('web_push_prompt_dismissed');
       
+      console.log('[WebPush] Cridant subscribeToWebPush...');
       const success = await subscribeToWebPush(token);
+      console.log('[WebPush] Resultat:', success);
       
       if (success) {
         setWebPushStatus('subscribed');
-        Alert.alert('Activat!', 'Les notificacions push s\'han activat correctament');
+        if (Platform.OS === 'web') {
+          window.alert('Les notificacions push s\'han activat correctament!');
+        } else {
+          Alert.alert('Activat!', 'Les notificacions push s\'han activat correctament');
+        }
       } else {
         const permission = getNotificationPermission();
+        console.log('[WebPush] Permís:', permission);
         if (permission === 'denied') {
           setWebPushStatus('denied');
-          Alert.alert(
-            'Notificacions bloquejades',
-            'Has bloquejat les notificacions per aquesta web. Per activar-les, ves a la configuració del navegador.'
-          );
+          if (Platform.OS === 'web') {
+            window.alert('Has bloquejat les notificacions per aquesta web. Per activar-les, ves a la configuració del navegador.');
+          } else {
+            Alert.alert(
+              'Notificacions bloquejades',
+              'Has bloquejat les notificacions per aquesta web. Per activar-les, ves a la configuració del navegador.'
+            );
+          }
         } else {
-          Alert.alert('Error', 'No s\'ha pogut activar les notificacions. Intenta-ho de nou.');
+          if (Platform.OS === 'web') {
+            window.alert('No s\'ha pogut activar les notificacions. Intenta-ho de nou.');
+          } else {
+            Alert.alert('Error', 'No s\'ha pogut activar les notificacions. Intenta-ho de nou.');
+          }
         }
       }
     } catch (error) {
-      console.error('Error activant Web Push:', error);
-      Alert.alert('Error', 'Hi ha hagut un error activant les notificacions');
+      console.error('[WebPush] Error activant Web Push:', error);
+      if (Platform.OS === 'web') {
+        window.alert('Hi ha hagut un error activant les notificacions: ' + (error as Error).message);
+      } else {
+        Alert.alert('Error', 'Hi ha hagut un error activant les notificacions');
+      }
     }
   };
 
