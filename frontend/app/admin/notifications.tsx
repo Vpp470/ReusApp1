@@ -690,6 +690,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     color: Colors.primary,
   },
+  campaignChip: {
+    borderColor: Colors.warning,
+  },
   selectedTagInfo: {
     flexDirection: 'row',
     alignItems: 'center',
