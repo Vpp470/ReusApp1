@@ -5,8 +5,21 @@
 
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
-const API_BASE = '/api';
+// Obtenir la URL base de l'API
+const getApiBase = (): string => {
+  // En web, primer intentem obtenir la URL de l'entorn
+  const envUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 
+                 process.env.EXPO_PUBLIC_BACKEND_URL;
+  
+  if (envUrl) {
+    return `${envUrl}/api`;
+  }
+  
+  // Fallback: usar URL relativa
+  return '/api';
+};
 
 /**
  * Converteix una clau base64 URL-safe a Uint8Array
