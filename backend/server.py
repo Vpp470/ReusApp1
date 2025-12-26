@@ -459,24 +459,33 @@ class WebPushSubscription(BaseModel):
 async def get_user_from_token(authorization: str):
     """Obtenir usuari des del token d'autorització"""
     if not authorization:
+        print("[AUTH] No hi ha authorization header")
         return None
     
     # Suportar diferents formats de token
     token = authorization.replace("Bearer ", "").replace("token_", "")
+    print(f"[AUTH] Token rebut (primers 20 chars): {token[:20]}...")
     
     try:
         # Primer intentar buscar per token directament (nou sistema)
         user = await db.users.find_one({"token": token})
         if user:
+            print(f"[AUTH] Usuari trobat pel camp 'token': {user.get('email')}")
             return user
+        else:
+            print("[AUTH] Usuari NO trobat pel camp 'token'")
         
         # Si no es troba, intentar buscar per _id (sistema antic amb token_)
         try:
             user = await db.users.find_one({"_id": ObjectId(token)})
+            if user:
+                print(f"[AUTH] Usuari trobat per ObjectId: {user.get('email')}")
             return user
-        except:
+        except Exception as e:
+            print(f"[AUTH] Error buscant per ObjectId: {e}")
             return None
-    except Exception:
+    except Exception as e:
+        print(f"[AUTH] Error general: {e}")
         return None
 
 # Authentication endpoints
