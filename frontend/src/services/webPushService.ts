@@ -98,9 +98,11 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
 /**
  * Obté la clau pública VAPID del servidor
  */
-async function getVapidPublicKey(): Promise<string | null> {
+export async function getVapidPublicKey(): Promise<string | null> {
   try {
-    const response = await fetch(`${API_BASE}/web-push/vapid-public-key`);
+    const apiBase = getApiBase();
+    console.log('[WebPush] Obtenint clau VAPID de:', `${apiBase}/web-push/vapid-public-key`);
+    const response = await fetch(`${apiBase}/web-push/vapid-public-key`);
     if (!response.ok) {
       throw new Error('No s\'ha pogut obtenir la clau VAPID');
     }
