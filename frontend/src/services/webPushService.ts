@@ -200,7 +200,8 @@ export async function unsubscribeFromWebPush(authToken: string): Promise<boolean
     }
     
     // Eliminar del servidor
-    await fetch(`${API_BASE}/web-push/unsubscribe`, {
+    const apiBase = getApiBase();
+    await fetch(`${apiBase}/web-push/unsubscribe`, {
       method: 'DELETE',
       headers: {
         'Authorization': authToken
