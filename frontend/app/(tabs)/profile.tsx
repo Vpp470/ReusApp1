@@ -102,24 +102,35 @@ export default function ProfileScreen() {
 
   // Funció per verificar l'estat de Web Push
   const checkWebPushStatus = async () => {
+    console.log('[WebPush] checkWebPushStatus - Platform:', Platform.OS);
+    
     if (Platform.OS !== 'web') {
+      console.log('[WebPush] No és web, marcant com unsupported');
       setWebPushStatus('unsupported');
       return;
     }
     
-    if (!isWebPushSupported()) {
+    const supported = isWebPushSupported();
+    console.log('[WebPush] isWebPushSupported:', supported);
+    
+    if (!supported) {
       setWebPushStatus('unsupported');
       return;
     }
     
     const permission = getNotificationPermission();
+    console.log('[WebPush] getNotificationPermission:', permission);
+    
     if (permission === 'denied') {
       setWebPushStatus('denied');
       return;
     }
     
     const subscribed = await isSubscribedToWebPush();
+    console.log('[WebPush] isSubscribedToWebPush:', subscribed);
+    
     setWebPushStatus(subscribed ? 'subscribed' : 'not-subscribed');
+    console.log('[WebPush] Estat final:', subscribed ? 'subscribed' : 'not-subscribed');
   };
 
   // Funció per activar Web Push
