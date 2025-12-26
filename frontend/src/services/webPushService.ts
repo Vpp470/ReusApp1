@@ -153,7 +153,8 @@ export async function subscribeToWebPush(authToken: string): Promise<boolean> {
     
     // 5. Enviar subscripció al servidor
     const subscriptionJson = subscription.toJSON();
-    const response = await fetch(`${API_BASE}/web-push/subscribe`, {
+    const apiBase = getApiBase();
+    const response = await fetch(`${apiBase}/web-push/subscribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
