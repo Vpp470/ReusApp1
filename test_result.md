@@ -3198,3 +3198,42 @@ backend:
           
           🎉 CONCLUSION: The complete ownership management system is fully functional and ready for production use. All endpoints work correctly with proper authentication, validation, and data persistence.
 
+
+  - agent: "main"
+    message: |
+      ✅ IMPLEMENTAT: Filtratge Avançat de Notificacions Push
+      
+      🔧 CANVIS AL BACKEND (admin_routes.py):
+      
+      1. **POST /api/admin/notifications/estimate** - Nou endpoint
+         - Estima el nombre de destinataris segons filtres de segmentació
+         - Suporta filtres: tags, gènere, rang d'edat, campanyes, esdeveniments
+         - Retorna el comptador d'usuaris que tenen dispositius de notificació actius
+      
+      2. **POST /api/admin/notifications/broadcast** - Nou endpoint
+         - Envia notificacions amb filtres de segmentació opcionals
+         - Suporta target "segmented" per aplicar filtres avançats
+         - Compatible amb Expo Push i Web Push
+         - Guarda historial amb informació dels filtres aplicats
+      
+      3. **Funció auxiliar build_segmentation_query()** - Nova funció
+         - Construeix consultes MongoDB complexes a partir dels filtres
+         - Combina múltiples condicions amb AND
+         - Suporta:
+           * Filtres per tags/marcadors (usuaris amb participacions)
+           * Filtres per gènere
+           * Filtres per rang d'edat (calculat a partir de birth_date)
+           * Filtres per campanyes de sorteig
+           * Filtres per esdeveniments
+      
+      📊 VERIFICACIÓ:
+      - Import del mòdul: ✅ Correcte
+      - Endpoints registrats: ✅ 5 endpoints de notificacions
+      - Backend reiniciat: ✅ Sense errors
+      - Base de dades: 6456 usuaris, 1 amb dispositiu de push actiu
+      
+      🎯 ESTAT ACTUAL:
+      - El frontend ja tenia la UI del modal implementada
+      - Ara el backend suporta completament els filtres de segmentació
+      - Pendent: Verificar funcionament complet quan el preview estigui disponible
+
