@@ -137,7 +137,13 @@ export default function ProfileScreen() {
   const handleEnableWebPush = async () => {
     console.log('[WebPush] Botó clicat, intentant activar...');
     
-    if (!token) {
+    // Obtenir token - primer de l'store, després del localStorage
+    let authToken = token;
+    if (!authToken && typeof localStorage !== 'undefined') {
+      authToken = localStorage.getItem('reusapp_auth_token');
+    }
+    
+    if (!authToken) {
       console.log('[WebPush] No hi ha token!');
       if (Platform.OS === 'web') {
         window.alert('Has d\'iniciar sessió per activar les notificacions');
@@ -147,13 +153,15 @@ export default function ProfileScreen() {
       return;
     }
     
+    console.log('[WebPush] Token trobat, procedint...');
+    
     try {
       console.log('[WebPush] Esborrant flag dismissed...');
       // Esborrar el flag de "dismissed" per poder tornar a mostrar el prompt si cal
       await AsyncStorage.removeItem('web_push_prompt_dismissed');
       
       console.log('[WebPush] Cridant subscribeToWebPush...');
-      const success = await subscribeToWebPush(token);
+      const success = await subscribeToWebPush(authToken);
       console.log('[WebPush] Resultat:', success);
       
       if (success) {
