@@ -195,7 +195,9 @@ export default function AdminNotificationsScreen() {
                         filters.ageMin || 
                         filters.ageMax || 
                         filters.campaigns.length > 0 || 
-                        filters.events.length > 0;
+                        filters.events.length > 0 ||
+                        filters.city ||
+                        filters.postalCode;
       if (hasFilters) {
         const timer = setTimeout(estimateRecipients, 500);
         return () => clearTimeout(timer);
