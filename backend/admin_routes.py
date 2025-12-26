@@ -2518,6 +2518,25 @@ async def build_segmentation_query(filters: SegmentationFilters) -> dict:
         else:
             return {"_id": {"$exists": False}}
     
+    # Filtre per ciutat
+    if filters.city and filters.city.strip():
+        city_pattern = filters.city.strip()
+        # Cerca insensible a majúscules/minúscules
+        conditions.append({
+            "city": {"$regex": city_pattern, "$options": "i"}
+        })
+    
+    # Filtre per codi postal
+    if filters.postalCode and filters.postalCode.strip():
+        postal_code = filters.postalCode.strip()
+        # Cerca per codi postal exacte o que comenci amb el prefix
+        conditions.append({
+            "$or": [
+                {"postal_code": postal_code},
+                {"postal_code": {"$regex": f"^{postal_code}"}}
+            ]
+        })
+    
     # Combinar totes les condicions amb AND
     if len(conditions) == 1:
         query = conditions[0]
