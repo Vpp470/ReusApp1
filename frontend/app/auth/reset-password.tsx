@@ -41,23 +41,29 @@ export default function ResetPasswordScreen() {
       return;
     }
 
+    if (!token) {
+      setError('Token invàlid. Si us plau, sol·licita un nou enllaç.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
-      await api.post('/auth/reset-password', null, {
-        params: {
-          token: token,
-          new_password: newPassword
-        }
+      await api.post('/auth/reset-password', {
+        token: token,
+        new_password: newPassword
       });
 
       console.log('Password reset successfully');
+      if (Platform.OS === 'web') {
+        window.alert('Contrasenya actualitzada correctament. Ja pots iniciar sessió.');
+      }
       router.replace('/auth/login');
     } catch (error: any) {
       console.error('Error resetting password:', error);
       if (error.response?.status === 400) {
-        setError('Token invàlid o caducat. Si us plau, sol·licita un nou enllaç.');
+        setError(error.response?.data?.detail || 'Token invàlid o caducat. Si us plau, sol·licita un nou enllaç.');
       } else {
         setError('No s\'ha pogut actualitzar la contrasenya');
       }
