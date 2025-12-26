@@ -529,9 +529,15 @@ export default function ProfileScreen() {
 
         {/* Web Push - només mostrar a web */}
         {Platform.OS === 'web' && webPushStatus !== 'unsupported' && (
-          <Pressable 
+          <TouchableOpacity 
             style={[styles.menuItem, webPushStatus === 'subscribed' && styles.menuItemSuccess]}
-            onPress={webPushStatus !== 'subscribed' ? handleEnableWebPush : undefined}
+            onPress={() => {
+              console.log('[WebPush] Botó clicat! Estat actual:', webPushStatus);
+              if (webPushStatus !== 'subscribed') {
+                handleEnableWebPush();
+              }
+            }}
+            activeOpacity={0.7}
           >
             <MaterialIcons 
               name={webPushStatus === 'subscribed' ? 'notifications-active' : 'notifications-off'} 
@@ -556,7 +562,7 @@ export default function ProfileScreen() {
             {webPushStatus === 'subscribed' && (
               <MaterialIcons name="check-circle" size={24} color={Colors.success} />
             )}
-          </Pressable>
+          </TouchableOpacity>
         )}
 
         <Pressable style={styles.menuItem}>
