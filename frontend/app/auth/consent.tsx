@@ -116,7 +116,7 @@ export default function ConsentScreen() {
             <View style={styles.infoContent}>
               <Text style={styles.infoTitle}>Responsable del tractament</Text>
               <Text style={styles.infoText}>REUS COMERÇ i FUTUR</Text>
-              <Text style={styles.infoText}>protecciodades@reuscomercifutur.com</Text>
+              <Text style={styles.infoText}>gestio@eltombdereus.com</Text>
             </View>
           </View>
 
@@ -145,7 +145,7 @@ export default function ConsentScreen() {
             <View style={styles.infoContent}>
               <Text style={styles.infoTitle}>Els teus drets</Text>
               <Text style={styles.infoText}>
-                Tens dret a accedir, rectificar, suprimir, limitar el tractament, oposar-te i a la portabilitat de les teves dades. Pots exercir aquests drets contactant-nos a protecciodades@reuscomercifutur.com
+                Tens dret a accedir, rectificar, suprimir, limitar el tractament, oposar-te i a la portabilitat de les teves dades. Pots exercir aquests drets contactant-nos a gestio@eltombdereus.com
               </Text>
             </View>
           </View>
