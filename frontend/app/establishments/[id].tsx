@@ -181,6 +181,39 @@ export default function EstablishmentDetailScreen() {
           </View>
         )}
 
+        {/* Vídeos */}
+        {establishment.videos && Array.isArray(establishment.videos) && establishment.videos.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              <MaterialIcons name="videocam" size={20} color={Colors.primary} /> Vídeos
+            </Text>
+            {establishment.videos.map((video: any, index: number) => (
+              <TouchableOpacity
+                key={`video-${index}`}
+                style={styles.videoItem}
+                onPress={() => {
+                  if (video.video_url) {
+                    Linking.openURL(video.video_url);
+                  }
+                }}
+              >
+                <View style={styles.videoThumbnail}>
+                  <MaterialIcons name="play-circle-filled" size={48} color={Colors.primary} />
+                </View>
+                <View style={styles.videoInfo}>
+                  <Text style={styles.videoTitle}>Vídeo {index + 1}</Text>
+                  {video.description && (
+                    <Text style={styles.videoDescription} numberOfLines={2}>
+                      {video.description}
+                    </Text>
+                  )}
+                </View>
+                <MaterialIcons name="open-in-new" size={20} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
         {/* Contact Info */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Informació de Contacte</Text>
