@@ -2184,12 +2184,14 @@ async def send_notification_to_users(
     - "users": Només usuaris normals
     - "role:local_associat": Usuaris amb un rol específic
     - "tag:nadal2024": Usuaris amb un marcador específic
+    - "campaign:ID": Participants d'una campanya de sorteig
     """
     await verify_admin(authorization)
     
     try:
         # Construir la consulta base segons el target (sense filtrar per push_token)
         query = {}
+        user_ids_filter = None
         
         if notification.target == "admins":
             query["role"] = "admin"
@@ -2201,6 +2203,15 @@ async def send_notification_to_users(
         elif notification.target.startswith("tag:"):
             tag = notification.target.split(":", 1)[1]
             query["tags"] = tag
+        elif notification.target.startswith("campaign:"):
+            # Obtenir participants d'una campanya de sorteig
+            campaign_id = notification.target.split(":", 1)[1]
+            participations = await db.draw_participations.find(
+                {"participations": {"$gt": 0}}
+            ).to_list(10000)
+            user_ids_filter = [p.get("user_id") for p in participations if p.get("user_id")]
+            if user_ids_filter:
+                query["_id"] = {"$in": [ObjectId(uid) if isinstance(uid, str) else uid for uid in user_ids_filter]}
         # "all" no afegeix cap filtre addicional
         
         # Obtenir TOTS els usuaris que compleixen el filtre
