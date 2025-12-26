@@ -730,6 +730,35 @@ export default function AdminNotificationsScreen() {
                 </View>
               </View>
 
+              {/* Filtres per Ciutat */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>
+                  <MaterialIcons name="location-city" size={18} color={Colors.primary} /> Ciutat
+                </Text>
+                <TextInput
+                  style={styles.textInputFilter}
+                  placeholder="Escriu el nom de la ciutat..."
+                  placeholderTextColor={Colors.gray}
+                  value={filters.city}
+                  onChangeText={(val) => setFilters(prev => ({ ...prev, city: val }))}
+                />
+              </View>
+
+              {/* Filtres per Codi Postal */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>
+                  <MaterialIcons name="markunread-mailbox" size={18} color={Colors.primary} /> Codi Postal
+                </Text>
+                <TextInput
+                  style={styles.textInputFilter}
+                  placeholder="Escriu el codi postal..."
+                  placeholderTextColor={Colors.gray}
+                  keyboardType="numeric"
+                  value={filters.postalCode}
+                  onChangeText={(val) => setFilters(prev => ({ ...prev, postalCode: val }))}
+                />
+              </View>
+
               {/* Filtres per Campanyes de Sorteig */}
               <View style={styles.filterSection}>
                 <Text style={styles.filterSectionTitle}>
