@@ -50,9 +50,10 @@ export default function AssumptesPage() {
       const response = await api.get('/consell/assumptes', {
         headers: { Authorization: token },
       });
-      setNotices(response.data);
+      setNotices(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error loading notices:', error);
+      setNotices([]);
     } finally {
       setLoading(false);
     }
