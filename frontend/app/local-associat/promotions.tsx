@@ -217,29 +217,45 @@ export default function LocalAssociatPromotionsScreen() {
   };
 
   const handleDelete = async (promotionId: string) => {
-    Alert.alert(
-      'Confirmar',
-      'Estàs segur que vols eliminar aquesta promoció?',
-      [
-        { text: 'Cancel·lar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.delete(`/promotions/${promotionId}`, {
-                headers: { Authorization: token },
-              });
-              Alert.alert('Èxit', 'Promoció eliminada correctament');
-              loadPromotions();
-            } catch (error) {
-              console.error('Error deleting promotion:', error);
-              Alert.alert('Error', 'No s\'ha pogut eliminar la promoció');
-            }
+    const confirmDelete = async () => {
+      try {
+        await api.delete(`/promotions/${promotionId}`, {
+          headers: { Authorization: token },
+        });
+        if (Platform.OS === 'web') {
+          window.alert('Promoció eliminada correctament');
+        } else {
+          Alert.alert('Èxit', 'Promoció eliminada correctament');
+        }
+        loadPromotions();
+      } catch (error) {
+        console.error('Error deleting promotion:', error);
+        if (Platform.OS === 'web') {
+          window.alert('No s\'ha pogut eliminar la promoció');
+        } else {
+          Alert.alert('Error', 'No s\'ha pogut eliminar la promoció');
+        }
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Estàs segur que vols eliminar aquesta promoció?')) {
+        confirmDelete();
+      }
+    } else {
+      Alert.alert(
+        'Confirmar',
+        'Estàs segur que vols eliminar aquesta promoció?',
+        [
+          { text: 'Cancel·lar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: confirmDelete,
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const resetForm = () => {
