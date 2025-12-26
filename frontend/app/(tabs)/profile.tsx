@@ -130,6 +130,22 @@ export default function ProfileScreen() {
     const subscribed = await isSubscribedToWebPush();
     console.log('[WebPush] isSubscribedToWebPush:', subscribed);
     
+    // Si l'usuari està subscrit al navegador, intentar re-sincronitzar amb el servidor
+    if (subscribed && permission === 'granted') {
+      console.log('[WebPush] Usuari subscrit al navegador, re-sincronitzant amb servidor...');
+      
+      // Obtenir token
+      let authToken = token;
+      if (!authToken && typeof localStorage !== 'undefined') {
+        authToken = localStorage.getItem('reusapp_auth_token');
+      }
+      
+      if (authToken) {
+        const resyncResult = await resyncWebPushSubscription(authToken);
+        console.log('[WebPush] Re-sincronització:', resyncResult ? 'OK' : 'FALLIDA');
+      }
+    }
+    
     setWebPushStatus(subscribed ? 'subscribed' : 'not-subscribed');
     console.log('[WebPush] Estat final:', subscribed ? 'subscribed' : 'not-subscribed');
   };
