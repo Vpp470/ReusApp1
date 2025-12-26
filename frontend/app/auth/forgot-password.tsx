@@ -37,28 +37,27 @@ export default function ForgotPasswordScreen() {
 
     try {
       // Enviar correu de recuperació
-      const response = await api.post('/auth/forgot-password', null, {
-        params: { email }
-      });
+      const response = await api.post('/auth/forgot-password', { email });
       
-      if (response.data.success) {
-        // Mostrar missatge d'èxit
-        console.log('Email sent successfully');
-        console.log('Reset URL:', response.data.reset_url);
-        
-        // Mostrar missatge a l'usuari
-        setError('');
-        router.push({
-          pathname: '/auth/email-sent',
-          params: { email, resetUrl: response.data.reset_url }
-        });
+      // Mostrar missatge d'èxit
+      if (Platform.OS === 'web') {
+        window.alert('Si el correu existeix, rebràs un enllaç per restablir la contrasenya. Revisa la teva safata d\'entrada.');
       }
+      
+      // Tornar a la pantalla de login
+      router.replace('/auth/login');
     } catch (error: any) {
       console.error('Error sending email:', error);
       if (error.response?.status === 404) {
         setError('usuari no registrat');
-      } else {
+      } else if (error.response?.status === 500) {
         setError('Error enviant el correu. Si us plau, torna-ho a intentar.');
+      } else {
+        // Per seguretat, mostrar missatge genèric
+        if (Platform.OS === 'web') {
+          window.alert('Si el correu existeix, rebràs un enllaç per restablir la contrasenya.');
+        }
+        router.replace('/auth/login');
       }
     } finally {
       setLoading(false);
