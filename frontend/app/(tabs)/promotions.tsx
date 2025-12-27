@@ -15,10 +15,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
 import { useAuthStore } from '../../src/store/authStore';
-import axios from 'axios';
-import Constants from 'expo-constants';
-
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
+import api from '../../src/services/api';
 
 interface Promotion {
   _id: string;
@@ -53,7 +50,7 @@ export default function PromotionsScreen() {
         headers.Authorization = token;
       }
 
-      const response = await axios.get(`${API_URL}/api/promotions`, { headers });
+      const response = await api.get('/promotions', { headers });
       setPromotions(response.data);
     } catch (error) {
       console.error('Error loading promotions:', error);
