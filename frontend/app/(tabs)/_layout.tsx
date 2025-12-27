@@ -87,7 +87,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="offers"
         options={{
-          title: 'Promocions',
+          href: null, // Ocultar - utilitzem promotions
+          title: 'Ofertes',
           tabBarIcon: ({ color, size}) => (
             <MaterialIcons name="local-offer" size={24} color={color} />
           ),
@@ -105,7 +106,6 @@ export default function TabLayout() {
       <Tabs.Screen
         name="promotions"
         options={{
-          href: null, // Accessible des del menú home
           title: 'Promocions',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="card-giftcard" size={size} color={color} />
