@@ -1362,24 +1362,41 @@ async def get_promotions(authorization: str = Header(None)):
     """
     Obtenir promocions:
     - Si és admin o local_associat: veu totes les seves
-    - Si és usuari normal: només veu les aprovades
+    - Si és usuari normal: només veu les aprovades i actives (dins el període de validesa)
     """
+    from datetime import datetime
+    now = datetime.utcnow()
+    
     if authorization:
         user = await get_user_from_token(authorization)
         
         if user and user.get('role') in ['admin', 'local_associat', 'entitat_colaboradora', 'membre_consell']:
             user_id = str(user['_id'])
-            # Admins i associats veuen totes les seves
+            # Admins i associats veuen totes les seves (incloent caducades)
             if user.get('role') == 'admin':
                 promotions = await db.promotions.find().sort("created_at", -1).to_list(100)
             else:
                 promotions = await db.promotions.find({"created_by": user_id}).sort("created_at", -1).to_list(100)
         else:
-            # Usuaris normals només veuen aprovades
-            promotions = await db.promotions.find({"status": "approved"}).sort("created_at", -1).to_list(100)
+            # Usuaris normals només veuen aprovades i dins del període de validesa
+            promotions = await db.promotions.find({
+                "status": "approved",
+                "$or": [
+                    {"valid_until": {"$gte": now}},
+                    {"valid_until": None},
+                    {"valid_until": {"$exists": False}}
+                ]
+            }).sort("created_at", -1).to_list(100)
     else:
-        # Sense autenticació: només aprovades
-        promotions = await db.promotions.find({"status": "approved"}).sort("created_at", -1).to_list(100)
+        # Sense autenticació: només aprovades i actives
+        promotions = await db.promotions.find({
+            "status": "approved",
+            "$or": [
+                {"valid_until": {"$gte": now}},
+                {"valid_until": None},
+                {"valid_until": {"$exists": False}}
+            ]
+        }).sort("created_at", -1).to_list(100)
     
     for promo in promotions:
         promo['_id'] = str(promo['_id'])
