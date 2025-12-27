@@ -176,8 +176,23 @@ async def process_news_with_ai(raw_news: List[Dict], max_news: int = 6) -> List[
     Processar notícies amb IA per filtrar i resumir les més rellevants
     Si no hi ha clau d'API o falla, retorna les primeres notícies
     """
+    # Desactivar temporalment IA - utilitzar selecció automàtica
+    # El processament amb IA es pot reactivar configurant una clau vàlida
+    print("   📋 Selecció automàtica sense IA...")
+    
+    # Prioritzar notícies de Canal Reus i Reus Digital (més locals)
+    priority_sources = ["Canal Reus", "Reus Digital"]
+    priority_news = [n for n in raw_news if n.get('source') in priority_sources]
+    other_news = [n for n in raw_news if n.get('source') not in priority_sources]
+    selected = (priority_news + other_news)[:max_news]
+    print(f"   ✅ Seleccionades: {len(selected)} notícies")
+    return selected
+    
+    # === CODI IA DESACTIVAT ===
+    # Per reactivar, descomentar el codi següent i configurar una clau OpenAI vàlida
+    """
     try:
-        api_key = os.getenv('EMERGENT_LLM_KEY') or os.getenv('OPENAI_API_KEY')
+        api_key = os.getenv('OPENAI_API_KEY')  # Usar clau OpenAI real, no Emergent
         
         # Si no hi ha clau, retornar notícies sense processar
         if not api_key:
