@@ -174,9 +174,19 @@ async def scrape_news_from_url(url: str, source_name: str) -> List[Dict]:
 async def process_news_with_ai(raw_news: List[Dict], max_news: int = 6) -> List[Dict]:
     """
     Processar notícies amb IA per filtrar i resumir les més rellevants
+    Si no hi ha clau d'API o falla, retorna les primeres notícies
     """
     try:
-        api_key = os.getenv('EMERGENT_LLM_KEY')
+        api_key = os.getenv('EMERGENT_LLM_KEY') or os.getenv('OPENAI_API_KEY')
+        
+        # Si no hi ha clau, retornar notícies sense processar
+        if not api_key:
+            print("   ⚠️ Sense clau d'IA - usant selecció automàtica sense IA")
+            # Prioritzar notícies de Canal Reus i Reus Digital (més locals)
+            priority_sources = ["Canal Reus", "Reus Digital"]
+            priority_news = [n for n in raw_news if n.get('source') in priority_sources]
+            other_news = [n for n in raw_news if n.get('source') not in priority_sources]
+            return (priority_news + other_news)[:max_news]
         
         # Preparar prompt per a la IA
         news_text = "\n\n".join([
