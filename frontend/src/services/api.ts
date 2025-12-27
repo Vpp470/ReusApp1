@@ -4,25 +4,33 @@ import { Platform } from 'react-native';
 
 // Determinar la URL base segons la plataforma i entorn
 const getBaseURL = () => {
-  // Obtenir URL del backend des de variables d'entorn
-  const envUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 
-                 process.env.EXPO_PUBLIC_BACKEND_URL;
-  
-  // Si tenim una URL d'entorn configurada, utilitzar-la
-  if (envUrl) {
-    // Assegurar que acabi amb /api
-    const baseUrl = envUrl.endsWith('/api') ? envUrl : `${envUrl}/api`;
-    console.log('API Base URL:', baseUrl);
-    return baseUrl;
-  }
-  
-  // Fallback: En web usar URL relativa, en mobile usar localhost
+  // En web, sempre utilitzar URL relativa per evitar problemes de CORS
   if (Platform.OS === 'web') {
-    // En producció el proxy hauria de funcionar
+    // Detectar si estem en producció (reusapp.com o railway)
+    if (typeof window !== 'undefined') {
+      const hostname = window.location?.hostname || '';
+      
+      // Si estem en producció, usar la URL de producció
+      if (hostname.includes('reusapp.com') || hostname.includes('railway.app') || hostname.includes('eltombdereus.com')) {
+        console.log('API Base URL: https://www.reusapp.com/api');
+        return 'https://www.reusapp.com/api';
+      }
+      
+      // Si estem en Emergent preview, usar URL relativa
+      if (hostname.includes('emergent')) {
+        console.log('API Base URL: /api (Emergent)');
+        return '/api';
+      }
+    }
+    
+    // Fallback per web
+    console.log('API Base URL: /api');
     return '/api';
   }
   
-  return 'http://localhost:8001/api';
+  // Per apps mòbils, usar la URL de producció
+  console.log('API Base URL: https://www.reusapp.com/api');
+  return 'https://www.reusapp.com/api';
 };
 
 const api = axios.create({
