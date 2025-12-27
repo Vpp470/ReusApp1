@@ -173,12 +173,10 @@ async def scrape_news_from_url(url: str, source_name: str) -> List[Dict]:
 
 async def process_news_with_ai(raw_news: List[Dict], max_news: int = 6) -> List[Dict]:
     """
-    Processar notícies amb IA per filtrar i resumir les més rellevants
-    Si no hi ha clau d'API o falla, retorna les primeres notícies
+    Processar notícies - selecció automàtica sense IA
+    Prioritza notícies de fonts locals (Canal Reus, Reus Digital)
     """
-    # Desactivar temporalment IA - utilitzar selecció automàtica
-    # El processament amb IA es pot reactivar configurant una clau vàlida
-    print("   📋 Selecció automàtica sense IA...")
+    print("   📋 Selecció automàtica de notícies...")
     
     # Prioritzar notícies de Canal Reus i Reus Digital (més locals)
     priority_sources = ["Canal Reus", "Reus Digital"]
@@ -187,64 +185,6 @@ async def process_news_with_ai(raw_news: List[Dict], max_news: int = 6) -> List[
     selected = (priority_news + other_news)[:max_news]
     print(f"   ✅ Seleccionades: {len(selected)} notícies")
     return selected
-    
-    # === CODI IA DESACTIVAT ===
-    # Per reactivar, descomentar el codi següent i configurar una clau OpenAI vàlida
-    """
-    try:
-        api_key = os.getenv('OPENAI_API_KEY')  # Usar clau OpenAI real, no Emergent
-        
-        # Si no hi ha clau, retornar notícies sense processar
-        if not api_key:
-            print("   ⚠️ Sense clau d'IA - usant selecció automàtica sense IA")
-            # Prioritzar notícies de Canal Reus i Reus Digital (més locals)
-            priority_sources = ["Canal Reus", "Reus Digital"]
-            priority_news = [n for n in raw_news if n.get('source') in priority_sources]
-            other_news = [n for n in raw_news if n.get('source') not in priority_sources]
-            return (priority_news + other_news)[:max_news]
-        
-        # Preparar prompt per a la IA
-        news_text = "\n\n".join([
-            f"{i+1}. {item['title']} (Font: {item['source']})\n   URL: {item['url']}"
-            for i, item in enumerate(raw_news)
-        ])
-        
-        prompt = f"""Ets un editor de notícies local de Reus. Tens aquesta llista de notícies:
-
-{news_text}
-
-TASCA:
-1. Selecciona les {max_news} notícies MÉS RELLEVANTS sobre Reus, el seu comerç local, esdeveniments o cultura
-2. Descarta notícies no relacionades amb Reus o poc interessants
-3. Retorna NOMÉS els números de les notícies seleccionades separats per comes (exemple: 1,3,5,7)
-
-RESPOSTA (NOMÉS NÚMEROS):"""
-
-        # Cridar la IA amb OpenAI directament
-        client = OpenAI(api_key=api_key)
-        
-        completion = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "Ets un editor de notícies local expert en seleccionar contingut rellevant."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        
-        response = completion.choices[0].message.content
-        
-        # Extreure números seleccionats
-        selected_indices = [int(n.strip())-1 for n in response.split(',') if n.strip().isdigit()]
-        
-        # Filtrar notícies seleccionades
-        selected_news = [raw_news[i] for i in selected_indices if i < len(raw_news)]
-        
-        return selected_news[:max_news]
-    
-    except Exception as e:
-        print(f"❌ Error processant amb IA: {str(e)}")
-        # Fallback: retornar les primeres notícies
-        return raw_news[:max_news]
 
 
 async def fetch_daily_news(max_news: int = 6) -> List[Dict]:
