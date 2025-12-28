@@ -377,13 +377,14 @@ export default function ScanTicketScreen() {
             <TouchableOpacity 
               style={styles.participationsButton} 
               onPress={() => router.push('/tickets/participations')}
-          >
-            <MaterialIcons name="confirmation-number" size={20} color={Colors.white} />
-            <Text style={styles.participationsButtonText}>
-              Les meves participacions ({participations})
-            </Text>
-          </TouchableOpacity>
-        </View>
+            >
+              <MaterialIcons name="confirmation-number" size={20} color={Colors.white} />
+              <Text style={styles.participationsButtonText}>
+                Les meves participacions ({participations})
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
