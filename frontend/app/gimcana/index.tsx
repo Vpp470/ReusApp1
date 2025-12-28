@@ -50,12 +50,14 @@ export default function GimcanaUserPage() {
   const [refreshing, setRefreshing] = useState(false);
 
   const loadCampaigns = useCallback(async () => {
-    if (!token) return;
-    
     try {
-      const response = await api.get('/gimcana/campaigns/active', {
-        headers: { Authorization: token },
-      });
+      // Les gimcanes actives són públiques, el token és opcional
+      const headers: any = {};
+      if (token) {
+        headers.Authorization = token;
+      }
+      
+      const response = await api.get('/gimcana/campaigns/active', { headers });
       setCampaigns(response.data);
     } catch (error) {
       console.error('Error loading campaigns:', error);
