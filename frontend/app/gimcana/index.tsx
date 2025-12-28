@@ -436,4 +436,18 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     fontWeight: 'bold',
   },
+  loginBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+  },
+  loginBannerText: {
+    color: Colors.white,
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    flex: 1,
+  },
 });
