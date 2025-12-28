@@ -14,29 +14,39 @@ import {
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
-import { offersService, eventsService } from '../../src/services/api';
+import api, { eventsService } from '../../src/services/api';
 import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
-import type { Offer, Event } from '../../src/types';
+import type { Event } from '../../src/types';
 import i18n from '../../src/i18n';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const CARD_WIDTH = (screenWidth - 60) / 3;
 
+interface Promotion {
+  _id: string;
+  id?: string;
+  title: string;
+  description?: string;
+  image_url?: string;
+  valid_from?: string;
+  valid_until?: string;
+}
+
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [offers, setOffers] = useState<Offer[]>([]);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = async () => {
     try {
-      const [offersData, eventsData] = await Promise.all([
-        offersService.getAll(),
+      const [promotionsRes, eventsData] = await Promise.all([
+        api.get('/promotions/featured'),
         eventsService.getAll(),
       ]);
-      setOffers(offersData.slice(0, 3));
+      setPromotions(promotionsRes.data.slice(0, 3));
       setEvents(eventsData.slice(0, 3));
     } catch (error) {
       console.error('Error loading data:', error);
