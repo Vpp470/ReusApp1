@@ -267,8 +267,8 @@ export default function ScanTicketScreen() {
     );
   }
 
-  // Vista de escàner QR
-  if (scanMode === 'qr' && permission?.granted) {
+  // Vista de escàner QR - SEMPRE mostrar càmera si tenim permisos
+  if (permission?.granted) {
     return (
       <View style={styles.container}>
         <CameraView
@@ -282,7 +282,7 @@ export default function ScanTicketScreen() {
 
         <SafeAreaView style={styles.scannerOverlay} edges={['top']}>
           <View style={styles.scannerHeader}>
-            <Pressable onPress={() => setScanMode('menu')}>
+            <Pressable onPress={() => router.back()}>
               <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
             </Pressable>
             <Text style={styles.scannerHeaderTitle}>Escanejar Codi QR</Text>
@@ -315,8 +315,9 @@ export default function ScanTicketScreen() {
     );
   }
 
+  // Fallback - no hauria d'arribar aquí
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
@@ -324,10 +325,19 @@ export default function ScanTicketScreen() {
         <Text style={styles.headerTitle}>Escaneja Tiquet</Text>
         <View style={{ width: 24 }} />
       </View>
-
-      {/* Secció de campanya activa */}
-      {loadingCampaign ? (
-        <View style={styles.campaignLoadingContainer}>
+      <View style={styles.cameraPermissionContainer}>
+        <MaterialIcons name="error-outline" size={80} color={Colors.primary} />
+        <Text style={styles.cameraPermissionTitle}>Error</Text>
+        <Text style={styles.cameraPermissionText}>
+          No s'ha pogut inicialitzar la càmera.
+        </Text>
+        <Pressable style={styles.allowCameraButton} onPress={() => router.back()}>
+          <Text style={styles.allowCameraButtonText}>Tornar</Text>
+        </Pressable>
+      </View>
+    </SafeAreaView>
+  );
+}
           <ActivityIndicator size="small" color={Colors.primary} />
         </View>
       ) : activeCampaign ? (
