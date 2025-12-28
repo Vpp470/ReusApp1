@@ -123,7 +123,14 @@ export default function ScanTicketScreen() {
             Necessitem accés a la càmera per escanejar tiquets.
           </Text>
           
-          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+          <TouchableOpacity 
+            style={styles.permissionButton} 
+            onPress={() => {
+              console.log('Requesting camera permission...');
+              requestPermission();
+            }}
+            activeOpacity={0.7}
+          >
             <MaterialIcons name="camera-alt" size={24} color={Colors.white} />
             <Text style={styles.permissionButtonText}>Permetre Càmera</Text>
           </TouchableOpacity>
