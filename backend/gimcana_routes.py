@@ -172,36 +172,56 @@ async def create_campaign(campaign: GimcanaCampaignCreate, authorization: str = 
     if not user or user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail="Només els administradors poden crear campanyes")
     
-    campaign_data = campaign.dict()
+    campaign_data = campaign.dict(exclude={'qr_items'})
     campaign_data['created_at'] = datetime.utcnow()
     campaign_data['created_by'] = str(user['_id'])
     campaign_data['created_by_name'] = user.get('name', 'Admin')
     
+    # Camps addicionals per al sistema de sorteig
+    campaign_data['raffle_executed'] = False
+    campaign_data['raffle_executed_at'] = None
+    campaign_data['winners'] = []
+    
     result = await db.gimcana_campaigns.insert_one(campaign_data)
     campaign_id = str(result.inserted_id)
     
-    # Generar els QR codes automàticament
+    # Generar els QR codes amb noms personalitzats si s'han proporcionat
     qr_codes = []
+    qr_items = campaign.qr_items or []
+    
     for i in range(campaign.total_qr_codes):
+        # Usar noms personalitzats si existeixen
+        if i < len(qr_items):
+            qr_item = qr_items[i]
+            establishment_name = qr_item.establishment_name
+            location_hint = qr_item.location_hint or ""
+            image_url = qr_item.image_url
+        else:
+            establishment_name = f"Punt {i + 1}"
+            location_hint = ""
+            image_url = None
+        
         qr_code = {
             "campaign_id": campaign_id,
             "code": generate_qr_code(),
             "number": i + 1,
             "establishment_id": None,
-            "establishment_name": f"Punt {i + 1}",
-            "location_hint": "",
+            "establishment_name": establishment_name,
+            "location_hint": location_hint,
+            "image_url": image_url,
             "created_at": datetime.utcnow()
         }
         await db.gimcana_qr_codes.insert_one(qr_code)
         qr_codes.append(qr_code)
     
-    logger.info(f"Campanya de gimcana creada: {campaign.name} amb {campaign.total_qr_codes} QR codes")
+    logger.info(f"Campanya de gimcana creada: {campaign.name} amb {campaign.total_qr_codes} QR codes (tipus premi: {campaign.prize_type})")
     
     return {
         "success": True,
         "campaign_id": campaign_id,
         "qr_codes_generated": len(qr_codes),
-        "message": f"Campanya creada amb {campaign.total_qr_codes} codis QR"
+        "message": f"Campanya creada amb {campaign.total_qr_codes} codis QR",
+        "prize_type": campaign.prize_type
     }
 
 
