@@ -310,9 +310,11 @@ export default function AgendaPage() {
                     <Text style={styles.eventDateText}>{formatDate(event.date)}</Text>
                     {event.time && <Text style={styles.eventTime}>{event.time}</Text>}
                   </View>
-                  <Pressable onPress={() => handleDelete(event._id)}>
-                    <MaterialIcons name="delete" size={24} color={Colors.error} />
-                  </Pressable>
+                  {canEdit && (
+                    <Pressable onPress={() => handleDelete(event._id)}>
+                      <MaterialIcons name="delete" size={24} color={Colors.error} />
+                    </Pressable>
+                  )}
                 </View>
                 
                 <Text style={styles.eventTitle}>{event.title}</Text>
