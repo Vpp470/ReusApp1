@@ -41,11 +41,10 @@ export default function ScanTicketScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [processing, setProcessing] = useState(false);
   const [participations, setParticipations] = useState(0);
-  const [scanMode, setScanMode] = useState<'menu' | 'qr' | 'photo' | 'manual'>('menu');
+  const [scanMode, setScanMode] = useState<'menu' | 'qr' | 'photo'>('menu');
   const [scanned, setScanned] = useState(false);
   const [activeCampaign, setActiveCampaign] = useState<TicketCampaign | null>(null);
   const [loadingCampaign, setLoadingCampaign] = useState(true);
-  const [manualCode, setManualCode] = useState('');
 
   useEffect(() => {
     loadParticipations();
