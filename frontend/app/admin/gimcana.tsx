@@ -223,6 +223,11 @@ export default function GimcanaAdminPage() {
   };
 
   const generatePDF = async (campaignId: string) => {
+    if (Platform.OS !== 'web') {
+      Alert.alert('Avís', 'La generació de PDF només està disponible a la versió web');
+      return;
+    }
+    
     setGeneratingPDF(true);
     
     try {
@@ -233,9 +238,12 @@ export default function GimcanaAdminPage() {
       
       const qrCodes = response.data;
       
-      // Importar les llibreries dinàmicament per a web
-      const QRCode = (await import('qrcode')).default;
-      const { jsPDF } = await import('jspdf');
+      // Generar QR codes i PDF usant una funció de web
+      // @ts-ignore - Importació dinàmica per evitar errors de Metro
+      const QRCode = await import(/* webpackIgnore: true */ 'qrcode');
+      // @ts-ignore
+      const jspdf = await import(/* webpackIgnore: true */ 'jspdf');
+      const { jsPDF } = jspdf;
       
       // Crear el PDF
       const pdf = new jsPDF({
