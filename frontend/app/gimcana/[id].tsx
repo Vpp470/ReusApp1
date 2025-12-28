@@ -447,7 +447,7 @@ export default function GimcanaDetailPage() {
             </Text>
           )}
           {campaign.prize_image_url && (
-            <Image source={{ uri: campaign.prize_image_url }} style={styles.prizeImage} />
+            <Image source={{ uri: getImageUrl(campaign.prize_image_url) }} style={styles.prizeImage} />
           )}
         </View>
 
