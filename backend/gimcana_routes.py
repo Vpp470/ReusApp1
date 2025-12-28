@@ -599,3 +599,274 @@ async def get_raffle_participants(campaign_id: str, authorization: str = Header(
         })
     
     return result
+
+
+# ============== SORTEIG ==============
+
+@gimcana_router.post("/campaigns/{campaign_id}/execute-raffle")
+async def execute_raffle(campaign_id: str, request: RaffleExecuteRequest, authorization: str = Header(None)):
+    """
+    Executar el sorteig d'una campanya (només admin)
+    Selecciona guanyadors aleatoris entre els participants que han completat la gimcana
+    """
+    user = await get_user_from_token(authorization)
+    if not user or user.get('role') != 'admin':
+        raise HTTPException(status_code=403, detail="Només els administradors poden executar sortejos")
+    
+    # Obtenir campanya
+    campaign = await db.gimcana_campaigns.find_one({"_id": ObjectId(campaign_id)})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campanya no trobada")
+    
+    # Verificar que és una campanya de tipus sorteig
+    if campaign.get('prize_type') != 'raffle':
+        raise HTTPException(status_code=400, detail="Aquesta campanya no és de tipus sorteig")
+    
+    # Verificar que no s'ha executat ja
+    if campaign.get('raffle_executed'):
+        raise HTTPException(status_code=400, detail="El sorteig ja s'ha executat per aquesta campanya")
+    
+    # Obtenir participants elegibles (els que han completat i entrat al sorteig)
+    participants = await db.gimcana_progress.find({
+        "campaign_id": campaign_id,
+        "completed": True,
+        "entered_raffle": True
+    }).to_list(10000)
+    
+    if len(participants) == 0:
+        raise HTTPException(status_code=400, detail="No hi ha participants elegibles per al sorteig")
+    
+    num_winners = min(request.num_winners, len(participants))
+    
+    # Seleccionar guanyadors aleatoris
+    winners = random.sample(participants, num_winners)
+    
+    # Preparar dades dels guanyadors
+    winners_data = []
+    for i, winner in enumerate(winners):
+        winner_info = {
+            "position": i + 1,
+            "user_id": winner['user_id'],
+            "user_name": winner.get('user_name', 'Usuari'),
+            "user_email": winner.get('user_email', ''),
+            "completed_at": winner.get('completed_at'),
+            "entered_raffle_at": winner.get('entered_raffle_at')
+        }
+        winners_data.append(winner_info)
+        
+        # Afegir marcador de guanyador a l'usuari
+        await db.users.update_one(
+            {"_id": ObjectId(winner['user_id'])},
+            {
+                "$addToSet": {
+                    "tags": f"gimcana_winner_{campaign_id}"
+                }
+            }
+        )
+        
+        # Marcar el participant com a guanyador
+        await db.gimcana_progress.update_one(
+            {"_id": winner['_id']},
+            {"$set": {
+                "is_winner": True,
+                "winner_position": i + 1,
+                "won_at": datetime.utcnow()
+            }}
+        )
+    
+    # Marcar a tots els participants (guanyadors i no guanyadors)
+    for p in participants:
+        await db.users.update_one(
+            {"_id": ObjectId(p['user_id'])},
+            {
+                "$addToSet": {
+                    "tags": f"gimcana_participant_{campaign_id}"
+                }
+            }
+        )
+    
+    # Actualitzar campanya amb el resultat del sorteig
+    raffle_result = {
+        "executed_at": datetime.utcnow(),
+        "executed_by": str(user['_id']),
+        "executed_by_name": user.get('name', 'Admin'),
+        "total_participants": len(participants),
+        "num_winners": num_winners,
+        "winners": winners_data
+    }
+    
+    await db.gimcana_campaigns.update_one(
+        {"_id": ObjectId(campaign_id)},
+        {"$set": {
+            "raffle_executed": True,
+            "raffle_executed_at": datetime.utcnow(),
+            "winners": winners_data,
+            "raffle_result": raffle_result
+        }}
+    )
+    
+    # Guardar al registre de sortejos
+    raffle_record = {
+        "campaign_id": campaign_id,
+        "campaign_name": campaign.get('name'),
+        **raffle_result,
+        "created_at": datetime.utcnow()
+    }
+    await db.gimcana_raffles.insert_one(raffle_record)
+    
+    logger.info(f"Sorteig executat per campanya {campaign.get('name')}: {num_winners} guanyadors de {len(participants)} participants")
+    
+    return {
+        "success": True,
+        "message": f"Sorteig executat correctament! {num_winners} guanyador(s) seleccionat(s)",
+        "total_participants": len(participants),
+        "winners": winners_data
+    }
+
+
+@gimcana_router.get("/campaigns/{campaign_id}/raffle-result")
+async def get_raffle_result(campaign_id: str, authorization: str = Header(None)):
+    """Obtenir el resultat del sorteig d'una campanya"""
+    user = await get_user_from_token(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="Has d'iniciar sessió")
+    
+    campaign = await db.gimcana_campaigns.find_one({"_id": ObjectId(campaign_id)})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campanya no trobada")
+    
+    if not campaign.get('raffle_executed'):
+        return {
+            "raffle_executed": False,
+            "message": "El sorteig encara no s'ha realitzat"
+        }
+    
+    # Per usuaris normals, només mostrar guanyadors sense emails complets
+    is_admin = user.get('role') == 'admin'
+    user_id = str(user['_id'])
+    
+    winners = campaign.get('winners', [])
+    
+    # Verificar si l'usuari és guanyador
+    is_winner = any(w.get('user_id') == user_id for w in winners)
+    
+    if not is_admin:
+        # Ofuscar emails per no-admins
+        for w in winners:
+            email = w.get('user_email', '')
+            if email and '@' in email:
+                parts = email.split('@')
+                w['user_email'] = f"{parts[0][:2]}***@{parts[1]}"
+    
+    return {
+        "raffle_executed": True,
+        "executed_at": campaign.get('raffle_executed_at'),
+        "total_participants": campaign.get('raffle_result', {}).get('total_participants', 0),
+        "winners": winners,
+        "is_winner": is_winner,
+        "campaign_name": campaign.get('name'),
+        "prize_description": campaign.get('prize_description')
+    }
+
+
+@gimcana_router.get("/campaigns/{campaign_id}/export-raffle-pdf")
+async def export_raffle_pdf(campaign_id: str, authorization: str = Header(None)):
+    """
+    Exportar el resultat del sorteig en format PDF (només admin)
+    """
+    user = await get_user_from_token(authorization)
+    if not user or user.get('role') != 'admin':
+        raise HTTPException(status_code=403, detail="Només els administradors poden exportar el PDF")
+    
+    campaign = await db.gimcana_campaigns.find_one({"_id": ObjectId(campaign_id)})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campanya no trobada")
+    
+    if not campaign.get('raffle_executed'):
+        raise HTTPException(status_code=400, detail="El sorteig encara no s'ha realitzat")
+    
+    # Crear PDF
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen import canvas
+        from reportlab.lib import colors
+        from reportlab.lib.units import cm
+        
+        buffer = io.BytesIO()
+        pdf = canvas.Canvas(buffer, pagesize=A4)
+        width, height = A4
+        
+        # Títol
+        pdf.setFont("Helvetica-Bold", 20)
+        pdf.drawCentredString(width/2, height - 2*cm, "ACTA DEL SORTEIG")
+        
+        pdf.setFont("Helvetica", 14)
+        pdf.drawCentredString(width/2, height - 3*cm, campaign.get('name', ''))
+        
+        # Data del sorteig
+        raffle_date = campaign.get('raffle_executed_at', datetime.utcnow())
+        if isinstance(raffle_date, datetime):
+            date_str = raffle_date.strftime("%d/%m/%Y a les %H:%M")
+        else:
+            date_str = str(raffle_date)
+        
+        pdf.setFont("Helvetica", 12)
+        pdf.drawString(2*cm, height - 5*cm, f"Data del sorteig: {date_str}")
+        
+        # Estadístiques
+        result = campaign.get('raffle_result', {})
+        pdf.drawString(2*cm, height - 6*cm, f"Total participants: {result.get('total_participants', 0)}")
+        pdf.drawString(2*cm, height - 6.5*cm, f"Nombre de guanyadors: {result.get('num_winners', 0)}")
+        
+        # Guanyadors
+        pdf.setFont("Helvetica-Bold", 14)
+        pdf.drawString(2*cm, height - 8*cm, "GUANYADORS:")
+        
+        pdf.setFont("Helvetica", 12)
+        winners = campaign.get('winners', [])
+        y_position = height - 9*cm
+        
+        for winner in winners:
+            pdf.drawString(2.5*cm, y_position, f"{winner.get('position')}. {winner.get('user_name', 'Usuari')}")
+            pdf.drawString(5*cm, y_position - 0.5*cm, f"   Email: {winner.get('user_email', '')}")
+            y_position -= 1.5*cm
+            
+            if y_position < 4*cm:
+                pdf.showPage()
+                y_position = height - 2*cm
+        
+        # Signatura
+        pdf.setFont("Helvetica", 10)
+        pdf.drawString(2*cm, 3*cm, f"Executat per: {result.get('executed_by_name', 'Admin')}")
+        pdf.drawString(2*cm, 2.5*cm, "El Tomb de Reus - Gimcana")
+        
+        pdf.save()
+        buffer.seek(0)
+        
+        filename = f"sorteig_{campaign.get('name', 'gimcana').replace(' ', '_')}_{datetime.utcnow().strftime('%Y%m%d')}.pdf"
+        
+        return StreamingResponse(
+            buffer,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except ImportError:
+        raise HTTPException(status_code=500, detail="No es pot generar el PDF. Falta la llibreria reportlab.")
+
+
+# ============== HISTORIAL DE SORTEJOS ==============
+
+@gimcana_router.get("/raffles/history")
+async def get_raffles_history(authorization: str = Header(None)):
+    """Obtenir historial de tots els sortejos (només admin)"""
+    user = await get_user_from_token(authorization)
+    if not user or user.get('role') != 'admin':
+        raise HTTPException(status_code=403, detail="Només els administradors poden veure l'historial")
+    
+    raffles = await db.gimcana_raffles.find().sort("created_at", -1).to_list(100)
+    
+    for r in raffles:
+        r['_id'] = str(r['_id'])
+    
+    return raffles
