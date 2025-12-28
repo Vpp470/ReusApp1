@@ -527,17 +527,29 @@ export default function GimcanaDetailPage() {
               <MaterialIcons name="close" size={28} color={Colors.white} />
             </TouchableOpacity>
             <Text style={styles.scannerHeaderTitle}>Escanejar QR</Text>
-            <TouchableOpacity onPress={() => setScanMode(scanMode === 'camera' ? 'manual' : 'camera')}>
-              <MaterialIcons 
-                name={scanMode === 'camera' ? 'keyboard' : 'camera-alt'} 
-                size={28} 
-                color={Colors.white} 
-              />
-            </TouchableOpacity>
+            <View style={{ width: 28 }} />
           </View>
 
-          {scanMode === 'camera' && Platform.OS !== 'web' ? (
-            /* Mode càmera */
+          {Platform.OS === 'web' ? (
+            /* Web: Missatge que cal usar l'app mòbil */
+            <View style={styles.webMessageContainer}>
+              <MaterialIcons name="phone-iphone" size={80} color={Colors.primary} />
+              <Text style={styles.webMessageTitle}>Usa l'app mòbil</Text>
+              <Text style={styles.webMessageText}>
+                Per escanejar codis QR necessites obrir l'app al teu telèfon mòbil.
+              </Text>
+              <Text style={styles.webMessageHint}>
+                L'escaneig amb càmera no està disponible al navegador web.
+              </Text>
+              <TouchableOpacity 
+                style={styles.webCloseButton}
+                onPress={() => setShowScanner(false)}
+              >
+                <Text style={styles.webCloseButtonText}>Tancar</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            /* Mòbil: Càmera */
             <View style={styles.cameraContainer}>
               <CameraView
                 style={styles.camera}
@@ -561,16 +573,11 @@ export default function GimcanaDetailPage() {
                 </Text>
               </View>
 
-              {/* Botons inferiors */}
+              {/* Botó galeria */}
               <View style={styles.cameraButtons}>
                 <TouchableOpacity style={styles.cameraActionButton} onPress={pickImageFromGallery}>
                   <MaterialIcons name="photo-library" size={24} color={Colors.white} />
                   <Text style={styles.cameraActionText}>Galeria</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity style={styles.cameraActionButton} onPress={() => setScanMode('manual')}>
-                  <MaterialIcons name="keyboard" size={24} color={Colors.white} />
-                  <Text style={styles.cameraActionText}>Manual</Text>
                 </TouchableOpacity>
               </View>
 
@@ -581,33 +588,7 @@ export default function GimcanaDetailPage() {
                 </View>
               )}
             </View>
-          ) : (
-            /* Mode entrada manual */
-            <View style={styles.manualContainer}>
-              <View style={styles.manualContent}>
-                <MaterialIcons name="qr-code-2" size={80} color={Colors.primary} />
-                <Text style={styles.manualTitle}>Introdueix el codi QR</Text>
-                <Text style={styles.manualHint}>
-                  Escriu el codi que trobaràs sota el QR{'\n'}Format: GIMCANA-XXXXXXXXXXXX
-                </Text>
-                
-                <TextInput
-                  style={styles.codeTextInputFull}
-                  placeholder="GIMCANA-XXXXXXXXXXXX"
-                  placeholderTextColor="#999"
-                  value={scanInput}
-                  onChangeText={setScanInput}
-                  autoCapitalize="characters"
-                  autoCorrect={false}
-                  autoFocus={true}
-                  returnKeyType="done"
-                  onSubmitEditing={() => scanInput && handleScanQR(scanInput)}
-                />
-                
-                <TouchableOpacity 
-                  style={[
-                    styles.submitScanButton,
-                    (!scanInput || scanning) && styles.submitScanButtonDisabled
+          )}
                   ]}
                   onPress={() => handleScanQR(scanInput)}
                   disabled={!scanInput || scanning}
