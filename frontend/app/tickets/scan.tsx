@@ -211,16 +211,26 @@ export default function ScanTicketScreen() {
   // A web, la càmera pot no estar disponible
   const isWeb = Platform.OS === 'web';
   
-  if (!permission && !isWeb) {
+  if (!permission) {
     return (
       <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()}>
+            <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
+          </Pressable>
+          <Text style={styles.headerTitle}>Escaneja Tiquet</Text>
+          <View style={{ width: 24 }} />
+        </View>
+        <View style={styles.cameraPermissionContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.cameraPermissionText}>Carregant càmera...</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
-  // A web o sense permisos de càmera, mostrar opcions alternatives
-  if (isWeb || !permission?.granted) {
+  // Sense permisos de càmera
+  if (!permission.granted) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
@@ -233,22 +243,15 @@ export default function ScanTicketScreen() {
         
         <View style={styles.cameraPermissionContainer}>
           <MaterialIcons name="photo-camera" size={80} color={Colors.primary} />
-          <Text style={styles.cameraPermissionTitle}>Càmera Necessària</Text>
+          <Text style={styles.cameraPermissionTitle}>Permís de Càmera</Text>
           <Text style={styles.cameraPermissionText}>
-            Per escanejar tiquets necessites permetre l'accés a la càmera.
+            Necessitem accés a la càmera per escanejar tiquets.
           </Text>
           
-          {!isWeb ? (
-            <Pressable style={styles.allowCameraButton} onPress={requestPermission}>
-              <MaterialIcons name="camera-alt" size={24} color={Colors.white} />
-              <Text style={styles.allowCameraButtonText}>Permetre Càmera</Text>
-            </Pressable>
-          ) : (
-            <Text style={styles.webWarningText}>
-              L'escaneig amb càmera només funciona a l'app mòbil.
-              {'\n'}Obre l'app al teu telèfon per escanejar.
-            </Text>
-          )}
+          <Pressable style={styles.allowCameraButton} onPress={requestPermission}>
+            <MaterialIcons name="camera-alt" size={24} color={Colors.white} />
+            <Text style={styles.allowCameraButtonText}>Permetre Càmera</Text>
+          </Pressable>
           
           <TouchableOpacity 
             style={styles.participationsButtonSmall} 
