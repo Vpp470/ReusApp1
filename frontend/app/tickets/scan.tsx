@@ -1040,4 +1040,47 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     fontWeight: '600',
   },
+  // Estils per pantalla de permisos de càmera
+  cameraPermissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.xl,
+  },
+  cameraPermissionTitle: {
+    fontSize: FontSizes.xl,
+    fontWeight: 'bold',
+    color: Colors.textDark,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+  cameraPermissionText: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+  },
+  allowCameraButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  allowCameraButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.lg,
+    fontWeight: '700',
+  },
+  webWarningText: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+    lineHeight: 24,
+  },
 });
