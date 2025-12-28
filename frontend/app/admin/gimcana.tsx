@@ -10,10 +10,12 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
 import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/services/api';
