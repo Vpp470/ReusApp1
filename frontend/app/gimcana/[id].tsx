@@ -494,59 +494,127 @@ export default function GimcanaDetailPage() {
         </TouchableOpacity>
       )}
 
-      {/* Modal d'escaneig (simplificat per web) */}
+      {/* Modal d'escaneig */}
       <Modal
         visible={showScanner}
         animationType="slide"
-        transparent={true}
+        transparent={false}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.scannerModal}>
-            <View style={styles.scannerHeader}>
-              <Text style={styles.scannerTitle}>Introdueix el codi QR</Text>
-              <TouchableOpacity onPress={() => { setShowScanner(false); setScanInput(''); }}>
-                <MaterialIcons name="close" size={24} color="#333" />
-              </TouchableOpacity>
-            </View>
-            
-            <Text style={styles.scannerHint}>
-              Introdueix el codi que trobaràs sota el QR (format: GIMCANA-XXXX):
-            </Text>
-            
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.codeTextInputFull}
-                placeholder="GIMCANA-XXXXXXXXXXXX"
-                placeholderTextColor="#999"
-                value={scanInput}
-                onChangeText={setScanInput}
-                autoCapitalize="characters"
-                autoCorrect={false}
-                autoFocus={true}
-                returnKeyType="done"
-                onSubmitEditing={() => scanInput && handleScanQR(scanInput)}
+        <SafeAreaView style={styles.scannerContainer}>
+          {/* Header */}
+          <View style={styles.scannerHeader}>
+            <TouchableOpacity onPress={() => { setShowScanner(false); setScanInput(''); setHasScanned(false); }}>
+              <MaterialIcons name="close" size={28} color={Colors.white} />
+            </TouchableOpacity>
+            <Text style={styles.scannerHeaderTitle}>Escanejar QR</Text>
+            <TouchableOpacity onPress={() => setScanMode(scanMode === 'camera' ? 'manual' : 'camera')}>
+              <MaterialIcons 
+                name={scanMode === 'camera' ? 'keyboard' : 'camera-alt'} 
+                size={28} 
+                color={Colors.white} 
               />
-            </View>
-            
-            <TouchableOpacity 
-              style={[
-                styles.submitScanButton,
-                (!scanInput || scanning) && styles.submitScanButtonDisabled
-              ]}
-              onPress={() => handleScanQR(scanInput)}
-              disabled={!scanInput || scanning}
-            >
-              {scanning ? (
-                <ActivityIndicator color={Colors.white} />
-              ) : (
-                <>
-                  <MaterialIcons name="check-circle" size={20} color={Colors.white} />
-                  <Text style={styles.submitScanButtonText}>Validar codi</Text>
-                </>
-              )}
             </TouchableOpacity>
           </View>
-        </View>
+
+          {scanMode === 'camera' && Platform.OS !== 'web' ? (
+            /* Mode càmera */
+            <View style={styles.cameraContainer}>
+              <CameraView
+                style={styles.camera}
+                facing="back"
+                barcodeScannerSettings={{
+                  barcodeTypes: ['qr'],
+                }}
+                onBarcodeScanned={hasScanned ? undefined : handleBarCodeScanned}
+              />
+              
+              {/* Overlay amb marc */}
+              <View style={styles.cameraOverlay}>
+                <View style={styles.cameraScanArea}>
+                  <View style={[styles.cornerTL, styles.corner]} />
+                  <View style={[styles.cornerTR, styles.corner]} />
+                  <View style={[styles.cornerBL, styles.corner]} />
+                  <View style={[styles.cornerBR, styles.corner]} />
+                </View>
+                <Text style={styles.cameraScanText}>
+                  Apunta al codi QR de la gimcana
+                </Text>
+              </View>
+
+              {/* Botons inferiors */}
+              <View style={styles.cameraButtons}>
+                <TouchableOpacity style={styles.cameraActionButton} onPress={pickImageFromGallery}>
+                  <MaterialIcons name="photo-library" size={24} color={Colors.white} />
+                  <Text style={styles.cameraActionText}>Galeria</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.cameraActionButton} onPress={() => setScanMode('manual')}>
+                  <MaterialIcons name="keyboard" size={24} color={Colors.white} />
+                  <Text style={styles.cameraActionText}>Manual</Text>
+                </TouchableOpacity>
+              </View>
+
+              {scanning && (
+                <View style={styles.scanningOverlay}>
+                  <ActivityIndicator size="large" color={Colors.white} />
+                  <Text style={styles.scanningText}>Processant...</Text>
+                </View>
+              )}
+            </View>
+          ) : (
+            /* Mode entrada manual */
+            <View style={styles.manualContainer}>
+              <View style={styles.manualContent}>
+                <MaterialIcons name="qr-code-2" size={80} color={Colors.primary} />
+                <Text style={styles.manualTitle}>Introdueix el codi QR</Text>
+                <Text style={styles.manualHint}>
+                  Escriu el codi que trobaràs sota el QR{'\n'}Format: GIMCANA-XXXXXXXXXXXX
+                </Text>
+                
+                <TextInput
+                  style={styles.codeTextInputFull}
+                  placeholder="GIMCANA-XXXXXXXXXXXX"
+                  placeholderTextColor="#999"
+                  value={scanInput}
+                  onChangeText={setScanInput}
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  autoFocus={true}
+                  returnKeyType="done"
+                  onSubmitEditing={() => scanInput && handleScanQR(scanInput)}
+                />
+                
+                <TouchableOpacity 
+                  style={[
+                    styles.submitScanButton,
+                    (!scanInput || scanning) && styles.submitScanButtonDisabled
+                  ]}
+                  onPress={() => handleScanQR(scanInput)}
+                  disabled={!scanInput || scanning}
+                >
+                  {scanning ? (
+                    <ActivityIndicator color={Colors.white} />
+                  ) : (
+                    <>
+                      <MaterialIcons name="check-circle" size={20} color={Colors.white} />
+                      <Text style={styles.submitScanButtonText}>Validar codi</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+
+                {Platform.OS !== 'web' && (
+                  <TouchableOpacity 
+                    style={styles.switchModeButton}
+                    onPress={() => setScanMode('camera')}
+                  >
+                    <MaterialIcons name="camera-alt" size={20} color={Colors.primary} />
+                    <Text style={styles.switchModeText}>Usar càmera</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
+        </SafeAreaView>
       </Modal>
 
       {/* Modal de completat */}
