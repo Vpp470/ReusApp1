@@ -259,9 +259,13 @@ export default function AgendaPage() {
           <MaterialIcons name="arrow-back" size={28} color={Colors.white} />
         </Pressable>
         <Text style={styles.headerTitle}>Agenda dels Actes</Text>
-        <Pressable style={styles.addButton} onPress={() => setShowModal(true)}>
-          <MaterialIcons name="add" size={28} color={Colors.white} />
-        </Pressable>
+        {canEdit ? (
+          <Pressable style={styles.addButton} onPress={() => setShowModal(true)}>
+            <MaterialIcons name="add" size={28} color={Colors.white} />
+          </Pressable>
+        ) : (
+          <View style={{ width: 44 }} />
+        )}
       </View>
 
       <ScrollView style={styles.content}>
