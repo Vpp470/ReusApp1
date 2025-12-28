@@ -318,52 +318,25 @@ export default function ScanTicketScreen() {
           <View style={{ width: 24 }} />
         </View>
         
-        {/* Contingut scrollable */}
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-          {/* Secció de campanya activa - compacta */}
-          {loadingCampaign ? (
-            <View style={styles.campaignLoadingContainer}>
-              <ActivityIndicator size="small" color={Colors.primary} />
-            </View>
-          ) : activeCampaign ? (
-            <View style={styles.campaignContainerCompact}>
-              {activeCampaign.image && (
-                <Image source={{ uri: activeCampaign.image }} style={styles.campaignImageSmall} />
-              )}
-              <View style={styles.campaignContentCompact}>
-                <Text style={styles.campaignTitleSmall}>{activeCampaign.title}</Text>
-                <Text style={styles.campaignPrizeSmall} numberOfLines={2}>🎁 {activeCampaign.prize_description}</Text>
-              </View>
-            </View>
-          ) : null}
-        </ScrollView>
-        
-        {/* Botons d'acció - sempre visibles a la part inferior */}
-        <View style={styles.actionButtonsContainer}>
-          <MaterialIcons name="photo-camera" size={40} color={Colors.primary} style={{ marginBottom: 8 }} />
-          <Text style={styles.actionTitle}>
-            {isWeb ? 'Opcions d\'Escaneig' : 'Accés a la Càmera'}
+        <View style={styles.cameraPermissionContainer}>
+          <MaterialIcons name="photo-camera" size={80} color={Colors.primary} />
+          <Text style={styles.cameraPermissionTitle}>Càmera Necessària</Text>
+          <Text style={styles.cameraPermissionText}>
+            Per escanejar tiquets necessites permetre l'accés a la càmera.
           </Text>
           
-          {/* Botó entrada manual - PRINCIPAL */}
-          <Pressable style={styles.manualEntryButtonLarge} onPress={() => setScanMode('manual')}>
-            <MaterialIcons name="keyboard" size={24} color={Colors.white} />
-            <Text style={styles.manualEntryButtonTextLarge}>Introduir Codi Manualment</Text>
-          </Pressable>
-          
-          {!isWeb && (
-            <Pressable style={styles.cameraButton} onPress={requestPermission}>
-              <MaterialIcons name="camera-alt" size={20} color={Colors.primary} />
-              <Text style={styles.cameraButtonText}>Obrir Càmera</Text>
+          {!isWeb ? (
+            <Pressable style={styles.allowCameraButton} onPress={requestPermission}>
+              <MaterialIcons name="camera-alt" size={24} color={Colors.white} />
+              <Text style={styles.allowCameraButtonText}>Permetre Càmera</Text>
             </Pressable>
+          ) : (
+            <Text style={styles.webWarningText}>
+              L'escaneig amb càmera només funciona a l'app mòbil.
+              {'\n'}Obre l'app al teu telèfon per escanejar.
+            </Text>
           )}
           
-          <Pressable style={styles.galleryButtonSmall} onPress={pickImage}>
-            <MaterialIcons name="photo-library" size={20} color={Colors.primary} />
-            <Text style={styles.galleryButtonTextSmall}>Galeria</Text>
-          </Pressable>
-          
-          {/* Participacions */}
           <TouchableOpacity 
             style={styles.participationsButtonSmall} 
             onPress={() => router.push('/tickets/participations')}
