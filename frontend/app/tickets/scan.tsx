@@ -318,73 +318,62 @@ export default function ScanTicketScreen() {
           <View style={{ width: 24 }} />
         </View>
         
-        <ScrollView style={{ flex: 1 }}>
-          {/* Secció de campanya activa */}
+        {/* Contingut scrollable */}
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+          {/* Secció de campanya activa - compacta */}
           {loadingCampaign ? (
             <View style={styles.campaignLoadingContainer}>
               <ActivityIndicator size="small" color={Colors.primary} />
             </View>
           ) : activeCampaign ? (
-            <View style={styles.campaignContainer}>
+            <View style={styles.campaignContainerCompact}>
               {activeCampaign.image && (
-                <Image source={{ uri: activeCampaign.image }} style={styles.campaignImage} />
+                <Image source={{ uri: activeCampaign.image }} style={styles.campaignImageSmall} />
               )}
-              <View style={styles.campaignContent}>
-                <Text style={styles.campaignTitle}>{activeCampaign.title}</Text>
-                {activeCampaign.description && (
-                  <Text style={styles.campaignDescription}>{activeCampaign.description}</Text>
-                )}
-                <Text style={styles.campaignPrize}>🎁 {activeCampaign.prize_description}</Text>
+              <View style={styles.campaignContentCompact}>
+                <Text style={styles.campaignTitleSmall}>{activeCampaign.title}</Text>
+                <Text style={styles.campaignPrizeSmall} numberOfLines={2}>🎁 {activeCampaign.prize_description}</Text>
               </View>
             </View>
-          ) : (
-            <View style={styles.noCampaignContainer}>
-              <MaterialIcons name="info-outline" size={40} color={Colors.textSecondary} />
-              <Text style={styles.noCampaignText}>No hi ha cap campanya activa en aquest moment</Text>
-            </View>
+          ) : null}
+        </ScrollView>
+        
+        {/* Botons d'acció - sempre visibles a la part inferior */}
+        <View style={styles.actionButtonsContainer}>
+          <MaterialIcons name="photo-camera" size={40} color={Colors.primary} style={{ marginBottom: 8 }} />
+          <Text style={styles.actionTitle}>
+            {isWeb ? 'Opcions d\'Escaneig' : 'Accés a la Càmera'}
+          </Text>
+          
+          {/* Botó entrada manual - PRINCIPAL */}
+          <Pressable style={styles.manualEntryButtonLarge} onPress={() => setScanMode('manual')}>
+            <MaterialIcons name="keyboard" size={24} color={Colors.white} />
+            <Text style={styles.manualEntryButtonTextLarge}>Introduir Codi Manualment</Text>
+          </Pressable>
+          
+          {!isWeb && (
+            <Pressable style={styles.cameraButton} onPress={requestPermission}>
+              <MaterialIcons name="camera-alt" size={20} color={Colors.primary} />
+              <Text style={styles.cameraButtonText}>Obrir Càmera</Text>
+            </Pressable>
           )}
           
-          <View style={styles.permissionContainer}>
-            <MaterialIcons name="photo-camera" size={64} color={Colors.primary} />
-            <Text style={styles.permissionTitle}>
-              {isWeb ? 'Opcions d\'Escaneig' : 'Accés a la Càmera'}
+          <Pressable style={styles.galleryButtonSmall} onPress={pickImage}>
+            <MaterialIcons name="photo-library" size={20} color={Colors.primary} />
+            <Text style={styles.galleryButtonTextSmall}>Galeria</Text>
+          </Pressable>
+          
+          {/* Participacions */}
+          <TouchableOpacity 
+            style={styles.participationsButtonSmall} 
+            onPress={() => router.push('/tickets/participations')}
+          >
+            <MaterialIcons name="confirmation-number" size={18} color={Colors.white} />
+            <Text style={styles.participationsButtonTextSmall}>
+              Participacions ({participations})
             </Text>
-            <Text style={styles.permissionText}>
-              {isWeb 
-                ? 'Tria com vols validar el teu tiquet:'
-                : 'Necessitem accés a la càmera per escanejar els teus tiquets'
-              }
-            </Text>
-            
-            {!isWeb && (
-              <Pressable style={styles.permissionButton} onPress={requestPermission}>
-                <Text style={styles.permissionButtonText}>Permetre Càmera</Text>
-              </Pressable>
-            )}
-            
-            {/* Botó entrada manual */}
-            <Pressable style={styles.manualEntryButton} onPress={() => setScanMode('manual')}>
-              <MaterialIcons name="keyboard" size={20} color={Colors.white} />
-              <Text style={styles.manualEntryButtonText}>Introduir Codi Manualment</Text>
-            </Pressable>
-            
-            <Pressable style={styles.galleryButton} onPress={pickImage}>
-              <MaterialIcons name="photo-library" size={20} color={Colors.primary} />
-              <Text style={styles.galleryButtonText}>Seleccionar de Galeria</Text>
-            </Pressable>
-            
-            {/* Participacions */}
-            <TouchableOpacity 
-              style={styles.participationsButton} 
-              onPress={() => router.push('/tickets/participations')}
-            >
-              <MaterialIcons name="confirmation-number" size={20} color={Colors.white} />
-              <Text style={styles.participationsButtonText}>
-                Les meves participacions ({participations})
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
