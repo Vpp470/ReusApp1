@@ -99,7 +99,7 @@ async def get_user_from_token(authorization: str):
 
 def generate_qr_code():
     """Generar un codi QR únic"""
-    return f"GINCANA-{secrets.token_hex(8).upper()}"
+    return f"GIMCANA-{secrets.token_hex(8).upper()}"
 
 
 # ============== ADMIN ENDPOINTS ==============
