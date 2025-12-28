@@ -442,7 +442,7 @@ export default function GimcanaDetailPage() {
             <View style={styles.inputRow}>
               <TextInput
                 style={styles.codeTextInputFull}
-                placeholder="GINCANA-XXXXXXXXXXXX"
+                placeholder="GIMCANA-XXXXXXXXXXXX"
                 placeholderTextColor="#999"
                 value={scanInput}
                 onChangeText={setScanInput}
