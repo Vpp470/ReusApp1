@@ -542,12 +542,14 @@ const styles = StyleSheet.create({
   descriptionContainer: {
     marginTop: Spacing.md,
     padding: Spacing.md,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.white,
     borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
   },
   descriptionText: {
     fontSize: FontSizes.sm,
-    color: Colors.darkGray,
+    color: Colors.textDark,
     lineHeight: 20,
   },
   actionButtons: {
