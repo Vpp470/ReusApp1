@@ -16,13 +16,14 @@ import {
   Platform,
   Alert,
   Dimensions,
+  TextInput,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useAuth } from '../../src/context/AuthContext';
+import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/services/api';
-import { Colors, FontSizes, Spacing, BorderRadius } from '../../src/styles/theme';
+import { Colors, FontSizes, Spacing, BorderRadius } from '../../src/constants/colors';
 
 const { width } = Dimensions.get('window');
 const QR_GRID_SIZE = Math.floor((width - Spacing.md * 3) / 4);
