@@ -165,6 +165,86 @@ async def get_campaign(campaign_id: str, authorization: str = Header(None)):
     return campaign
 
 
+@gimcana_router.get("/campaigns/active")
+async def get_active_campaigns(authorization: str = Header(None)):
+    """Obtenir campanyes actives amb el progrés de l'usuari"""
+    user = await get_user_from_token(authorization)
+    
+    now = datetime.utcnow()
+    campaigns = await db.gimcana_campaigns.find({
+        "is_active": True,
+        "start_date": {"$lte": now},
+        "end_date": {"$gte": now}
+    }).sort("start_date", -1).to_list(100)
+    
+    user_id = str(user['_id']) if user else None
+    
+    for c in campaigns:
+        c['_id'] = str(c['_id'])
+        
+        # Obtenir progrés de l'usuari si ha iniciat sessió
+        if user_id:
+            progress = await db.gimcana_progress.find_one({
+                "campaign_id": str(c['_id']),
+                "user_id": user_id
+            })
+            if progress:
+                c['user_progress'] = {
+                    "scanned_count": len(progress.get('scanned_qrs', [])),
+                    "completed": progress.get('completed', False),
+                    "entered_raffle": progress.get('entered_raffle', False)
+                }
+            else:
+                c['user_progress'] = {
+                    "scanned_count": 0,
+                    "completed": False,
+                    "entered_raffle": False
+                }
+        else:
+            c['user_progress'] = None
+    
+    return campaigns
+
+
+@gimcana_router.get("/campaigns/{campaign_id}/progress")
+async def get_user_progress(campaign_id: str, authorization: str = Header(None)):
+    """Obtenir el progrés de l'usuari en una campanya"""
+    user = await get_user_from_token(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="Has d'iniciar sessió")
+    
+    user_id = str(user['_id'])
+    
+    progress = await db.gimcana_progress.find_one({
+        "campaign_id": campaign_id,
+        "user_id": user_id
+    })
+    
+    if not progress:
+        return {
+            "scanned_qrs": [],
+            "completed": False,
+            "entered_raffle": False
+        }
+    
+    # Convertir ObjectIds dels QRs escanejats a strings
+    scanned_qrs = []
+    for qr_id in progress.get('scanned_qrs', []):
+        if isinstance(qr_id, ObjectId):
+            scanned_qrs.append(str(qr_id))
+        else:
+            scanned_qrs.append(qr_id)
+    
+    return {
+        "scanned_qrs": scanned_qrs,
+        "completed": progress.get('completed', False),
+        "completed_at": progress.get('completed_at'),
+        "entered_raffle": progress.get('entered_raffle', False),
+        "entered_raffle_at": progress.get('entered_raffle_at'),
+        "is_winner": progress.get('is_winner', False)
+    }
+
+
 @gimcana_router.post("/campaigns")
 async def create_campaign(campaign: GimcanaCampaignCreate, authorization: str = Header(None)):
     """Crear una nova campanya de gimcana (només admin)"""
