@@ -3239,6 +3239,10 @@ app.include_router(admin_router, prefix="/api")
 # Include consell routes
 app.include_router(consell_router)
 
+# Include gincana routes
+set_gincana_db(db)
+app.include_router(gincana_router)
+
 # Routes included above
 
 app.add_middleware(
