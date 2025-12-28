@@ -173,8 +173,13 @@ export default function GimcanaAdminPage() {
         total_qr_codes: qrItems.length,
         start_date: new Date(formData.start_date).toISOString(),
         end_date: new Date(formData.end_date).toISOString(),
+        prize_type: formData.prize_type,
         prize_description: formData.prize_description,
+        prize_image_url: formData.prize_image_url || null,
         rules: formData.rules,
+        rules_url: formData.rules_url || null,
+        image_url: formData.image_url || null,
+        raffle_date: formData.prize_type === 'raffle' ? new Date(formData.raffle_date).toISOString() : null,
         is_active: formData.is_active,
         qr_items: qrItems.map(item => ({
           establishment_name: item.name,
