@@ -3333,6 +3333,63 @@ if frontend_public_path.exists():
             return FileResponse(map_path)
         raise HTTPException(status_code=404, detail="Event map file not found")
 
+# ============== UPLOAD DE FITXERS ==============
+# Crear directori per emmagatzemar fitxers pujats
+UPLOAD_DIR = ROOT_DIR / "uploads"
+UPLOAD_DIR.mkdir(exist_ok=True)
+
+@app.post("/api/upload")
+async def upload_file(file: UploadFile = File(...), authorization: str = Header(None)):
+    """
+    Pujar un fitxer (imatge) al servidor
+    Retorna la URL pública del fitxer
+    """
+    # Verificar autenticació
+    user = await get_user_from_token(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="Has d'iniciar sessió per pujar fitxers")
+    
+    # Verificar tipus de fitxer
+    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Tipus de fitxer no permès. Només: {', '.join(allowed_types)}")
+    
+    # Generar nom únic pel fitxer
+    file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+    unique_filename = f"{uuid.uuid4()}.{file_extension}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    try:
+        # Guardar el fitxer
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Retornar la URL pública
+        # La URL serà accessible via /api/uploads/filename
+        file_url = f"/api/uploads/{unique_filename}"
+        
+        logger.info(f"Fitxer pujat: {unique_filename} per usuari {user.get('email')}")
+        
+        return {
+            "success": True,
+            "url": file_url,
+            "filename": unique_filename,
+            "content_type": file.content_type
+        }
+    except Exception as e:
+        logger.error(f"Error pujant fitxer: {e}")
+        raise HTTPException(status_code=500, detail=f"Error pujant el fitxer: {str(e)}")
+
+
+@app.get("/api/uploads/{filename}")
+async def get_uploaded_file(filename: str):
+    """Servir un fitxer pujat"""
+    file_path = UPLOAD_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Fitxer no trobat")
+    return FileResponse(file_path)
+
+
 # Endpoint per netejar les descripcions dels establiments (eliminar HTML tags)
 @app.post("/api/admin/clean-descriptions")
 async def clean_establishment_descriptions():
