@@ -539,29 +539,38 @@ export default function GimcanaDetailPage() {
             <View style={{ width: 28 }} />
           </View>
 
-          {Platform.OS === 'web' ? (
-            /* Web: Missatge que cal usar l'app mòbil */
+          {/* Contingut principal - Càmera o missatge */}
+          {!permission?.granted ? (
+            /* Sense permisos */
             <View style={styles.webMessageContainer}>
-              <MaterialIcons name="phone-iphone" size={80} color={Colors.primary} />
-              <Text style={styles.webMessageTitle}>Usa l'app mòbil</Text>
+              <MaterialIcons name="camera-alt" size={80} color={Colors.primary} />
+              <Text style={styles.webMessageTitle}>Permís de Càmera</Text>
               <Text style={styles.webMessageText}>
-                Per escanejar codis QR necessites obrir l'app al teu telèfon mòbil.
-              </Text>
-              <Text style={styles.webMessageHint}>
-                L'escaneig amb càmera no està disponible al navegador web.
+                Necessitem accés a la càmera per escanejar codis QR.
               </Text>
               <TouchableOpacity 
                 style={styles.webCloseButton}
+                onPress={async () => {
+                  const result = await requestPermission();
+                  if (!result.granted) {
+                    Alert.alert('Error', 'No s\'ha pogut obtenir el permís de la càmera');
+                  }
+                }}
+              >
+                <Text style={styles.webCloseButtonText}>Permetre Càmera</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.webCloseButton, { backgroundColor: Colors.textSecondary, marginTop: 10 }]}
                 onPress={() => setShowScanner(false)}
               >
                 <Text style={styles.webCloseButtonText}>Tancar</Text>
               </TouchableOpacity>
             </View>
           ) : (
-            /* Mòbil: Càmera */
+            /* Amb permisos - Mostrar càmera */
             <View style={styles.cameraContainer}>
               <CameraView
-                style={styles.camera}
+                style={StyleSheet.absoluteFillObject}
                 facing="back"
                 barcodeScannerSettings={{
                   barcodeTypes: ['qr'],
