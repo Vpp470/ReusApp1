@@ -205,32 +205,39 @@ export default function ScanTicketScreen() {
     try {
       setProcessing(true);
       
-      const response = await axios.post(
-        `${API_URL}/api/tickets/process`,
+      const response = await api.post(
+        '/tickets/process',
         { ticket_image: imageBase64 },
         { headers: { Authorization: token! } }
       );
 
       if (response.data.success) {
-        Alert.alert(
-          '🎉 Tiquet Validat!',
-          `${response.data.message}\n\nEstabliment: ${response.data.establishment}\nImport: ${response.data.amount}€\n\nTotal participacions: ${participations + response.data.participations}`,
-          [
-            {
-              text: 'Veure Participacions',
-              onPress: () => router.push('/tickets/participations'),
-            },
-            { text: 'Escanejar Altre', onPress: () => { setScanMode('menu'); loadParticipations(); } },
-          ]
-        );
+        const msg = `${response.data.message}\n\nEstabliment: ${response.data.establishment}\nImport: ${response.data.amount}€\n\nTotal participacions: ${participations + response.data.participations}`;
+        if (Platform.OS === 'web') {
+          window.alert(`🎉 Tiquet Validat!\n${msg}`);
+        } else {
+          Alert.alert(
+            '🎉 Tiquet Validat!',
+            msg,
+            [
+              {
+                text: 'Veure Participacions',
+                onPress: () => router.push('/tickets/participations'),
+              },
+              { text: 'Escanejar Altre', onPress: () => { setScanMode('menu'); loadParticipations(); } },
+            ]
+          );
+        }
         loadParticipations();
       }
     } catch (error: any) {
       console.error('Error processant tiquet:', error);
-      Alert.alert(
-        'Error',
-        error.response?.data?.detail || 'No s\'ha pogut processar el tiquet. Comprova que sigui llegible i d\'un establiment associat.'
-      );
+      const errorMsg = error.response?.data?.detail || 'No s\'ha pogut processar el tiquet. Comprova que sigui llegible i d\'un establiment associat.';
+      if (Platform.OS === 'web') {
+        window.alert(`Error: ${errorMsg}`);
+      } else {
+        Alert.alert('Error', errorMsg);
+      }
     } finally {
       setProcessing(false);
     }
