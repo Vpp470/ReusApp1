@@ -17,10 +17,13 @@ import {
   Alert,
   Dimensions,
   TextInput,
+  Pressable,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/services/api';
 import { Colors, FontSizes, Spacing, BorderRadius } from '../../src/constants/colors';
