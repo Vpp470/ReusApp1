@@ -33,7 +33,7 @@ interface Acta {
 
 export default function ActaPage() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   
   const [actes, setActes] = useState<Acta[]>([]);
   const [loading, setLoading] = useState(true);

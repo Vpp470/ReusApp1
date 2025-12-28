@@ -37,7 +37,7 @@ interface Member {
 
 export default function CampanyesFuturesPage() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
