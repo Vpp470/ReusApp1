@@ -118,29 +118,29 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      {offers.length > 0 && (
+      {promotions.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{i18n.t('home.featuredOffers')}</Text>
-            <Pressable onPress={() => router.push('/(tabs)/offers')}>
+            <Text style={styles.sectionTitle}>Promocions Destacades</Text>
+            <Pressable onPress={() => router.push('/(tabs)/promotions')}>
               <Text style={styles.seeAllText}>{i18n.t('home.seeAll')}</Text>
             </Pressable>
           </View>
           
-          {offers.map((offer) => (
+          {promotions.map((promo) => (
             <Pressable
-              key={offer.id}
+              key={promo._id || promo.id}
               style={styles.offerCard}
-              onPress={() => router.push('/(tabs)/offers')}
+              onPress={() => router.push('/(tabs)/promotions')}
             >
               <View style={styles.offerContent}>
-                <MaterialIcons name="local-offer" size={20} color={Colors.primary} />
+                <MaterialIcons name="card-giftcard" size={20} color={Colors.primary} />
                 <View style={styles.offerInfo}>
                   <Text style={styles.offerTitle} numberOfLines={1}>
-                    {offer.title}
+                    {promo.title}
                   </Text>
-                  {offer.discount && (
-                    <Text style={styles.offerDiscount}>{offer.discount}</Text>
+                  {promo.description && (
+                    <Text style={styles.offerDiscount} numberOfLines={1}>{promo.description}</Text>
                   )}
                 </View>
               </View>
