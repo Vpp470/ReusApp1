@@ -1407,6 +1407,45 @@ async def get_promotions(authorization: str = Header(None)):
     
     return promotions
 
+
+@api_router.get("/promotions/featured")
+async def get_featured_promotions():
+    """
+    Obtenir promocions destacades per a la pàgina principal.
+    Retorna les promocions aprovades, vigents i marcades com destacades.
+    """
+    from datetime import datetime
+    now = datetime.utcnow()
+    
+    # Promocions aprovades, vigents i destacades
+    promotions = await db.promotions.find({
+        "status": "approved",
+        "is_featured": True,
+        "$or": [
+            {"valid_until": {"$gte": now}},
+            {"valid_until": None},
+            {"valid_until": {"$exists": False}}
+        ]
+    }).sort("created_at", -1).to_list(10)
+    
+    # Si no n'hi ha destacades, retornar les més recents
+    if not promotions:
+        promotions = await db.promotions.find({
+            "status": "approved",
+            "$or": [
+                {"valid_until": {"$gte": now}},
+                {"valid_until": None},
+                {"valid_until": {"$exists": False}}
+            ]
+        }).sort("created_at", -1).to_list(5)
+    
+    for promo in promotions:
+        promo['_id'] = str(promo['_id'])
+        promo['id'] = str(promo['_id'])
+    
+    return promotions
+
+
 @api_router.get("/promotions/{promotion_id}")
 async def get_promotion(promotion_id: str):
     """Obtenir una promoció específica"""
