@@ -645,6 +645,34 @@ export default function GimcanaAdminPage() {
                 placeholderTextColor="#999"
               />
 
+              {/* Imatge de la campanya */}
+              <Text style={styles.label}>Imatge de la campanya</Text>
+              <Pressable 
+                style={styles.imagePickerButton}
+                onPress={() => pickImage('image_url')}
+                disabled={uploadingImage}
+              >
+                {uploadingImage ? (
+                  <ActivityIndicator color={Colors.primary} />
+                ) : formData.image_url ? (
+                  <View style={styles.imagePreviewContainer}>
+                    <Image source={{ uri: formData.image_url }} style={styles.imagePreview} />
+                    <Pressable 
+                      style={styles.removeImageButton}
+                      onPress={() => setFormData(prev => ({ ...prev, image_url: '' }))}
+                    >
+                      <MaterialIcons name="close" size={16} color={Colors.white} />
+                    </Pressable>
+                  </View>
+                ) : (
+                  <View style={styles.imagePickerPlaceholder}>
+                    <MaterialIcons name="add-photo-alternate" size={40} color={Colors.primary} />
+                    <Text style={styles.imagePickerText}>Toca per afegir imatge</Text>
+                    <Text style={styles.imagePickerHint}>Format recomanat: 16:9</Text>
+                  </View>
+                )}
+              </Pressable>
+
               {/* Tipus de premi */}
               <Text style={styles.label}>Tipus de premi *</Text>
               <View style={styles.prizeTypeContainer}>
