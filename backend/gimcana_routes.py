@@ -365,6 +365,29 @@ async def delete_campaign(campaign_id: str, authorization: str = Header(None)):
     return {"success": True, "message": "Campanya eliminada"}
 
 
+@gimcana_router.post("/admin/fix-qr-codes")
+async def fix_qr_codes(authorization: str = Header(None)):
+    """Corregir els codis QR canviant GINCANA per GIMCANA (només admin)"""
+    user = await get_user_from_token(authorization)
+    if not user or user.get('role') != 'admin':
+        raise HTTPException(status_code=403, detail="Només els administradors poden fer això")
+    
+    # Buscar tots els codis amb GINCANA
+    qr_codes = await db.gimcana_qr_codes.find({"code": {"$regex": "^GINCANA-"}}).to_list(1000)
+    
+    updated = 0
+    for qr in qr_codes:
+        old_code = qr['code']
+        new_code = old_code.replace('GINCANA-', 'GIMCANA-')
+        await db.gimcana_qr_codes.update_one(
+            {"_id": qr['_id']},
+            {"$set": {"code": new_code}}
+        )
+        updated += 1
+    
+    return {"success": True, "message": f"Actualitzats {updated} codis QR", "updated": updated}
+
+
 # ============== QR CODE MANAGEMENT ==============
 
 @gimcana_router.get("/campaigns/{campaign_id}/qr-codes")
