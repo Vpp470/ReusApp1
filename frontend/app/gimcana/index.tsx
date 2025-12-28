@@ -44,7 +44,7 @@ interface GimcanaCampaign {
 
 export default function GimcanaUserPage() {
   const router = useRouter();
-  const { token, user } = useAuth();
+  const { token, user } = useAuthStore();
   const [campaigns, setCampaigns] = useState<GimcanaCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
