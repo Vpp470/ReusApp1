@@ -168,38 +168,6 @@ export default function ScanTicketScreen() {
     }
   };
 
-  const handleManualSubmit = async () => {
-    if (!manualCode.trim() || processing) return;
-    
-    setProcessing(true);
-    try {
-      const response = await api.post(
-        '/tickets/scan',
-        { ticket_code: manualCode.trim().toUpperCase() },
-        { headers: { Authorization: token! } }
-      );
-
-      if (Platform.OS === 'web') {
-        window.alert(`🎉 Tiquet Validat!\n${response.data.message || 'Tiquet processat correctament!'}`);
-      } else {
-        Alert.alert('🎉 Tiquet Validat!', response.data.message || 'Tiquet processat correctament!');
-      }
-      
-      setManualCode('');
-      setScanMode('menu');
-      loadParticipations();
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || 'No s\'ha pogut processar el codi';
-      if (Platform.OS === 'web') {
-        window.alert(`Error: ${errorMsg}`);
-      } else {
-        Alert.alert('Error', errorMsg);
-      }
-    } finally {
-      setProcessing(false);
-    }
-  };
-
   const processTicket = async (imageBase64: string) => {
     try {
       setProcessing(true);
