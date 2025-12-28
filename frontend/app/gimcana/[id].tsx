@@ -223,7 +223,6 @@ export default function GimcanaDetailPage() {
       } : null);
       
       setShowScanner(false);
-      setScanInput('');
       setHasScanned(false);
       
       if (result.completed && result.is_new_completion) {
