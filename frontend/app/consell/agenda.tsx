@@ -37,7 +37,10 @@ interface Member {
 
 export default function AgendaPage() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
+  
+  // Només admins poden editar
+  const canEdit = user?.role === 'admin';
   
   const [events, setEvents] = useState<AgendaEvent[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
