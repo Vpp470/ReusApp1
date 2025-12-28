@@ -83,8 +83,6 @@ export default function GimcanaDetailPage() {
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showRaffleResult, setShowRaffleResult] = useState(false);
   const [raffleResult, setRaffleResult] = useState<any>(null);
-  const [scanInput, setScanInput] = useState('');
-  const [scanMode, setScanMode] = useState<'camera' | 'manual'>('camera');
   const [hasScanned, setHasScanned] = useState(false);
 
   const loadCampaignDetails = useCallback(async () => {
