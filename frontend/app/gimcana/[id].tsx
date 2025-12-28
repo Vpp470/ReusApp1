@@ -149,32 +149,19 @@ export default function GimcanaDetailPage() {
   // Funció per obrir l'escàner
   const openScanner = async () => {
     setHasScanned(false);
-    setScanInput('');
-    
-    // A web, anar directament a mode manual
-    if (Platform.OS === 'web') {
-      setScanMode('manual');
-      setShowScanner(true);
-      return;
-    }
     
     // A mòbil, demanar permisos de càmera
-    if (!permission?.granted) {
+    if (Platform.OS !== 'web' && !permission?.granted) {
       const result = await requestPermission();
       if (!result.granted) {
         Alert.alert(
           'Permís necessari',
-          'Cal accés a la càmera per escanejar codis QR',
-          [
-            { text: 'Cancel·lar', style: 'cancel' },
-            { text: 'Entrada manual', onPress: () => { setScanMode('manual'); setShowScanner(true); }}
-          ]
+          'Cal accés a la càmera per escanejar codis QR'
         );
         return;
       }
     }
     
-    setScanMode('camera');
     setShowScanner(true);
   };
 
