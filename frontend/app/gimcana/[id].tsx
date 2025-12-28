@@ -944,6 +944,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
+  codeTextInput: {
+    flex: 1,
+    fontSize: FontSizes.md,
+    color: '#333',
+    marginLeft: Spacing.sm,
+    paddingVertical: Spacing.xs,
+  },
   submitScanButton: {
     backgroundColor: Colors.primary,
     flexDirection: 'row',
