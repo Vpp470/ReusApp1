@@ -189,7 +189,10 @@ export default function ScanTicketScreen() {
     }
   };
 
-  if (!permission) {
+  // A web, la càmera pot no estar disponible
+  const isWeb = Platform.OS === 'web';
+  
+  if (!permission && !isWeb) {
     return (
       <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -197,22 +200,76 @@ export default function ScanTicketScreen() {
     );
   }
 
-  if (!permission.granted) {
+  // A web o sense permisos de càmera, mostrar opcions alternatives
+  if (isWeb || !permission?.granted) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.permissionContainer}>
-          <MaterialIcons name="camera-alt" size={64} color={Colors.textSecondary} />
-          <Text style={styles.permissionTitle}>Accés a la Càmera</Text>
-          <Text style={styles.permissionText}>
-            Necessitem accés a la càmera per escanejar els teus tiquets
-          </Text>
-          <Pressable style={styles.permissionButton} onPress={requestPermission}>
-            <Text style={styles.permissionButtonText}>Permetre Càmera</Text>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()}>
+            <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
           </Pressable>
+          <Text style={styles.headerTitle}>Escaneja Tiquet</Text>
+          <View style={{ width: 24 }} />
+        </View>
+        
+        {/* Secció de campanya activa */}
+        {loadingCampaign ? (
+          <View style={styles.campaignLoadingContainer}>
+            <ActivityIndicator size="small" color={Colors.primary} />
+          </View>
+        ) : activeCampaign ? (
+          <View style={styles.campaignContainer}>
+            {activeCampaign.image && (
+              <Image source={{ uri: activeCampaign.image }} style={styles.campaignImage} />
+            )}
+            <View style={styles.campaignContent}>
+              <Text style={styles.campaignTitle}>{activeCampaign.title}</Text>
+              {activeCampaign.description && (
+                <Text style={styles.campaignDescription}>{activeCampaign.description}</Text>
+              )}
+              <Text style={styles.campaignPrize}>🎁 {activeCampaign.prize_description}</Text>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.noCampaignContainer}>
+            <MaterialIcons name="info-outline" size={40} color={Colors.textSecondary} />
+            <Text style={styles.noCampaignText}>No hi ha cap campanya activa en aquest moment</Text>
+          </View>
+        )}
+        
+        <View style={styles.permissionContainer}>
+          <MaterialIcons name="photo-camera" size={64} color={Colors.primary} />
+          <Text style={styles.permissionTitle}>
+            {isWeb ? 'Escaneja des del mòbil' : 'Accés a la Càmera'}
+          </Text>
+          <Text style={styles.permissionText}>
+            {isWeb 
+              ? 'Per escanejar codis QR amb la càmera, utilitza l\'app des del teu mòbil. O pots seleccionar una foto de la galeria.'
+              : 'Necessitem accés a la càmera per escanejar els teus tiquets'
+            }
+          </Text>
+          
+          {!isWeb && (
+            <Pressable style={styles.permissionButton} onPress={requestPermission}>
+              <Text style={styles.permissionButtonText}>Permetre Càmera</Text>
+            </Pressable>
+          )}
+          
           <Pressable style={styles.galleryButton} onPress={pickImage}>
             <MaterialIcons name="photo-library" size={20} color={Colors.primary} />
             <Text style={styles.galleryButtonText}>Seleccionar de Galeria</Text>
           </Pressable>
+          
+          {/* Participacions */}
+          <TouchableOpacity 
+            style={styles.participationsButton} 
+            onPress={() => router.push('/tickets/participations')}
+          >
+            <MaterialIcons name="confirmation-number" size={20} color={Colors.white} />
+            <Text style={styles.participationsButtonText}>
+              Les meves participacions ({participations})
+            </Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
