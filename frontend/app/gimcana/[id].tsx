@@ -548,23 +548,32 @@ export default function GimcanaDetailPage() {
               <Text style={styles.webMessageText}>
                 Necessitem accés a la càmera per escanejar codis QR.
               </Text>
-              <TouchableOpacity 
-                style={styles.webCloseButton}
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.webCloseButton,
+                  pressed && { opacity: 0.7 }
+                ]}
                 onPress={async () => {
+                  console.log('Requesting camera permission from Gimcana...');
                   const result = await requestPermission();
+                  console.log('Permission result:', result);
                   if (!result.granted) {
                     Alert.alert('Error', 'No s\'ha pogut obtenir el permís de la càmera');
                   }
                 }}
               >
                 <Text style={styles.webCloseButtonText}>Permetre Càmera</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.webCloseButton, { backgroundColor: Colors.textSecondary, marginTop: 10 }]}
+              </Pressable>
+              <Pressable 
+                style={({ pressed }) => [
+                  styles.webCloseButton, 
+                  { backgroundColor: Colors.textSecondary, marginTop: 10 },
+                  pressed && { opacity: 0.7 }
+                ]}
                 onPress={() => setShowScanner(false)}
               >
                 <Text style={styles.webCloseButtonText}>Tancar</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           ) : (
             /* Amb permisos - Mostrar càmera */
