@@ -39,6 +39,9 @@ export default function CampanyesFuturesPage() {
   const router = useRouter();
   const { token, user } = useAuthStore();
   
+  // Només admins poden editar
+  const canEdit = user?.role === 'admin';
+  
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);

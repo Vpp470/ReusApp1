@@ -36,6 +36,9 @@ export default function ComptesPage() {
   const router = useRouter();
   const { token, user } = useAuthStore();
   
+  // Només admins poden editar
+  const canEdit = user?.role === 'admin';
+  
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

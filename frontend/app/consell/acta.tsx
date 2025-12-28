@@ -35,6 +35,9 @@ export default function ActaPage() {
   const router = useRouter();
   const { token, user } = useAuthStore();
   
+  // Només admins poden editar
+  const canEdit = user?.role === 'admin';
+  
   const [actes, setActes] = useState<Acta[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
