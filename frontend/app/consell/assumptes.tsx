@@ -160,9 +160,13 @@ export default function AssumptesPage() {
           <MaterialIcons name="arrow-back" size={28} color={Colors.white} />
         </Pressable>
         <Text style={styles.headerTitle}>Assumptes Sobrevinguts</Text>
-        <Pressable style={styles.addButton} onPress={() => setShowModal(true)}>
-          <MaterialIcons name="add" size={28} color={Colors.white} />
-        </Pressable>
+        {canEdit ? (
+          <Pressable style={styles.addButton} onPress={() => setShowModal(true)}>
+            <MaterialIcons name="add" size={28} color={Colors.white} />
+          </Pressable>
+        ) : (
+          <View style={{ width: 44 }} />
+        )}
       </View>
 
       <ScrollView style={styles.content}>
@@ -171,7 +175,7 @@ export default function AssumptesPage() {
             <MaterialIcons name="notifications-none" size={64} color={Colors.gray} />
             <Text style={styles.emptyTitle}>No hi ha assumptes</Text>
             <Text style={styles.emptyText}>
-              Clica el botó + per afegir un nou assumpte sobrevingut
+              {canEdit ? "Clica el botó + per afegir un nou assumpte sobrevingut" : "No hi ha assumptes pendents"}
             </Text>
           </View>
         ) : (
@@ -183,9 +187,11 @@ export default function AssumptesPage() {
               
               <View style={styles.noticeHeader}>
                 <Text style={styles.noticeTitle}>{notice.title}</Text>
-                <Pressable onPress={() => handleDelete(notice._id)}>
-                  <MaterialIcons name="delete" size={24} color={Colors.error} />
-                </Pressable>
+                {canEdit && (
+                  <Pressable onPress={() => handleDelete(notice._id)}>
+                    <MaterialIcons name="delete" size={24} color={Colors.error} />
+                  </Pressable>
+                )}
               </View>
               
               <Text style={styles.noticeContent}>{notice.content}</Text>
