@@ -16,7 +16,6 @@ import {
   Platform,
   Alert,
   Dimensions,
-  TextInput,
   Pressable,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -27,6 +26,32 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/services/api';
 import { Colors, FontSizes, Spacing, BorderRadius } from '../../src/constants/colors';
+
+// Helper per obtenir la URL completa de les imatges
+const getImageUrl = (url: string | undefined | null): string | undefined => {
+  if (!url) return undefined;
+  
+  // Si ja és una URL completa, retornar-la
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  
+  // Si és una URL relativa, afegir la base URL segons la plataforma
+  if (Platform.OS === 'web') {
+    // Al web en desenvolupament local
+    if (typeof window !== 'undefined') {
+      const hostname = window.location?.hostname || '';
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return `http://localhost:8001${url}`;
+      }
+    }
+    // En producció o Emergent, la URL relativa funcionarà
+    return url;
+  }
+  
+  // Al mòbil, usar la URL de producció
+  return `https://www.reusapp.com${url}`;
+};
 
 const { width } = Dimensions.get('window');
 const QR_GRID_SIZE = Math.floor((width - Spacing.md * 3) / 4);
