@@ -370,7 +370,7 @@ export default function GimcanaDetailPage() {
       <ScrollView style={styles.content}>
         {/* Imatge de campanya */}
         {campaign.image_url && (
-          <Image source={{ uri: campaign.image_url }} style={styles.campaignImage} />
+          <Image source={{ uri: getImageUrl(campaign.image_url) }} style={styles.campaignImage} />
         )}
 
         {/* Progrés */}
