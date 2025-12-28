@@ -52,6 +52,7 @@ export default function GimcanaAdminPage() {
   const [showQRModal, setShowQRModal] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<GimcanaCampaign | null>(null);
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -74,6 +75,72 @@ export default function GimcanaAdminPage() {
   useEffect(() => {
     loadCampaigns();
   }, []);
+
+  // Funció per seleccionar i pujar imatge
+  const pickImage = async (field: 'image_url' | 'prize_image_url') => {
+    try {
+      // Demanar permisos
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (!permissionResult.granted) {
+        const msg = 'Cal permís per accedir a la galeria de fotos';
+        Platform.OS === 'web' ? window.alert(msg) : Alert.alert('Permís necessari', msg);
+        return;
+      }
+      
+      // Obrir selector d'imatges
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: field === 'image_url' ? [16, 9] : [1, 1],
+        quality: 0.8,
+        base64: true,
+      });
+      
+      if (!result.canceled && result.assets[0]) {
+        setUploadingImage(true);
+        
+        const asset = result.assets[0];
+        
+        // Crear FormData per pujar la imatge
+        const formDataUpload = new FormData();
+        
+        if (Platform.OS === 'web') {
+          // A web, convertim base64 a blob
+          const base64Response = await fetch(`data:image/jpeg;base64,${asset.base64}`);
+          const blob = await base64Response.blob();
+          formDataUpload.append('file', blob, 'gimcana_image.jpg');
+        } else {
+          // A mòbil
+          formDataUpload.append('file', {
+            uri: asset.uri,
+            type: 'image/jpeg',
+            name: 'gimcana_image.jpg',
+          } as any);
+        }
+        
+        // Pujar la imatge
+        const uploadResponse = await api.post('/upload', formDataUpload, {
+          headers: {
+            Authorization: token,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        
+        if (uploadResponse.data.url) {
+          setFormData(prev => ({ ...prev, [field]: uploadResponse.data.url }));
+          const msg = 'Imatge pujada correctament!';
+          Platform.OS === 'web' ? window.alert(msg) : Alert.alert('Èxit', msg);
+        }
+      }
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      const msg = error.response?.data?.detail || 'Error pujant la imatge';
+      Platform.OS === 'web' ? window.alert(msg) : Alert.alert('Error', msg);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const loadCampaigns = async () => {
     try {
