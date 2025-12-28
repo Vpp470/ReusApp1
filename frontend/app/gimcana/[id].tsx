@@ -71,6 +71,7 @@ export default function GimcanaDetailPage() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { token, user } = useAuthStore();
+  const [permission, requestPermission] = useCameraPermissions();
   
   const [campaign, setCampaign] = useState<GimcanaCampaign | null>(null);
   const [progress, setProgress] = useState<GimcanaProgress | null>(null);
@@ -83,6 +84,8 @@ export default function GimcanaDetailPage() {
   const [showRaffleResult, setShowRaffleResult] = useState(false);
   const [raffleResult, setRaffleResult] = useState<any>(null);
   const [scanInput, setScanInput] = useState('');
+  const [scanMode, setScanMode] = useState<'camera' | 'manual'>('camera');
+  const [hasScanned, setHasScanned] = useState(false);
 
   const loadCampaignDetails = useCallback(async () => {
     if (!token || !id) return;
