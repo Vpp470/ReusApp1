@@ -541,17 +541,12 @@ async def scan_qr_code(request: ScanQRRequest, authorization: str = Header(None)
     
     # Verificar que el QR code existeix i pertany a aquesta campanya
     logger.info(f"Cercant QR code: '{qr_code}' per campanya: '{campaign_id}'")
-    logger.info(f"DB object: {db}, gimcana_qr_codes collection: {db.gimcana_qr_codes}")
-    
-    # Test query
-    all_qrs_count = await db.gimcana_qr_codes.count_documents({})
-    logger.info(f"Total QR codes in collection: {all_qrs_count}")
     
     qr = await db.gimcana_qr_codes.find_one({
         "campaign_id": campaign_id,
         "code": qr_code
     })
-    logger.info(f"QR trobat: {qr}")
+    logger.info(f"QR trobat: {qr is not None}")
     
     if not qr:
         # Intentar cercar sense el filtre de campanya per depurar
