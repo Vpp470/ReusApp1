@@ -589,32 +589,6 @@ export default function GimcanaDetailPage() {
               )}
             </View>
           )}
-                  ]}
-                  onPress={() => handleScanQR(scanInput)}
-                  disabled={!scanInput || scanning}
-                >
-                  {scanning ? (
-                    <ActivityIndicator color={Colors.white} />
-                  ) : (
-                    <>
-                      <MaterialIcons name="check-circle" size={20} color={Colors.white} />
-                      <Text style={styles.submitScanButtonText}>Validar codi</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-
-                {Platform.OS !== 'web' && (
-                  <TouchableOpacity 
-                    style={styles.switchModeButton}
-                    onPress={() => setScanMode('camera')}
-                  >
-                    <MaterialIcons name="camera-alt" size={20} color={Colors.primary} />
-                    <Text style={styles.switchModeText}>Usar càmera</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          )}
         </SafeAreaView>
       </Modal>
 
