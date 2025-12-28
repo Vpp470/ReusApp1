@@ -22,8 +22,8 @@ Data: 24 Novembre 2025
 
 ### 2. URLs Incorrectes en Pàgines HTML (RESOLT ✅)
 **Problema:** Alguns fitxers HTML encara utilitzaven l'URL antiga del domini preview:
-- `https://appcentral-3.preview.emergentagent.com/api`
-- `https://appcentral-3.preview.emergentagent.com/api`
+- `https://councilmap.preview.emergentagent.com/api`
+- `https://councilmap.preview.emergentagent.com/api`
 
 **Solució:** Actualitzat tots els fitxers a l'URL correcta de producció:
 - `https://reus-commerce-1.emergent.host/api`

@@ -140,13 +140,13 @@
     </style>
 </head>
 <body>
-    <a href="/api/landing/tomb-pagines/tomb-inici.html" target="_parent" class="logo-container"><img src="https://appcentral-3.preview.emergentagent.com/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" /></a>
+    <a href="/api/landing/tomb-pagines/tomb-inici.html" target="_parent" class="logo-container"><img src="https://councilmap.preview.emergentagent.com/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" /></a>
     <div class="container">
         <div class="page-header"><div class="page-subtitle">Informa't</div><h1 class="page-title">Notícies</h1></div>
         <div id="news-grid" class="news-grid"><div class="loading">Carregant notícies...</div></div>
     </div>
     <script>
-        const API_BASE_URL = 'https://appcentral-3.preview.emergentagent.com/api';
+        const API_BASE_URL = 'https://councilmap.preview.emergentagent.com/api';
         let allNews = []; let currentPage = 0; const ITEMS_PER_PAGE = window.innerWidth < 768 ? 12 : 20;
         function formatDate(d) { return new Date(d).toLocaleDateString('ca-ES', { day: 'numeric', month: 'long', year: 'numeric' }); }
         function loadNews() {

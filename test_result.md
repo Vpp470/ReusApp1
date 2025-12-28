@@ -3065,7 +3065,7 @@ agent_communication:
       Comprehensive testing performed on the admin statistics endpoint as specifically requested:
       
       🎯 ENDPOINT TESTED:
-      - URL: GET https://appcentral-3.preview.emergentagent.com/api/admin/statistics
+      - URL: GET https://councilmap.preview.emergentagent.com/api/admin/statistics
       - Admin Token: i_yKBfolFbGsik3rMzPNVA5O6TyK5uzzAc-7YRQod-w
       - Authorization Header: Bearer i_yKBfolFbGsik3rMzPNVA5O6TyK5uzzAc-7YRQod-w
       
