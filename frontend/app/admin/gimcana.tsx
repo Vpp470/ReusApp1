@@ -223,11 +223,6 @@ export default function GimcanaAdminPage() {
   };
 
   const generatePDF = async (campaignId: string) => {
-    if (Platform.OS !== 'web') {
-      Alert.alert('Avís', 'La generació de PDF només està disponible a la versió web');
-      return;
-    }
-    
     setGeneratingPDF(true);
     
     try {
@@ -238,14 +233,92 @@ export default function GimcanaAdminPage() {
       
       const qrCodes = response.data;
       
-      // Generar QR codes i PDF usant una funció de web
-      // @ts-ignore - Importació dinàmica per evitar errors de Metro
-      const QRCode = await import(/* webpackIgnore: true */ 'qrcode');
-      // @ts-ignore
-      const jspdf = await import(/* webpackIgnore: true */ 'jspdf');
-      const { jsPDF } = jspdf;
+      if (Platform.OS === 'web') {
+        // A web, usem la llibreria qrcode per generar els QR i crear un HTML per imprimir
+        const QRCode = (await import('qrcode')).default;
+        
+        // Crear contingut HTML per imprimir
+        let htmlContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Codis QR - Gimcana</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              .qr-container { 
+                display: grid; 
+                grid-template-columns: repeat(3, 1fr); 
+                gap: 20px; 
+                page-break-inside: avoid;
+              }
+              .qr-item { 
+                text-align: center; 
+                padding: 10px; 
+                border: 1px solid #ddd; 
+                border-radius: 8px;
+                page-break-inside: avoid;
+              }
+              .qr-image { width: 150px; height: 150px; }
+              .qr-name { font-weight: bold; margin-top: 5px; font-size: 12px; }
+              .qr-hint { color: #666; font-size: 10px; }
+              .qr-code { font-family: monospace; font-size: 8px; color: #999; margin-top: 3px; }
+              @media print {
+                .qr-container { page-break-inside: avoid; }
+                .qr-item { page-break-inside: avoid; }
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Codis QR - ${formData.name}</h1>
+            <div class="qr-container">
+        `;
+        
+        for (const qr of qrCodes) {
+          const qrDataUrl = await QRCode.toDataURL(qr.code, {
+            width: 200,
+            margin: 1,
+            color: { dark: '#000000', light: '#ffffff' },
+          });
+          
+          htmlContent += `
+            <div class="qr-item">
+              <img src="${qrDataUrl}" class="qr-image" />
+              <div class="qr-name">${qr.number}. ${qr.establishment_name}</div>
+              ${qr.location_hint ? `<div class="qr-hint">${qr.location_hint}</div>` : ''}
+              <div class="qr-code">${qr.code}</div>
+            </div>
+          `;
+        }
+        
+        htmlContent += `
+            </div>
+          </body>
+          </html>
+        `;
+        
+        // Obrir finestra d'impressió
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(htmlContent);
+          printWindow.document.close();
+          printWindow.print();
+        }
+        
+        const msg = 'S\'ha obert la finestra d\'impressió. Pots guardar com a PDF!';
+        window.alert(msg);
+      } else {
+        Alert.alert('Avís', 'Per generar el PDF, accedeix des de la versió web');
+      }
       
-      // Crear el PDF
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      const msg = 'Error generant el PDF';
+      Platform.OS === 'web' ? window.alert(msg) : Alert.alert('Error', msg);
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
