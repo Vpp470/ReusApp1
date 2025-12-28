@@ -18,9 +18,9 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useAuth } from '../../src/context/AuthContext';
+import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/services/api';
-import { Colors, FontSizes, Spacing, BorderRadius } from '../../src/styles/theme';
+import { Colors, FontSizes, Spacing, BorderRadius } from '../../src/constants/colors';
 
 interface GimcanaCampaign {
   _id: string;
