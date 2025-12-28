@@ -195,6 +195,20 @@ export default function GimcanaUserPage() {
         <View style={{ width: 40 }} />
       </View>
 
+      {/* Banner per usuaris no registrats */}
+      {!user && (
+        <TouchableOpacity 
+          style={styles.loginBanner}
+          onPress={() => router.push('/auth/login')}
+        >
+          <MaterialIcons name="login" size={20} color={Colors.white} />
+          <Text style={styles.loginBannerText}>
+            Inicia sessió per participar i guanyar premis!
+          </Text>
+          <MaterialIcons name="chevron-right" size={20} color={Colors.white} />
+        </TouchableOpacity>
+      )}
+
       {campaigns.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MaterialIcons name="qr-code-2" size={60} color="#CCC" />
