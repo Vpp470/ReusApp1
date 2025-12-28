@@ -41,12 +41,11 @@ export default function ScanTicketScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [processing, setProcessing] = useState(false);
   const [participations, setParticipations] = useState(0);
-  const [scanMode, setScanMode] = useState<'menu' | 'qr' | 'photo'>('menu'); // menu, qr, photo
+  const [scanMode, setScanMode] = useState<'menu' | 'qr' | 'photo' | 'manual'>('menu');
   const [scanned, setScanned] = useState(false);
   const [activeCampaign, setActiveCampaign] = useState<TicketCampaign | null>(null);
   const [loadingCampaign, setLoadingCampaign] = useState(true);
-
-  const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
+  const [manualCode, setManualCode] = useState('');
 
   useEffect(() => {
     loadParticipations();
@@ -56,7 +55,7 @@ export default function ScanTicketScreen() {
   const loadActiveCampaign = async () => {
     try {
       setLoadingCampaign(true);
-      const response = await axios.get(`${API_URL}/api/tickets/campaign`);
+      const response = await api.get('/tickets/campaign');
       setActiveCampaign(response.data);
     } catch (error) {
       console.error('Error carregant campanya activa:', error);
@@ -67,9 +66,10 @@ export default function ScanTicketScreen() {
   };
 
   const loadParticipations = async () => {
+    if (!token) return;
     try {
-      const response = await axios.get(`${API_URL}/api/tickets/my-participations`, {
-        headers: { Authorization: token! },
+      const response = await api.get('/tickets/my-participations', {
+        headers: { Authorization: token },
       });
       setParticipations(response.data.participations || 0);
     } catch (error) {
