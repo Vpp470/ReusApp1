@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Image,
   Platform,
+  TextInput,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -17,8 +19,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors, Spacing, FontSizes, BorderRadius } from '../../src/constants/colors';
 import { useAuthStore } from '../../src/store/authStore';
-import axios from 'axios';
-import Constants from 'expo-constants';
+import api from '../../src/services/api';
 
 // Tipus per la campanya de tiquets
 interface TicketCampaign {
