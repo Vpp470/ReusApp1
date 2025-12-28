@@ -219,58 +219,6 @@ export default function ScanTicketScreen() {
     );
   }
 
-  // Mode d'entrada manual
-  if (scanMode === 'manual') {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Pressable onPress={() => setScanMode('menu')}>
-            <MaterialIcons name="arrow-back" size={24} color={Colors.white} />
-          </Pressable>
-          <Text style={styles.headerTitle}>Introduir Codi</Text>
-          <View style={{ width: 24 }} />
-        </View>
-
-        <ScrollView style={styles.manualContainer} contentContainerStyle={styles.manualContent}>
-          <MaterialIcons name="keyboard" size={64} color={Colors.primary} style={{ alignSelf: 'center', marginBottom: 16 }} />
-          <Text style={styles.manualTitle}>Introdueix el Codi del Tiquet</Text>
-          <Text style={styles.manualSubtitle}>
-            Escriu el codi que apareix al tiquet de compra
-          </Text>
-          
-          <TextInput
-            style={styles.manualInput}
-            placeholder="Ex: TIQUET-12345-ABC"
-            placeholderTextColor={Colors.textSecondary}
-            value={manualCode}
-            onChangeText={setManualCode}
-            autoCapitalize="characters"
-            autoCorrect={false}
-          />
-
-          <TouchableOpacity
-            style={[styles.manualSubmitButton, (!manualCode.trim() || processing) && styles.manualSubmitButtonDisabled]}
-            onPress={handleManualSubmit}
-            disabled={!manualCode.trim() || processing}
-          >
-            {processing ? (
-              <ActivityIndicator color={Colors.white} />
-            ) : (
-              <>
-                <MaterialIcons name="check-circle" size={20} color={Colors.white} />
-                <Text style={styles.manualSubmitButtonText}>Validar Codi</Text>
-              </>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.manualCancelButton} onPress={() => setScanMode('menu')}>
-            <Text style={styles.manualCancelButtonText}>Cancel·lar</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
-
   // A web o sense permisos de càmera, mostrar opcions alternatives
   if (isWeb || !permission?.granted) {
     return (
