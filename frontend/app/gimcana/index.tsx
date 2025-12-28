@@ -48,6 +48,7 @@ export default function GimcanaUserPage() {
   const [campaigns, setCampaigns] = useState<GimcanaCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   const loadCampaigns = useCallback(async () => {
     try {
@@ -58,14 +59,21 @@ export default function GimcanaUserPage() {
       }
       
       const response = await api.get('/gimcana/campaigns/active', { headers });
-      setCampaigns(response.data);
+      const activeCampaigns = response.data;
+      setCampaigns(activeCampaigns);
+      
+      // Si només hi ha una campanya activa i l'usuari està logat, redirigir automàticament
+      if (activeCampaigns.length === 1 && user && !hasRedirected) {
+        setHasRedirected(true);
+        router.replace(`/gimcana/${activeCampaigns[0]._id}`);
+      }
     } catch (error) {
       console.error('Error loading campaigns:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [token]);
+  }, [token, user, hasRedirected, router]);
 
   useEffect(() => {
     loadCampaigns();
