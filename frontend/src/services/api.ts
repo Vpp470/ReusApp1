@@ -4,7 +4,10 @@ import { Platform } from 'react-native';
 
 // Determinar la URL base segons la plataforma i entorn
 const getBaseURL = () => {
-  // En web, sempre utilitzar URL relativa per evitar problemes de CORS
+  // Prioritzar EXPO_PUBLIC_BACKEND_URL si existeix
+  const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+  
+  // En web, gestionar segons l'entorn
   if (Platform.OS === 'web') {
     // Detectar si estem en producció (reusapp.com o railway)
     if (typeof window !== 'undefined') {
@@ -16,9 +19,19 @@ const getBaseURL = () => {
         return 'https://www.reusapp.com/api';
       }
       
-      // Si estem en Emergent preview, usar URL relativa
-      if (hostname.includes('emergent')) {
-        console.log('API Base URL: /api (Emergent)');
+      // Si estem en localhost (desenvolupament), connectar directament al backend
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        console.log('API Base URL: http://localhost:8001/api (development)');
+        return 'http://localhost:8001/api';
+      }
+      
+      // Si estem en Emergent preview, usar la URL del backend amb /api
+      if (hostname.includes('emergent') || hostname.includes('preview')) {
+        if (backendUrl) {
+          console.log('API Base URL: ' + backendUrl + '/api (Emergent)');
+          return backendUrl + '/api';
+        }
+        console.log('API Base URL: /api (Emergent fallback)');
         return '/api';
       }
     }
