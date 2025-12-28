@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 # Import admin routes
 from admin_routes import admin_router, OfferCreate, OfferUpdate
 from consell_routes import consell_router
+from gincana_routes import gincana_router, set_database as set_gincana_db
 from news_scheduler import start_news_scheduler
 
 # MongoDB connection
