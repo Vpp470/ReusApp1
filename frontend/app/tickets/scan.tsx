@@ -109,49 +109,95 @@ export default function ScanTicketScreen() {
     setProcessing(true);
 
     try {
-      const response = await axios.post(
-        `${API_URL}/api/tickets/scan`,
+      const response = await api.post(
+        '/tickets/scan',
         { ticket_code: data },
         { headers: { Authorization: token! } }
       );
 
-      Alert.alert(
-        '🎉 Tiquet Validat!',
-        response.data.message || 'Tiquet processat correctament!',
-        [
-          {
-            text: 'Veure Participacions',
-            onPress: () => {
-              setScanned(false);
-              setScanMode('menu');
-              router.push('/tickets/participations');
+      if (Platform.OS === 'web') {
+        window.alert(`🎉 Tiquet Validat!\n${response.data.message || 'Tiquet processat correctament!'}`);
+        setScanned(false);
+        setScanMode('menu');
+        loadParticipations();
+      } else {
+        Alert.alert(
+          '🎉 Tiquet Validat!',
+          response.data.message || 'Tiquet processat correctament!',
+          [
+            {
+              text: 'Veure Participacions',
+              onPress: () => {
+                setScanned(false);
+                setScanMode('menu');
+                router.push('/tickets/participations');
+              },
             },
-          },
-          { 
-            text: 'Escanejar Altre', 
-            onPress: () => {
-              setScanned(false);
-              setProcessing(false);
-              loadParticipations();
-            } 
-          },
-        ]
-      );
+            { 
+              text: 'Escanejar Altre', 
+              onPress: () => {
+                setScanned(false);
+                setProcessing(false);
+                loadParticipations();
+              } 
+            },
+          ]
+        );
+      }
       loadParticipations();
     } catch (error: any) {
-      Alert.alert(
-        'Error',
-        error.response?.data?.detail || 'No s\'ha pogut processar el codi QR',
-        [
-          {
-            text: 'Reintentar',
-            onPress: () => {
-              setScanned(false);
-              setProcessing(false);
+      const errorMsg = error.response?.data?.detail || 'No s\'ha pogut processar el codi QR';
+      if (Platform.OS === 'web') {
+        window.alert(`Error: ${errorMsg}`);
+        setScanned(false);
+        setProcessing(false);
+      } else {
+        Alert.alert(
+          'Error',
+          errorMsg,
+          [
+            {
+              text: 'Reintentar',
+              onPress: () => {
+                setScanned(false);
+                setProcessing(false);
+              },
             },
-          },
-        ]
+          ]
+        );
+      }
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    if (!manualCode.trim() || processing) return;
+    
+    setProcessing(true);
+    try {
+      const response = await api.post(
+        '/tickets/scan',
+        { ticket_code: manualCode.trim().toUpperCase() },
+        { headers: { Authorization: token! } }
       );
+
+      if (Platform.OS === 'web') {
+        window.alert(`🎉 Tiquet Validat!\n${response.data.message || 'Tiquet processat correctament!'}`);
+      } else {
+        Alert.alert('🎉 Tiquet Validat!', response.data.message || 'Tiquet processat correctament!');
+      }
+      
+      setManualCode('');
+      setScanMode('menu');
+      loadParticipations();
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'No s\'ha pogut processar el codi';
+      if (Platform.OS === 'web') {
+        window.alert(`Error: ${errorMsg}`);
+      } else {
+        Alert.alert('Error', errorMsg);
+      }
+    } finally {
+      setProcessing(false);
     }
   };
 
