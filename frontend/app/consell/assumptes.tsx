@@ -29,7 +29,10 @@ interface UrgentNotice {
 
 export default function AssumptesPage() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
+  
+  // Només admins poden editar
+  const canEdit = user?.role === 'admin';
   
   const [notices, setNotices] = useState<UrgentNotice[]>([]);
   const [loading, setLoading] = useState(true);
