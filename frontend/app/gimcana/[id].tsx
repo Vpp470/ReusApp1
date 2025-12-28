@@ -1396,41 +1396,42 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     marginTop: Spacing.md,
   },
-  manualContainer: {
+  // Estils per missatge web
+  webMessageContainer: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
     justifyContent: 'center',
-    padding: Spacing.xl,
-  },
-  manualContent: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.xl,
     alignItems: 'center',
+    padding: Spacing.xl,
+    backgroundColor: '#F5F5F5',
   },
-  manualTitle: {
+  webMessageTitle: {
     fontSize: FontSizes.xl,
     fontWeight: 'bold',
-    color: '#333',
+    color: Colors.textDark,
     marginTop: Spacing.lg,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
-  manualHint: {
-    fontSize: FontSizes.sm,
-    color: '#666',
+  webMessageText: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
     textAlign: 'center',
-    marginBottom: Spacing.lg,
-    lineHeight: 20,
+    marginBottom: Spacing.sm,
+    lineHeight: 24,
   },
-  switchModeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginTop: Spacing.lg,
-    padding: Spacing.md,
+  webMessageHint: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
   },
-  switchModeText: {
-    color: Colors.primary,
+  webCloseButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.md,
+  },
+  webCloseButtonText: {
+    color: Colors.white,
     fontSize: FontSizes.md,
     fontWeight: '600',
   },
