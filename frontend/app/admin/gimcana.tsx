@@ -572,18 +572,78 @@ export default function GimcanaAdminPage() {
                 placeholderTextColor="#999"
               />
 
+              {/* Tipus de premi */}
+              <Text style={styles.label}>Tipus de premi *</Text>
+              <View style={styles.prizeTypeContainer}>
+                <Pressable
+                  style={[
+                    styles.prizeTypeButton,
+                    formData.prize_type === 'direct' && styles.prizeTypeButtonActive
+                  ]}
+                  onPress={() => setFormData(prev => ({ ...prev, prize_type: 'direct' }))}
+                >
+                  <MaterialIcons 
+                    name="card-giftcard" 
+                    size={24} 
+                    color={formData.prize_type === 'direct' ? Colors.white : Colors.primary} 
+                  />
+                  <Text style={[
+                    styles.prizeTypeText,
+                    formData.prize_type === 'direct' && styles.prizeTypeTextActive
+                  ]}>Premi Directe</Text>
+                </Pressable>
+                <Pressable
+                  style={[
+                    styles.prizeTypeButton,
+                    formData.prize_type === 'raffle' && styles.prizeTypeButtonActive
+                  ]}
+                  onPress={() => setFormData(prev => ({ ...prev, prize_type: 'raffle' }))}
+                >
+                  <MaterialIcons 
+                    name="emoji-events" 
+                    size={24} 
+                    color={formData.prize_type === 'raffle' ? Colors.white : '#FF9800'} 
+                  />
+                  <Text style={[
+                    styles.prizeTypeText,
+                    formData.prize_type === 'raffle' && styles.prizeTypeTextActive
+                  ]}>Sorteig</Text>
+                </Pressable>
+              </View>
+              <Text style={styles.prizeTypeHint}>
+                {formData.prize_type === 'direct' 
+                  ? '🎁 El premi es rep automàticament al completar la gimcana'
+                  : '🎰 Els participants entren en un sorteig que es realitzarà posteriorment'}
+              </Text>
+
+              {/* Data del sorteig (només si és sorteig) */}
+              {formData.prize_type === 'raffle' && (
+                <>
+                  <Text style={styles.label}>Data del sorteig</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={formData.raffle_date}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, raffle_date: text }))}
+                    placeholder="YYYY-MM-DD"
+                    placeholderTextColor="#999"
+                  />
+                </>
+              )}
+
               <Text style={styles.label}>Descripció del premi</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
                 value={formData.prize_description}
                 onChangeText={(text) => setFormData(prev => ({ ...prev, prize_description: text }))}
-                placeholder="Ex: Entra en el sorteig de 3 vals de 50€!"
+                placeholder={formData.prize_type === 'direct' 
+                  ? "Ex: Descompte del 10% a tots els establiments participants!"
+                  : "Ex: Entra en el sorteig de 3 vals de 50€!"}
                 placeholderTextColor="#999"
                 multiline
                 numberOfLines={2}
               />
 
-              <Text style={styles.label}>Bases de participació</Text>
+              <Text style={styles.label}>Bases de participació (text)</Text>
               <TextInput
                 style={[styles.input, { height: 100 }]}
                 value={formData.rules}
@@ -592,6 +652,15 @@ export default function GimcanaAdminPage() {
                 placeholderTextColor="#999"
                 multiline
                 numberOfLines={4}
+              />
+
+              <Text style={styles.label}>URL document de bases (opcional)</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.rules_url}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, rules_url: text }))}
+                placeholder="https://... (enllaç a PDF de bases)"
+                placeholderTextColor="#999"
               />
 
               <Pressable
