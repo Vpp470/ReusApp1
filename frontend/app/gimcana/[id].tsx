@@ -67,7 +67,7 @@ interface GimcanaCampaign {
 export default function GimcanaDetailPage() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { token, user } = useAuth();
+  const { token, user } = useAuthStore();
   
   const [campaign, setCampaign] = useState<GimcanaCampaign | null>(null);
   const [progress, setProgress] = useState<GimcanaProgress | null>(null);
