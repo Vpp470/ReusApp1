@@ -3241,7 +3241,7 @@ app.include_router(admin_router, prefix="/api")
 # Include consell routes
 app.include_router(consell_router)
 
-# Include gincana routes
+# Include gimcana routes
 set_gimcana_db(db)
 app.include_router(gimcana_router)
 
