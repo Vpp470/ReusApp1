@@ -56,8 +56,13 @@ export default function GimcanaAdminPage() {
     description: '',
     start_date: new Date().toISOString().split('T')[0],
     end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    prize_type: 'raffle' as 'direct' | 'raffle',
     prize_description: '',
+    prize_image_url: '',
     rules: '',
+    rules_url: '',
+    image_url: '',
+    raffle_date: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     is_active: true,
   });
   
@@ -87,8 +92,13 @@ export default function GimcanaAdminPage() {
       description: '',
       start_date: new Date().toISOString().split('T')[0],
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      prize_type: 'raffle',
       prize_description: '',
+      prize_image_url: '',
       rules: '',
+      rules_url: '',
+      image_url: '',
+      raffle_date: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       is_active: true,
     });
     setQrItems([]);
@@ -108,8 +118,13 @@ export default function GimcanaAdminPage() {
       description: campaign.description || '',
       start_date: campaign.start_date.split('T')[0],
       end_date: campaign.end_date.split('T')[0],
+      prize_type: (campaign as any).prize_type || 'raffle',
       prize_description: campaign.prize_description || '',
+      prize_image_url: (campaign as any).prize_image_url || '',
       rules: campaign.rules || '',
+      rules_url: (campaign as any).rules_url || '',
+      image_url: (campaign as any).image_url || '',
+      raffle_date: (campaign as any).raffle_date?.split('T')[0] || new Date(Date.now() + 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       is_active: campaign.is_active,
     });
     setQrCount(campaign.total_qr_codes.toString());
