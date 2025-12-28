@@ -31,9 +31,22 @@ export default function ScanTicketScreen() {
     setProcessing(true);
 
     try {
+      // Obtenir user_id del store
+      const userId = useAuthStore.getState().user?._id || useAuthStore.getState().user?.id;
+      
+      if (!userId) {
+        Alert.alert('Error', 'Has d\'iniciar sessió per escanejar tiquets');
+        setScanned(false);
+        setProcessing(false);
+        return;
+      }
+
       const response = await api.post(
         '/tickets/scan',
-        { ticket_code: data },
+        { 
+          ticket_code: data,
+          user_id: userId
+        },
         { headers: { Authorization: token! } }
       );
 
