@@ -685,6 +685,22 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     fontWeight: '600',
   },
+  participationsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    padding: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  participationsButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
   qrButton: {
     flex: 1,
     backgroundColor: Colors.success,
