@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Header, Body, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Header, Body, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -14,6 +14,8 @@ from pydantic import BaseModel, Field
 from bson import ObjectId
 import paypalrestsdk
 import random
+import uuid
+import shutil
 from push_notifications import send_push_notification, send_notification_to_user
 from web_push_service import get_vapid_public_key
 
