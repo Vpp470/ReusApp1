@@ -521,7 +521,7 @@ export default function GimcanaDetailPage() {
         <SafeAreaView style={styles.scannerContainer}>
           {/* Header */}
           <View style={styles.scannerHeader}>
-            <TouchableOpacity onPress={() => { setShowScanner(false); setScanInput(''); setHasScanned(false); }}>
+            <TouchableOpacity onPress={() => { setShowScanner(false); setHasScanned(false); }}>
               <MaterialIcons name="close" size={28} color={Colors.white} />
             </TouchableOpacity>
             <Text style={styles.scannerHeaderTitle}>Escanejar QR</Text>
