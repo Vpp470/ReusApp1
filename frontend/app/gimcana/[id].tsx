@@ -436,7 +436,7 @@ export default function GimcanaDetailPage() {
             </View>
             
             <Text style={styles.scannerHint}>
-              Introdueix el codi que trobaràs sota el QR (format: GINCANA-XXXX):
+              Introdueix el codi que trobaràs sota el QR (format: GIMCANA-XXXX):
             </Text>
             
             <View style={styles.inputRow}>
