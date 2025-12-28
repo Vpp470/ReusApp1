@@ -442,19 +442,14 @@ export default function GimcanaDetailPage() {
             <View style={styles.inputRow}>
               <View style={styles.codeInput}>
                 <MaterialIcons name="qr-code" size={24} color="#666" />
-                <input
-                  type="text"
+                <TextInput
+                  style={styles.codeTextInput}
                   placeholder="Introdueix el codi (ex: GIM-XXXX)"
+                  placeholderTextColor="#999"
                   value={scanInput}
-                  onChange={(e: any) => setScanInput(e.target.value)}
-                  style={{
-                    flex: 1,
-                    border: 'none',
-                    outline: 'none',
-                    fontSize: 16,
-                    padding: 8,
-                    backgroundColor: 'transparent',
-                  }}
+                  onChangeText={setScanInput}
+                  autoCapitalize="characters"
+                  autoCorrect={false}
                 />
               </View>
             </View>
