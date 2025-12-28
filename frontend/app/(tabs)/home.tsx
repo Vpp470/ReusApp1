@@ -71,8 +71,8 @@ export default function HomeScreen() {
     { id: 'club', icon: 'stars', title: 'Club El Tomb', route: '/club', color: Colors.accent },
     { id: 'territory', icon: 'article', title: 'Reus i Territori', route: '/(tabs)/news', color: Colors.primary },
     { id: 'map', icon: 'map', title: 'Mapa', route: '/(tabs)/map', color: Colors.secondary },
-    { id: 'offers', icon: 'local-offer', title: i18n.t('offers.title'), route: '/(tabs)/offers', color: Colors.accent },
-    { id: 'giftcards', icon: 'card-giftcard', title: i18n.t('home.quickActions.giftCards'), route: '/gift-cards/purchase', color: Colors.primary },
+    { id: 'promotions', icon: 'card-giftcard', title: 'Promocions', route: '/(tabs)/promotions', color: Colors.accent },
+    { id: 'giftcards', icon: 'redeem', title: i18n.t('home.quickActions.giftCards'), route: '/gift-cards/purchase', color: Colors.primary },
     { id: 'profile', icon: 'person', title: i18n.t('profile.title'), route: '/(tabs)/profile', color: Colors.secondary },
     { id: 'info', icon: 'info', title: 'Informació', route: '/info', color: Colors.accent },
   ];
