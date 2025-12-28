@@ -371,21 +371,33 @@ async def delete_campaign(campaign_id: str, authorization: str = Header(None)):
 async def get_qr_codes(campaign_id: str, authorization: str = Header(None)):
     """Obtenir tots els QR codes d'una campanya"""
     user = await get_user_from_token(authorization)
-    if not user or user.get('role') != 'admin':
-        raise HTTPException(status_code=403, detail="Només els administradors poden veure els QR codes")
+    is_admin = user and user.get('role') == 'admin'
     
     qr_codes = await db.gimcana_qr_codes.find({"campaign_id": campaign_id}).sort("number", 1).to_list(100)
     
+    result = []
     for qr in qr_codes:
-        qr['_id'] = str(qr['_id'])
-        # Comptar quants usuaris han escanejat aquest QR
-        scans = await db.gimcana_progress.count_documents({
-            "campaign_id": campaign_id,
-            f"scanned_codes.{qr['code']}": {"$exists": True}
-        })
-        qr['scan_count'] = scans
+        qr_data = {
+            '_id': str(qr['_id']),
+            'number': qr['number'],
+            'establishment_name': qr.get('establishment_name', f"Punt {qr['number']}"),
+            'location_hint': qr.get('location_hint', ''),
+            'image_url': qr.get('image_url'),
+        }
+        
+        # Només mostrar el codi secret als admins
+        if is_admin:
+            qr_data['code'] = qr['code']
+            # Comptar quants usuaris han escanejat aquest QR
+            scans = await db.gimcana_progress.count_documents({
+                "campaign_id": campaign_id,
+                f"scanned_codes.{qr['code']}": {"$exists": True}
+            })
+            qr_data['scan_count'] = scans
+        
+        result.append(qr_data)
     
-    return qr_codes
+    return result
 
 
 @gimcana_router.put("/qr-codes/{qr_id}")
