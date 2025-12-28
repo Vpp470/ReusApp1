@@ -1,16 +1,23 @@
 """
-Sistema de Gincanes amb QR Codes
+Sistema de Gimcanes amb QR Codes
 Permet crear campanyes on els usuaris han d'escanejar QR codes
-distribuïts per establiments per completar una cartilla i participar en sortejos.
+distribuïts per establiments per completar una cartilla i guanyar premis.
+
+Tipus de premis:
+- "direct": El premi es rep automàticament al completar
+- "raffle": L'usuari entra en un sorteig que es realitza posteriorment
 """
 
 from fastapi import APIRouter, HTTPException, Header
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 from bson import ObjectId
 import secrets
 import logging
+import random
+import io
 
 logger = logging.getLogger(__name__)
 
@@ -26,15 +33,37 @@ def set_database(database):
 
 # ============== MODELS ==============
 
+class QRItemCreate(BaseModel):
+    """Informació d'un punt QR individual"""
+    establishment_name: str = Field(..., description="Nom del punt/establiment")
+    location_hint: Optional[str] = Field("", description="Pista d'ubicació")
+    image_url: Optional[str] = Field(None, description="Imatge individual del QR (opcional)")
+
 class GimcanaCampaignCreate(BaseModel):
     name: str = Field(..., description="Nom de la campanya")
     description: str = Field("", description="Descripció de la campanya")
     total_qr_codes: int = Field(..., ge=1, le=100, description="Quantitat de QR a escanejar")
     start_date: datetime = Field(..., description="Data d'inici")
     end_date: datetime = Field(..., description="Data de fi")
+    
+    # Premi
+    prize_type: str = Field("raffle", description="Tipus de premi: 'direct' o 'raffle'")
     prize_description: str = Field("", description="Descripció del premi")
-    rules: str = Field("", description="Bases de participació")
-    image_url: Optional[str] = None
+    prize_image_url: Optional[str] = Field(None, description="Imatge del premi (opcional)")
+    
+    # Bases
+    rules: str = Field("", description="Bases de participació (text)")
+    rules_url: Optional[str] = Field(None, description="URL a document de bases (PDF)")
+    
+    # Imatge de campanya
+    image_url: Optional[str] = Field(None, description="Imatge principal de la campanya")
+    
+    # QR items amb noms personalitzats
+    qr_items: Optional[List[QRItemCreate]] = Field(None, description="Llista de punts QR amb noms personalitzats")
+    
+    # Data del sorteig (només si prize_type == 'raffle')
+    raffle_date: Optional[datetime] = Field(None, description="Data del sorteig")
+    
     is_active: bool = True
 
 
@@ -42,12 +71,18 @@ class QRCodeCreate(BaseModel):
     campaign_id: str
     establishment_id: Optional[str] = None
     establishment_name: Optional[str] = None
-    location_hint: Optional[str] = None  # Pista de on trobar el QR
+    location_hint: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 class ScanQRRequest(BaseModel):
     campaign_id: str
     qr_code: str
+
+
+class RaffleExecuteRequest(BaseModel):
+    """Sol·licitud per executar un sorteig"""
+    num_winners: int = Field(1, ge=1, le=10, description="Nombre de guanyadors")
 
 
 # ============== HELPER FUNCTIONS ==============
