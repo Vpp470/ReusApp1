@@ -414,6 +414,25 @@ export default function ProfileScreen() {
         </View>
       )}
 
+      {/* Gimcanes Section */}
+      <Pressable 
+        style={styles.gimcanaSection}
+        onPress={() => router.push('/gimcana')}
+      >
+        <View style={styles.gimcanaSectionContent}>
+          <View style={styles.gimcanaIconContainer}>
+            <MaterialIcons name="qr-code-scanner" size={36} color={Colors.white} />
+          </View>
+          <View style={styles.gimcanaTextContainer}>
+            <Text style={styles.gimcanaSectionTitle}>🎯 Gimcanes</Text>
+            <Text style={styles.gimcanaSectionSubtitle}>
+              Participa en gimcanes i guanya premis!
+            </Text>
+          </View>
+        </View>
+        <MaterialIcons name="chevron-right" size={28} color={Colors.primary} />
+      </Pressable>
+
       {/* Gift Cards Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
