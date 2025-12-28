@@ -35,7 +35,7 @@
 </head>
 <body>
     <a href="/api/landing/tomb-pagines/tomb-inici.html" target="_parent" style="position: fixed; top: 20px; left: 20px; z-index: 1001;">
-        <img src="https://reus-commerce-1.emergent.host/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" style="width: 120px; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; filter: brightness(0) invert(1);" />
+        <img src="/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" style="width: 120px; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; filter: brightness(0) invert(1);" />
     </a>
     
     <div class="container">
@@ -45,7 +45,7 @@
         <div id="establishments-grid" class="establishments-grid"><div class="loading">Carregant establiments...</div></div>
     </div>
     <script>
-        const API_BASE_URL = 'https://reus-commerce-1.emergent.host/api';
+        const API_BASE_URL = '/api';
         let allEstablishments = [];
         
         fetch(API_BASE_URL + '/establishments')
