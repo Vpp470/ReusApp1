@@ -474,7 +474,7 @@ export default function GimcanaDetailPage() {
       {!progress?.completed && campaign.is_active && (
         <TouchableOpacity 
           style={styles.scanButton}
-          onPress={() => setShowScanner(true)}
+          onPress={openScanner}
         >
           <MaterialIcons name="qr-code-scanner" size={28} color={Colors.white} />
           <Text style={styles.scanButtonText}>Escanejar QR</Text>
