@@ -14,7 +14,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-gincana_router = APIRouter(prefix="/api/gincana", tags=["Gincana"])
+gimcana_router = APIRouter(prefix="/api/gimcana", tags=["Gimcana"])
 
 # Database reference (will be set from server.py)
 db = None
@@ -26,7 +26,7 @@ def set_database(database):
 
 # ============== MODELS ==============
 
-class GincanaCampaignCreate(BaseModel):
+class GimcanaCampaignCreate(BaseModel):
     name: str = Field(..., description="Nom de la campanya")
     description: str = Field("", description="Descripció de la campanya")
     total_qr_codes: int = Field(..., ge=1, le=100, description="Quantitat de QR a escanejar")
@@ -69,17 +69,17 @@ def generate_qr_code():
 
 # ============== ADMIN ENDPOINTS ==============
 
-@gincana_router.get("/campaigns")
+@gimcana_router.get("/campaigns")
 async def get_campaigns(authorization: str = Header(None)):
-    """Obtenir totes les campanyes de gincana"""
+    """Obtenir totes les campanyes de gimcana"""
     user = await get_user_from_token(authorization)
     
     # Si és admin, mostra totes. Si no, només les actives
     if user and user.get('role') == 'admin':
-        campaigns = await db.gincana_campaigns.find().sort("created_at", -1).to_list(100)
+        campaigns = await db.gimcana_campaigns.find().sort("created_at", -1).to_list(100)
     else:
         now = datetime.utcnow()
-        campaigns = await db.gincana_campaigns.find({
+        campaigns = await db.gimcana_campaigns.find({
             "is_active": True,
             "start_date": {"$lte": now},
             "end_date": {"$gte": now}
@@ -88,8 +88,8 @@ async def get_campaigns(authorization: str = Header(None)):
     for c in campaigns:
         c['_id'] = str(c['_id'])
         # Obtenir estadístiques
-        participants = await db.gincana_progress.count_documents({"campaign_id": str(c['_id'])})
-        completed = await db.gincana_progress.count_documents({
+        participants = await db.gimcana_progress.count_documents({"campaign_id": str(c['_id'])})
+        completed = await db.gimcana_progress.count_documents({
             "campaign_id": str(c['_id']),
             "completed": True
         })
@@ -101,24 +101,24 @@ async def get_campaigns(authorization: str = Header(None)):
     return campaigns
 
 
-@gincana_router.get("/campaigns/{campaign_id}")
+@gimcana_router.get("/campaigns/{campaign_id}")
 async def get_campaign(campaign_id: str, authorization: str = Header(None)):
     """Obtenir detalls d'una campanya"""
-    campaign = await db.gincana_campaigns.find_one({"_id": ObjectId(campaign_id)})
+    campaign = await db.gimcana_campaigns.find_one({"_id": ObjectId(campaign_id)})
     if not campaign:
         raise HTTPException(status_code=404, detail="Campanya no trobada")
     
     campaign['_id'] = str(campaign['_id'])
     
     # Obtenir QR codes de la campanya
-    qr_codes = await db.gincana_qr_codes.find({"campaign_id": campaign_id}).to_list(100)
+    qr_codes = await db.gimcana_qr_codes.find({"campaign_id": campaign_id}).to_list(100)
     for qr in qr_codes:
         qr['_id'] = str(qr['_id'])
     campaign['qr_codes'] = qr_codes
     
     # Estadístiques
-    participants = await db.gincana_progress.count_documents({"campaign_id": campaign_id})
-    completed = await db.gincana_progress.count_documents({
+    participants = await db.gimcana_progress.count_documents({"campaign_id": campaign_id})
+    completed = await db.gimcana_progress.count_documents({
         "campaign_id": campaign_id,
         "completed": True
     })
@@ -130,9 +130,9 @@ async def get_campaign(campaign_id: str, authorization: str = Header(None)):
     return campaign
 
 
-@gincana_router.post("/campaigns")
-async def create_campaign(campaign: GincanaCampaignCreate, authorization: str = Header(None)):
-    """Crear una nova campanya de gincana (només admin)"""
+@gimcana_router.post("/campaigns")
+async def create_campaign(campaign: GimcanaCampaignCreate, authorization: str = Header(None)):
+    """Crear una nova campanya de gimcana (només admin)"""
     user = await get_user_from_token(authorization)
     if not user or user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail="Només els administradors poden crear campanyes")
@@ -142,7 +142,7 @@ async def create_campaign(campaign: GincanaCampaignCreate, authorization: str = 
     campaign_data['created_by'] = str(user['_id'])
     campaign_data['created_by_name'] = user.get('name', 'Admin')
     
-    result = await db.gincana_campaigns.insert_one(campaign_data)
+    result = await db.gimcana_campaigns.insert_one(campaign_data)
     campaign_id = str(result.inserted_id)
     
     # Generar els QR codes automàticament
@@ -157,10 +157,10 @@ async def create_campaign(campaign: GincanaCampaignCreate, authorization: str = 
             "location_hint": "",
             "created_at": datetime.utcnow()
         }
-        await db.gincana_qr_codes.insert_one(qr_code)
+        await db.gimcana_qr_codes.insert_one(qr_code)
         qr_codes.append(qr_code)
     
-    logger.info(f"Campanya de gincana creada: {campaign.name} amb {campaign.total_qr_codes} QR codes")
+    logger.info(f"Campanya de gimcana creada: {campaign.name} amb {campaign.total_qr_codes} QR codes")
     
     return {
         "success": True,
@@ -170,14 +170,14 @@ async def create_campaign(campaign: GincanaCampaignCreate, authorization: str = 
     }
 
 
-@gincana_router.put("/campaigns/{campaign_id}")
-async def update_campaign(campaign_id: str, campaign: GincanaCampaignCreate, authorization: str = Header(None)):
+@gimcana_router.put("/campaigns/{campaign_id}")
+async def update_campaign(campaign_id: str, campaign: GimcanaCampaignCreate, authorization: str = Header(None)):
     """Actualitzar una campanya (només admin)"""
     user = await get_user_from_token(authorization)
     if not user or user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail="Només els administradors poden editar campanyes")
     
-    existing = await db.gincana_campaigns.find_one({"_id": ObjectId(campaign_id)})
+    existing = await db.gimcana_campaigns.find_one({"_id": ObjectId(campaign_id)})
     if not existing:
         raise HTTPException(status_code=404, detail="Campanya no trobada")
     
@@ -187,7 +187,7 @@ async def update_campaign(campaign_id: str, campaign: GincanaCampaignCreate, aut
     # Si canvia el nombre de QR codes, regenerar-los
     if campaign.total_qr_codes != existing.get('total_qr_codes'):
         # Eliminar QR antics
-        await db.gincana_qr_codes.delete_many({"campaign_id": campaign_id})
+        await db.gimcana_qr_codes.delete_many({"campaign_id": campaign_id})
         
         # Generar nous
         for i in range(campaign.total_qr_codes):
@@ -200,9 +200,9 @@ async def update_campaign(campaign_id: str, campaign: GincanaCampaignCreate, aut
                 "location_hint": "",
                 "created_at": datetime.utcnow()
             }
-            await db.gincana_qr_codes.insert_one(qr_code)
+            await db.gimcana_qr_codes.insert_one(qr_code)
     
-    await db.gincana_campaigns.update_one(
+    await db.gimcana_campaigns.update_one(
         {"_id": ObjectId(campaign_id)},
         {"$set": update_data}
     )
@@ -210,7 +210,7 @@ async def update_campaign(campaign_id: str, campaign: GincanaCampaignCreate, aut
     return {"success": True, "message": "Campanya actualitzada"}
 
 
-@gincana_router.delete("/campaigns/{campaign_id}")
+@gimcana_router.delete("/campaigns/{campaign_id}")
 async def delete_campaign(campaign_id: str, authorization: str = Header(None)):
     """Eliminar una campanya (només admin)"""
     user = await get_user_from_token(authorization)
@@ -218,32 +218,32 @@ async def delete_campaign(campaign_id: str, authorization: str = Header(None)):
         raise HTTPException(status_code=403, detail="Només els administradors poden eliminar campanyes")
     
     # Eliminar campanya
-    await db.gincana_campaigns.delete_one({"_id": ObjectId(campaign_id)})
+    await db.gimcana_campaigns.delete_one({"_id": ObjectId(campaign_id)})
     
     # Eliminar QR codes associats
-    await db.gincana_qr_codes.delete_many({"campaign_id": campaign_id})
+    await db.gimcana_qr_codes.delete_many({"campaign_id": campaign_id})
     
     # Eliminar progrés dels usuaris
-    await db.gincana_progress.delete_many({"campaign_id": campaign_id})
+    await db.gimcana_progress.delete_many({"campaign_id": campaign_id})
     
     return {"success": True, "message": "Campanya eliminada"}
 
 
 # ============== QR CODE MANAGEMENT ==============
 
-@gincana_router.get("/campaigns/{campaign_id}/qr-codes")
+@gimcana_router.get("/campaigns/{campaign_id}/qr-codes")
 async def get_qr_codes(campaign_id: str, authorization: str = Header(None)):
     """Obtenir tots els QR codes d'una campanya"""
     user = await get_user_from_token(authorization)
     if not user or user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail="Només els administradors poden veure els QR codes")
     
-    qr_codes = await db.gincana_qr_codes.find({"campaign_id": campaign_id}).sort("number", 1).to_list(100)
+    qr_codes = await db.gimcana_qr_codes.find({"campaign_id": campaign_id}).sort("number", 1).to_list(100)
     
     for qr in qr_codes:
         qr['_id'] = str(qr['_id'])
         # Comptar quants usuaris han escanejat aquest QR
-        scans = await db.gincana_progress.count_documents({
+        scans = await db.gimcana_progress.count_documents({
             "campaign_id": campaign_id,
             f"scanned_codes.{qr['code']}": {"$exists": True}
         })
@@ -252,7 +252,7 @@ async def get_qr_codes(campaign_id: str, authorization: str = Header(None)):
     return qr_codes
 
 
-@gincana_router.put("/qr-codes/{qr_id}")
+@gimcana_router.put("/qr-codes/{qr_id}")
 async def update_qr_code(qr_id: str, data: dict, authorization: str = Header(None)):
     """Actualitzar informació d'un QR code (establiment, ubicació)"""
     user = await get_user_from_token(authorization)
@@ -266,7 +266,7 @@ async def update_qr_code(qr_id: str, data: dict, authorization: str = Header(Non
         "updated_at": datetime.utcnow()
     }
     
-    await db.gincana_qr_codes.update_one(
+    await db.gimcana_qr_codes.update_one(
         {"_id": ObjectId(qr_id)},
         {"$set": update_data}
     )
@@ -276,7 +276,7 @@ async def update_qr_code(qr_id: str, data: dict, authorization: str = Header(Non
 
 # ============== USER ENDPOINTS ==============
 
-@gincana_router.get("/my-progress/{campaign_id}")
+@gimcana_router.get("/my-progress/{campaign_id}")
 async def get_my_progress(campaign_id: str, authorization: str = Header(None)):
     """Obtenir el progrés de l'usuari en una campanya"""
     user = await get_user_from_token(authorization)
@@ -286,18 +286,18 @@ async def get_my_progress(campaign_id: str, authorization: str = Header(None)):
     user_id = str(user['_id'])
     
     # Obtenir campanya
-    campaign = await db.gincana_campaigns.find_one({"_id": ObjectId(campaign_id)})
+    campaign = await db.gimcana_campaigns.find_one({"_id": ObjectId(campaign_id)})
     if not campaign:
         raise HTTPException(status_code=404, detail="Campanya no trobada")
     
     # Obtenir progrés de l'usuari
-    progress = await db.gincana_progress.find_one({
+    progress = await db.gimcana_progress.find_one({
         "campaign_id": campaign_id,
         "user_id": user_id
     })
     
     # Obtenir QR codes de la campanya
-    qr_codes = await db.gincana_qr_codes.find({"campaign_id": campaign_id}).sort("number", 1).to_list(100)
+    qr_codes = await db.gimcana_qr_codes.find({"campaign_id": campaign_id}).sort("number", 1).to_list(100)
     
     if not progress:
         progress = {
@@ -348,7 +348,7 @@ async def get_my_progress(campaign_id: str, authorization: str = Header(None)):
     }
 
 
-@gincana_router.post("/scan")
+@gimcana_router.post("/scan")
 async def scan_qr_code(request: ScanQRRequest, authorization: str = Header(None)):
     """Escanejar un QR code"""
     user = await get_user_from_token(authorization)
@@ -360,7 +360,7 @@ async def scan_qr_code(request: ScanQRRequest, authorization: str = Header(None)
     qr_code = request.qr_code.strip().upper()
     
     # Verificar que la campanya existeix i està activa
-    campaign = await db.gincana_campaigns.find_one({"_id": ObjectId(campaign_id)})
+    campaign = await db.gimcana_campaigns.find_one({"_id": ObjectId(campaign_id)})
     if not campaign:
         raise HTTPException(status_code=404, detail="Campanya no trobada")
     
@@ -369,7 +369,7 @@ async def scan_qr_code(request: ScanQRRequest, authorization: str = Header(None)
         raise HTTPException(status_code=400, detail="Aquesta campanya no està activa")
     
     # Verificar que el QR code existeix i pertany a aquesta campanya
-    qr = await db.gincana_qr_codes.find_one({
+    qr = await db.gimcana_qr_codes.find_one({
         "campaign_id": campaign_id,
         "code": qr_code
     })
@@ -378,7 +378,7 @@ async def scan_qr_code(request: ScanQRRequest, authorization: str = Header(None)
         raise HTTPException(status_code=404, detail="Codi QR no vàlid per aquesta campanya")
     
     # Obtenir o crear progrés de l'usuari
-    progress = await db.gincana_progress.find_one({
+    progress = await db.gimcana_progress.find_one({
         "campaign_id": campaign_id,
         "user_id": user_id
     })
@@ -396,7 +396,7 @@ async def scan_qr_code(request: ScanQRRequest, authorization: str = Header(None)
             "entered_raffle": False,
             "created_at": now
         }
-        result = await db.gincana_progress.insert_one(progress)
+        result = await db.gimcana_progress.insert_one(progress)
         progress['_id'] = result.inserted_id
     
     # Verificar si ja ha escanejat aquest QR
@@ -422,7 +422,7 @@ async def scan_qr_code(request: ScanQRRequest, authorization: str = Header(None)
         completed_now = True
     
     # Actualitzar a la base de dades
-    await db.gincana_progress.update_one(
+    await db.gimcana_progress.update_one(
         {"_id": progress['_id']},
         {"$set": {
             "scanned_codes": progress['scanned_codes'],
@@ -450,7 +450,7 @@ async def scan_qr_code(request: ScanQRRequest, authorization: str = Header(None)
     }
 
 
-@gincana_router.post("/enter-raffle/{campaign_id}")
+@gimcana_router.post("/enter-raffle/{campaign_id}")
 async def enter_raffle(campaign_id: str, authorization: str = Header(None)):
     """Entrar al sorteig després de completar la cartilla"""
     user = await get_user_from_token(authorization)
@@ -460,7 +460,7 @@ async def enter_raffle(campaign_id: str, authorization: str = Header(None)):
     user_id = str(user['_id'])
     
     # Verificar que ha completat la campanya
-    progress = await db.gincana_progress.find_one({
+    progress = await db.gimcana_progress.find_one({
         "campaign_id": campaign_id,
         "user_id": user_id
     })
@@ -475,7 +475,7 @@ async def enter_raffle(campaign_id: str, authorization: str = Header(None)):
         raise HTTPException(status_code=400, detail="Ja estàs inscrit al sorteig")
     
     # Inscriure al sorteig
-    await db.gincana_progress.update_one(
+    await db.gimcana_progress.update_one(
         {"_id": progress['_id']},
         {"$set": {
             "entered_raffle": True,
@@ -491,16 +491,16 @@ async def enter_raffle(campaign_id: str, authorization: str = Header(None)):
 
 # ============== ADMIN STATISTICS ==============
 
-@gincana_router.get("/campaigns/{campaign_id}/participants")
+@gimcana_router.get("/campaigns/{campaign_id}/participants")
 async def get_participants(campaign_id: str, authorization: str = Header(None)):
     """Obtenir llista de participants d'una campanya (només admin)"""
     user = await get_user_from_token(authorization)
     if not user or user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail="Només els administradors poden veure els participants")
     
-    participants = await db.gincana_progress.find({"campaign_id": campaign_id}).sort("scanned_count", -1).to_list(1000)
+    participants = await db.gimcana_progress.find({"campaign_id": campaign_id}).sort("scanned_count", -1).to_list(1000)
     
-    campaign = await db.gincana_campaigns.find_one({"_id": ObjectId(campaign_id)})
+    campaign = await db.gimcana_campaigns.find_one({"_id": ObjectId(campaign_id)})
     total_qr = campaign['total_qr_codes'] if campaign else 0
     
     result = []
@@ -520,14 +520,14 @@ async def get_participants(campaign_id: str, authorization: str = Header(None)):
     return result
 
 
-@gincana_router.get("/campaigns/{campaign_id}/raffle-participants")
+@gimcana_router.get("/campaigns/{campaign_id}/raffle-participants")
 async def get_raffle_participants(campaign_id: str, authorization: str = Header(None)):
     """Obtenir participants inscrits al sorteig (només admin)"""
     user = await get_user_from_token(authorization)
     if not user or user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail="Només els administradors poden veure els participants")
     
-    participants = await db.gincana_progress.find({
+    participants = await db.gimcana_progress.find({
         "campaign_id": campaign_id,
         "completed": True,
         "entered_raffle": True

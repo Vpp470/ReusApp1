@@ -18,7 +18,7 @@ import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/co
 import { useAuthStore } from '../../src/store/authStore';
 import api from '../../src/services/api';
 
-interface GincanaCampaign {
+interface GimcanaCampaign {
   _id: string;
   name: string;
   description: string;
@@ -34,14 +34,14 @@ interface GincanaCampaign {
   };
 }
 
-export default function GincanaAdminPage() {
+export default function GimcanaAdminPage() {
   const router = useRouter();
   const { token } = useAuthStore();
   
-  const [campaigns, setCampaigns] = useState<GincanaCampaign[]>([]);
+  const [campaigns, setCampaigns] = useState<GimcanaCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editingCampaign, setEditingCampaign] = useState<GincanaCampaign | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<GimcanaCampaign | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -60,7 +60,7 @@ export default function GincanaAdminPage() {
 
   const loadCampaigns = async () => {
     try {
-      const response = await api.get('/gincana/campaigns', {
+      const response = await api.get('/gimcana/campaigns', {
         headers: { Authorization: token },
       });
       setCampaigns(response.data);
@@ -90,7 +90,7 @@ export default function GincanaAdminPage() {
     setShowModal(true);
   };
 
-  const handleEdit = (campaign: GincanaCampaign) => {
+  const handleEdit = (campaign: GimcanaCampaign) => {
     setEditingCampaign(campaign);
     setFormData({
       name: campaign.name,
@@ -125,13 +125,13 @@ export default function GincanaAdminPage() {
       };
 
       if (editingCampaign) {
-        await api.put(`/gincana/campaigns/${editingCampaign._id}`, data, {
+        await api.put(`/gimcana/campaigns/${editingCampaign._id}`, data, {
           headers: { Authorization: token },
         });
         const msg = 'Campanya actualitzada correctament';
         Platform.OS === 'web' ? window.alert(msg) : Alert.alert('Èxit', msg);
       } else {
-        await api.post('/gincana/campaigns', data, {
+        await api.post('/gimcana/campaigns', data, {
           headers: { Authorization: token },
         });
         const msg = `Campanya creada amb ${data.total_qr_codes} codis QR`;
@@ -151,7 +151,7 @@ export default function GincanaAdminPage() {
   const handleDelete = async (campaignId: string) => {
     const confirmDelete = async () => {
       try {
-        await api.delete(`/gincana/campaigns/${campaignId}`, {
+        await api.delete(`/gimcana/campaigns/${campaignId}`, {
           headers: { Authorization: token },
         });
         loadCampaigns();
@@ -188,7 +188,7 @@ export default function GincanaAdminPage() {
     }
   };
 
-  const isActive = (campaign: GincanaCampaign) => {
+  const isActive = (campaign: GimcanaCampaign) => {
     const now = new Date();
     const start = new Date(campaign.start_date);
     const end = new Date(campaign.end_date);
@@ -230,7 +230,7 @@ export default function GincanaAdminPage() {
             <MaterialIcons name="qr-code-2" size={64} color={Colors.gray} />
             <Text style={styles.emptyTitle}>No hi ha gincanes</Text>
             <Text style={styles.emptyText}>
-              Clica el botó + per crear una nova gincana amb QR codes
+              Clica el botó + per crear una nova gimcana amb QR codes
             </Text>
           </View>
         ) : (
@@ -238,7 +238,7 @@ export default function GincanaAdminPage() {
             <Pressable
               key={campaign._id}
               style={styles.campaignCard}
-              onPress={() => router.push(`/admin/gincana/${campaign._id}`)}
+              onPress={() => router.push(`/admin/gimcana/${campaign._id}`)}
             >
               <View style={styles.cardHeader}>
                 <View style={styles.titleRow}>
@@ -298,7 +298,7 @@ export default function GincanaAdminPage() {
                   style={styles.actionButton}
                   onPress={(e) => {
                     e.stopPropagation();
-                    router.push(`/admin/gincana/${campaign._id}`);
+                    router.push(`/admin/gimcana/${campaign._id}`);
                   }}
                 >
                   <MaterialIcons name="settings" size={20} color="#2196F3" />
@@ -326,7 +326,7 @@ export default function GincanaAdminPage() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {editingCampaign ? 'Editar Gincana' : 'Nova Gincana'}
+                {editingCampaign ? 'Editar Gimcana' : 'Nova Gimcana'}
               </Text>
               <Pressable onPress={() => { setShowModal(false); resetForm(); }}>
                 <MaterialIcons name="close" size={24} color={Colors.textDark} />
@@ -339,7 +339,7 @@ export default function GincanaAdminPage() {
                 style={styles.input}
                 value={formData.name}
                 onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-                placeholder="Ex: Gincana dels Follets Coia i Pere"
+                placeholder="Ex: Gimcana dels Follets Coia i Pere"
               />
 
               <Text style={styles.label}>Descripció</Text>
@@ -347,7 +347,7 @@ export default function GincanaAdminPage() {
                 style={[styles.input, styles.textArea]}
                 value={formData.description}
                 onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
-                placeholder="Descripció de la gincana..."
+                placeholder="Descripció de la gimcana..."
                 multiline
                 numberOfLines={3}
               />
@@ -422,7 +422,7 @@ export default function GincanaAdminPage() {
               </Pressable>
               <Pressable style={styles.saveButton} onPress={handleSave}>
                 <Text style={styles.saveButtonText}>
-                  {editingCampaign ? 'Actualitzar' : 'Crear Gincana'}
+                  {editingCampaign ? 'Actualitzar' : 'Crear Gimcana'}
                 </Text>
               </Pressable>
             </View>

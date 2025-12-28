@@ -56,7 +56,7 @@ export default function AdminDashboard() {
         {
           icon: 'qr-code-2',
           label: 'Gincanes QR',
-          route: '/admin/gincana',
+          route: '/admin/gimcana',
           color: '#9C27B0',
         },
         {

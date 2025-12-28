@@ -49,7 +49,7 @@ interface Campaign {
   };
 }
 
-export default function GincanaDetailPage() {
+export default function GimcanaDetailPage() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { token } = useAuthStore();
@@ -74,9 +74,9 @@ export default function GincanaDetailPage() {
   const loadData = async () => {
     try {
       const [campaignRes, qrRes, participantsRes] = await Promise.all([
-        api.get(`/gincana/campaigns/${id}`, { headers: { Authorization: token } }),
-        api.get(`/gincana/campaigns/${id}/qr-codes`, { headers: { Authorization: token } }),
-        api.get(`/gincana/campaigns/${id}/participants`, { headers: { Authorization: token } }),
+        api.get(`/gimcana/campaigns/${id}`, { headers: { Authorization: token } }),
+        api.get(`/gimcana/campaigns/${id}/qr-codes`, { headers: { Authorization: token } }),
+        api.get(`/gimcana/campaigns/${id}/participants`, { headers: { Authorization: token } }),
       ]);
       
       setCampaign(campaignRes.data);
@@ -102,7 +102,7 @@ export default function GincanaDetailPage() {
     if (!editingQR) return;
     
     try {
-      await api.put(`/gincana/qr-codes/${editingQR._id}`, editForm, {
+      await api.put(`/gimcana/qr-codes/${editingQR._id}`, editForm, {
         headers: { Authorization: token },
       });
       setShowEditModal(false);
@@ -161,7 +161,7 @@ export default function GincanaDetailPage() {
           <MaterialIcons name="arrow-back" size={28} color={Colors.white} />
         </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          {campaign?.name || 'Gincana'}
+          {campaign?.name || 'Gimcana'}
         </Text>
         <View style={{ width: 44 }} />
       </View>
