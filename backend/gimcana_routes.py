@@ -540,12 +540,17 @@ async def scan_qr_code(request: ScanQRRequest, authorization: str = Header(None)
         raise HTTPException(status_code=400, detail="Aquesta campanya no està activa")
     
     # Verificar que el QR code existeix i pertany a aquesta campanya
+    logger.info(f"Cercant QR code: '{qr_code}' per campanya: '{campaign_id}'")
     qr = await db.gimcana_qr_codes.find_one({
         "campaign_id": campaign_id,
         "code": qr_code
     })
+    logger.info(f"QR trobat: {qr}")
     
     if not qr:
+        # Intentar cercar sense el filtre de campanya per depurar
+        all_qrs = await db.gimcana_qr_codes.find({"code": qr_code}).to_list(10)
+        logger.warning(f"QR no trobat. Tots els QRs amb aquest codi: {all_qrs}")
         raise HTTPException(status_code=404, detail="Codi QR no vàlid per aquesta campanya")
     
     # Obtenir o crear progrés de l'usuari
