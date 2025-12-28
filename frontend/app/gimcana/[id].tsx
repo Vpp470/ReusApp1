@@ -430,28 +430,28 @@ export default function GimcanaDetailPage() {
           <View style={styles.scannerModal}>
             <View style={styles.scannerHeader}>
               <Text style={styles.scannerTitle}>Introdueix el codi QR</Text>
-              <TouchableOpacity onPress={() => setShowScanner(false)}>
+              <TouchableOpacity onPress={() => { setShowScanner(false); setScanInput(''); }}>
                 <MaterialIcons name="close" size={24} color="#333" />
               </TouchableOpacity>
             </View>
             
             <Text style={styles.scannerHint}>
-              Escaneja el codi QR amb la càmera del teu mòbil o introdueix el codi manualment:
+              Introdueix el codi que trobaràs sota el QR (format: GINCANA-XXXX):
             </Text>
             
             <View style={styles.inputRow}>
-              <View style={styles.codeInput}>
-                <MaterialIcons name="qr-code" size={24} color="#666" />
-                <TextInput
-                  style={styles.codeTextInput}
-                  placeholder="Introdueix el codi (ex: GIM-XXXX)"
-                  placeholderTextColor="#999"
-                  value={scanInput}
-                  onChangeText={setScanInput}
-                  autoCapitalize="characters"
-                  autoCorrect={false}
-                />
-              </View>
+              <TextInput
+                style={styles.codeTextInputFull}
+                placeholder="GINCANA-XXXXXXXXXXXX"
+                placeholderTextColor="#999"
+                value={scanInput}
+                onChangeText={setScanInput}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                autoFocus={true}
+                returnKeyType="done"
+                onSubmitEditing={() => scanInput && handleScanQR(scanInput)}
+              />
             </View>
             
             <TouchableOpacity 
@@ -466,7 +466,7 @@ export default function GimcanaDetailPage() {
                 <ActivityIndicator color={Colors.white} />
               ) : (
                 <>
-                  <MaterialIcons name="send" size={20} color={Colors.white} />
+                  <MaterialIcons name="check-circle" size={20} color={Colors.white} />
                   <Text style={styles.submitScanButtonText}>Validar codi</Text>
                 </>
               )}
