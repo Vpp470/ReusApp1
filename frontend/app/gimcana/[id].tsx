@@ -256,13 +256,9 @@ export default function GimcanaDetailPage() {
       } else {
         const msg = result.is_duplicate 
           ? 'Ja havies escanejat aquest QR!'
-          : `QR escanejat! ${result.scanned_count}/${result.total_qr_codes}`;
+          : `✅ QR escanejat correctament!\n\n${result.message || ''}\n\nProgrés: ${result.scanned_count}/${result.total}`;
         
-        if (Platform.OS === 'web') {
-          window.alert(msg);
-        } else {
-          Alert.alert('Èxit', msg);
-        }
+        Alert.alert('Èxit', msg);
       }
       
     } catch (error: any) {
