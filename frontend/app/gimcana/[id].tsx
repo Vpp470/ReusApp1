@@ -88,33 +88,53 @@ export default function GimcanaDetailPage() {
   const [hasScanned, setHasScanned] = useState(false);
 
   const loadCampaignDetails = useCallback(async () => {
-    if (!token || !id) return;
+    if (!id) return;
     
     try {
-      // Obtenir detalls de la campanya
-      const campaignRes = await api.get(`/gimcana/campaigns/${id}`, {
-        headers: { Authorization: token },
-      });
+      // Headers opcionals si l'usuari està autenticat
+      const headers: any = {};
+      if (token) {
+        headers.Authorization = token;
+      }
+      
+      // Obtenir detalls de la campanya (públic)
+      const campaignRes = await api.get(`/gimcana/campaigns/${id}`, { headers });
       setCampaign(campaignRes.data);
       
-      // Obtenir QR codes
-      const qrRes = await api.get(`/gimcana/campaigns/${id}/qr-codes`, {
-        headers: { Authorization: token },
-      });
+      // Obtenir QR codes (públic)
+      const qrRes = await api.get(`/gimcana/campaigns/${id}/qr-codes`, { headers });
       setQrCodes(qrRes.data);
       
-      // Obtenir progrés de l'usuari
-      const progressRes = await api.get(`/gimcana/campaigns/${id}/progress`, {
-        headers: { Authorization: token },
-      });
-      setProgress(progressRes.data);
-      
-      // Si la campanya té sorteig executat, obtenir resultat
-      if (campaignRes.data.raffle_executed) {
-        const raffleRes = await api.get(`/gimcana/campaigns/${id}/raffle-result`, {
-          headers: { Authorization: token },
+      // Obtenir progrés de l'usuari (només si està autenticat)
+      if (token) {
+        try {
+          const progressRes = await api.get(`/gimcana/campaigns/${id}/progress`, { headers });
+          setProgress(progressRes.data);
+        } catch (progressError) {
+          console.log('No progress found for user');
+          setProgress({
+            scanned_qrs: [],
+            completed: false,
+            entered_raffle: false,
+          });
+        }
+        
+        // Si la campanya té sorteig executat, obtenir resultat
+        if (campaignRes.data.raffle_executed) {
+          try {
+            const raffleRes = await api.get(`/gimcana/campaigns/${id}/raffle-result`, { headers });
+            setRaffleResult(raffleRes.data);
+          } catch (raffleError) {
+            console.log('No raffle result available');
+          }
+        }
+      } else {
+        // Usuari no autenticat - progrés buit
+        setProgress({
+          scanned_qrs: [],
+          completed: false,
+          entered_raffle: false,
         });
-        setRaffleResult(raffleRes.data);
       }
       
     } catch (error) {
