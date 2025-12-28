@@ -128,6 +128,72 @@ export default function GimcanaDetailPage() {
     loadCampaignDetails();
   }, [loadCampaignDetails]);
 
+  // Funció per obrir l'escàner
+  const openScanner = async () => {
+    setHasScanned(false);
+    setScanInput('');
+    
+    // A web, anar directament a mode manual
+    if (Platform.OS === 'web') {
+      setScanMode('manual');
+      setShowScanner(true);
+      return;
+    }
+    
+    // A mòbil, demanar permisos de càmera
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) {
+        Alert.alert(
+          'Permís necessari',
+          'Cal accés a la càmera per escanejar codis QR',
+          [
+            { text: 'Cancel·lar', style: 'cancel' },
+            { text: 'Entrada manual', onPress: () => { setScanMode('manual'); setShowScanner(true); }}
+          ]
+        );
+        return;
+      }
+    }
+    
+    setScanMode('camera');
+    setShowScanner(true);
+  };
+
+  // Handler per quan la càmera escaneja un QR
+  const handleBarCodeScanned = (result: BarcodeScanningResult) => {
+    if (hasScanned || scanning) return;
+    
+    const code = result.data;
+    if (code && code.includes('GIMCANA-')) {
+      setHasScanned(true);
+      handleScanQR(code);
+    }
+  };
+
+  // Funció per seleccionar imatge de la galeria
+  const pickImageFromGallery = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
+      });
+      
+      if (!result.canceled && result.assets[0]) {
+        // Aquí es podria implementar OCR o detecció de QR de la imatge
+        // Per ara, mostrem un missatge
+        Alert.alert(
+          'Funció en desenvolupament',
+          'L\'escaneig de QR des de galeria estarà disponible properament. Utilitza la càmera o introdueix el codi manualment.',
+          [{ text: 'Entès' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+    }
+  };
+
   const handleScanQR = async (code: string) => {
     if (scanning || !token || !id) return;
     
@@ -153,6 +219,7 @@ export default function GimcanaDetailPage() {
       
       setShowScanner(false);
       setScanInput('');
+      setHasScanned(false);
       
       if (result.completed && result.is_new_completion) {
         // Mostrar modal de completat
@@ -170,6 +237,7 @@ export default function GimcanaDetailPage() {
       }
       
     } catch (error: any) {
+      setHasScanned(false);
       const msg = error.response?.data?.detail || 'Error escanejant el QR';
       if (Platform.OS === 'web') {
         window.alert(msg);
