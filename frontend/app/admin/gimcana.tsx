@@ -938,4 +938,41 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   qrItemHint: { fontSize: FontSizes.xs },
+  prizeTypeContainer: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginTop: Spacing.xs,
+  },
+  prizeTypeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.white,
+  },
+  prizeTypeButtonActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  prizeTypeText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  prizeTypeTextActive: {
+    color: Colors.white,
+  },
+  prizeTypeHint: {
+    fontSize: FontSizes.xs,
+    color: '#666',
+    fontStyle: 'italic',
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.sm,
+  },
 });
