@@ -223,7 +223,18 @@ export default function GimcanaDetailPage() {
     const code = result.data;
     if (!code) return;
     
+    // Verificar que l'usuari té token
+    if (!token) {
+      Alert.alert(
+        'Sessió requerida',
+        'Has d\'iniciar sessió per escanejar QR codes.',
+        [{ text: 'D\'acord', onPress: () => setShowScanner(false) }]
+      );
+      return;
+    }
+    
     console.log('QR Escanejat:', code);
+    console.log('Token disponible:', token ? 'Sí' : 'No');
     setHasScanned(true);
     setScanning(true);
     
