@@ -2,17 +2,10 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-// URL del backend d'Emergent per testing
-const EMERGENT_BACKEND_URL = 'https://gimcana-repair.preview.emergentagent.com/api';
-
 // Determinar la URL base segons la plataforma i entorn
 const getBaseURL = () => {
-  // Prioritzar EXPO_PUBLIC_BACKEND_URL si existeix
-  const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
-  
   // En web, gestionar segons l'entorn
   if (Platform.OS === 'web') {
-    // Detectar si estem en producció (reusapp.com o railway)
     if (typeof window !== 'undefined') {
       const hostname = window.location?.hostname || '';
       
@@ -22,42 +15,26 @@ const getBaseURL = () => {
         return 'http://localhost:8001/api';
       }
       
-      // Si estem en Emergent preview, usar /api relatiu (el proxy s'encarrega de redirigir)
+      // Si estem en Emergent preview, usar /api relatiu
       if (hostname.includes('emergent') || hostname.includes('preview')) {
         console.log('API Base URL: /api (Emergent preview)');
         return '/api';
       }
       
-      // Si estem en producció (reusapp.com, railway.app, eltombdereus.com)
+      // Si estem en producció
       if (hostname.includes('reusapp.com') || hostname.includes('railway.app') || hostname.includes('eltombdereus.com')) {
         console.log('API Base URL: https://www.reusapp.com/api (production)');
         return 'https://www.reusapp.com/api';
       }
     }
     
-    // Fallback per web - usar URL relativa que funciona amb el proxy
+    // Fallback per web
     console.log('API Base URL: /api (fallback)');
     return '/api';
   }
   
-  // Per apps mòbils, verificar si estem en mode desenvolupament (Expo Go)
-  const isExpoGo = Constants.appOwnership === 'expo';
-  
-  if (isExpoGo) {
-    // En Expo Go (desenvolupament), usar el backend d'Emergent
-    console.log('API Base URL: ' + EMERGENT_BACKEND_URL + ' (Expo Go development)');
-    return EMERGENT_BACKEND_URL;
-  }
-  
-  // Per apps mòbils compilades, usar EXPO_PUBLIC_BACKEND_URL si existeix
-  if (backendUrl) {
-    const mobileUrl = `${backendUrl}/api`;
-    console.log('API Base URL: ' + mobileUrl + ' (mobile with env var)');
-    return mobileUrl;
-  }
-  
-  // Fallback a producció per apps compilades
-  console.log('API Base URL: https://www.reusapp.com/api (mobile production)');
+  // Per apps mòbils (iOS/Android), SEMPRE usar producció
+  console.log('API Base URL: https://www.reusapp.com/api (mobile)');
   return 'https://www.reusapp.com/api';
 };
 
