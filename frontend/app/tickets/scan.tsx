@@ -316,7 +316,8 @@ export default function ScanTicketScreen() {
     );
   }
 
-  // Només mostrar pantalla de permisos si NO és web i no té permisos
+  // A web o sense permisos de càmera al mòbil, mostrar opcions alternatives
+  // PERÒ al web volem mostrar els botons de foto i galeria igualment!
   if (!isWeb && !permission?.granted) {
     return (
       <SafeAreaView style={styles.container}>
@@ -335,17 +336,10 @@ export default function ScanTicketScreen() {
             Per escanejar tiquets necessites permetre l'accés a la càmera.
           </Text>
           
-          {!isWeb ? (
-            <Pressable style={styles.allowCameraButton} onPress={requestPermission}>
-              <MaterialIcons name="camera-alt" size={24} color={Colors.white} />
-              <Text style={styles.allowCameraButtonText}>Permetre Càmera</Text>
-            </Pressable>
-          ) : (
-            <Text style={styles.webWarningText}>
-              L'escaneig amb càmera només funciona a l'app mòbil.
-              {'\n'}Obre l'app al teu telèfon per escanejar.
-            </Text>
-          )}
+          <Pressable style={styles.allowCameraButton} onPress={requestPermission}>
+            <MaterialIcons name="camera-alt" size={24} color={Colors.white} />
+            <Text style={styles.allowCameraButtonText}>Permetre Càmera</Text>
+          </Pressable>
           
           <TouchableOpacity 
             style={styles.participationsButtonSmall} 
