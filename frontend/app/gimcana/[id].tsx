@@ -113,6 +113,8 @@ export default function GimcanaDetailPage() {
   const loadCampaignDetails = useCallback(async () => {
     if (!id) return;
     
+    console.log('📊 Loading gimcana details, token:', token ? 'present' : 'missing');
+    
     try {
       // Headers opcionals si l'usuari està autenticat
       const headers: any = {};
@@ -131,10 +133,12 @@ export default function GimcanaDetailPage() {
       // Obtenir progrés de l'usuari (només si està autenticat)
       if (token) {
         try {
+          console.log('📊 Fetching progress for user...');
           const progressRes = await api.get(`/gimcana/campaigns/${id}/progress`, { headers });
+          console.log('📊 Progress received:', progressRes.data);
           setProgress(progressRes.data);
         } catch (progressError) {
-          console.log('No progress found for user');
+          console.log('No progress found for user:', progressError);
           setProgress({
             scanned_qrs: [],
             completed: false,
