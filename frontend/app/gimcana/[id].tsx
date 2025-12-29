@@ -314,7 +314,7 @@ export default function GimcanaDetailPage() {
     );
   }
 
-  const scannedCount = progress?.scanned_qrs?.length || 0;
+  const scannedCount = progress?.scanned_count || progress?.scanned_qrs?.length || 0;
   const progressPercent = (scannedCount / campaign.total_qr_codes) * 100;
 
   return (
