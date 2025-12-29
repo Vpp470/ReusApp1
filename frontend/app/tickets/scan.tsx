@@ -41,10 +41,53 @@ export default function ScanTicketScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [processing, setProcessing] = useState(false);
   const [participations, setParticipations] = useState(0);
-  const [scanMode, setScanMode] = useState<'menu' | 'qr' | 'photo'>('menu');
+  const [scanMode, setScanMode] = useState<'menu' | 'qr' | 'photo' | 'manual'>('menu');
   const [scanned, setScanned] = useState(false);
   const [activeCampaign, setActiveCampaign] = useState<TicketCampaign | null>(null);
   const [loadingCampaign, setLoadingCampaign] = useState(true);
+  const [manualCode, setManualCode] = useState('');
+
+  // Funció per enviar codi manual
+  const handleManualSubmit = async () => {
+    if (!manualCode.trim() || processing) return;
+    
+    setProcessing(true);
+    try {
+      const response = await api.post(
+        '/tickets/scan',
+        { ticket_code: manualCode.trim() },
+        { headers: { Authorization: token! } }
+      );
+
+      if (Platform.OS === 'web') {
+        window.alert(`🎉 Tiquet Validat!\n${response.data.message || 'Tiquet processat correctament!'}`);
+      } else {
+        Alert.alert(
+          '🎉 Tiquet Validat!',
+          response.data.message || 'Tiquet processat correctament!',
+          [
+            {
+              text: 'Veure Participacions',
+              onPress: () => router.push('/tickets/participations'),
+            },
+            { text: 'D\'acord', onPress: () => {} },
+          ]
+        );
+      }
+      setManualCode('');
+      setScanMode('menu');
+      loadParticipations();
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'No s\'ha pogut processar el codi';
+      if (Platform.OS === 'web') {
+        window.alert(`Error: ${errorMsg}`);
+      } else {
+        Alert.alert('Error', errorMsg);
+      }
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   useEffect(() => {
     loadParticipations();
