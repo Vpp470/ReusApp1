@@ -675,7 +675,7 @@ async def scan_qr_code(request: ScanQRRequest, authorization: str = Header(None)
     }
 
 
-@gimcana_router.post("/enter-raffle/{campaign_id}")
+@gimcana_router.post("/campaigns/{campaign_id}/enter-raffle")
 async def enter_raffle(campaign_id: str, authorization: str = Header(None)):
     """Entrar al sorteig després de completar la cartilla"""
     user = await get_user_from_token(authorization)
