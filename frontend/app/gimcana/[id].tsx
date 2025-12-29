@@ -249,23 +249,41 @@ export default function GimcanaDetailPage() {
       console.log('Resposta API:', response.data);
       const data = response.data;
       
-      // Tancar scanner
+      // Tancar scanner PRIMER
       setShowScanner(false);
       
+      // Actualitzar el progrés IMMEDIATAMENT amb les dades de la resposta
+      if (data.scanned_count !== undefined) {
+        setProgress(prev => ({
+          ...prev,
+          scanned_qrs: [...(prev?.scanned_qrs || []), 'scanned'],
+          scanned_count: data.scanned_count,
+          completed: data.completed || false,
+        }));
+      }
+      
+      // Recarregar les dades completes per assegurar sincronització
+      await loadCampaignDetails();
+      
       // Mostrar missatge d'èxit
-      Alert.alert(
-        '✅ Èxit!',
-        data.message || `QR escanejat! Progrés: ${data.scanned_count}/${data.total}`,
-        [{ text: 'D\'acord', onPress: () => loadCampaignDetails() }]
-      );
+      if (Platform.OS === 'web') {
+        window.alert(`✅ Èxit! ${data.message || `QR escanejat! Progrés: ${data.scanned_count}/${data.total}`}`);
+      } else {
+        Alert.alert(
+          '✅ Èxit!',
+          data.message || `QR escanejat! Progrés: ${data.scanned_count}/${data.total}`,
+          [{ text: 'D\'acord' }]
+        );
+      }
       
     } catch (error: any) {
       console.error('Error escaneig:', error.response?.data || error);
-      Alert.alert(
-        'Error',
-        error.response?.data?.detail || 'No s\'ha pogut processar el QR. Torna-ho a provar.',
-        [{ text: 'D\'acord' }]
-      );
+      const errorMsg = error.response?.data?.detail || 'No s\'ha pogut processar el QR. Torna-ho a provar.';
+      if (Platform.OS === 'web') {
+        window.alert(`Error: ${errorMsg}`);
+      } else {
+        Alert.alert('Error', errorMsg, [{ text: 'D\'acord' }]);
+      }
     } finally {
       setScanning(false);
       setHasScanned(false);
