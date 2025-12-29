@@ -134,7 +134,7 @@ Status: 200 OK
 
 ### ❌ INCORRECTE (NO hauries de veure):
 ```
-POST https://scanventure-1.preview.emergentagent.com/api/auth/login
+POST https://gimcana-repair.preview.emergentagent.com/api/auth/login
 Status: ERR_FAILED
 ```
 

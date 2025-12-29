@@ -22,8 +22,8 @@ Data: 24 Novembre 2025
 
 ### 2. URLs Incorrectes en Pàgines HTML (RESOLT ✅)
 **Problema:** Alguns fitxers HTML encara utilitzaven l'URL antiga del domini preview:
-- `https://scanventure-1.preview.emergentagent.com/api`
-- `https://scanventure-1.preview.emergentagent.com/api`
+- `https://gimcana-repair.preview.emergentagent.com/api`
+- `https://gimcana-repair.preview.emergentagent.com/api`
 
 **Solució:** Actualitzat tots els fitxers a l'URL correcta de producció:
 - `https://reus-commerce-1.emergent.host/api`

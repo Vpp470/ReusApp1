@@ -3065,7 +3065,7 @@ agent_communication:
       Comprehensive testing performed on the admin statistics endpoint as specifically requested:
       
       🎯 ENDPOINT TESTED:
-      - URL: GET https://scanventure-1.preview.emergentagent.com/api/admin/statistics
+      - URL: GET https://gimcana-repair.preview.emergentagent.com/api/admin/statistics
       - Admin Token: i_yKBfolFbGsik3rMzPNVA5O6TyK5uzzAc-7YRQod-w
       - Authorization Header: Bearer i_yKBfolFbGsik3rMzPNVA5O6TyK5uzzAc-7YRQod-w
       

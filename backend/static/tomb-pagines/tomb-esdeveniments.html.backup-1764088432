@@ -189,13 +189,13 @@
     </style>
 </head>
 <body>
-    <a href="https://eltombdereus.com/" target="_parent" class="logo-container"><img src="https://scanventure-1.preview.emergentagent.com/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" /></a>
+    <a href="https://eltombdereus.com/" target="_parent" class="logo-container"><img src="https://gimcana-repair.preview.emergentagent.com/api/landing/assets/logo-tomb-oficial.png" alt="El Tomb de Reus" /></a>
     <div class="container">
         <div class="page-header"><div class="page-subtitle">Participa</div><h1 class="page-title">Esdeveniments</h1></div>
         <div id="events-grid" class="events-grid"><div class="loading">Carregant esdeveniments...</div></div>
     </div>
     <script>
-        const API_BASE_URL = 'https://scanventure-1.preview.emergentagent.com/api';
+        const API_BASE_URL = 'https://gimcana-repair.preview.emergentagent.com/api';
         let allEvents = []; let currentPage = 0; const ITEMS_PER_PAGE = 30;  // Grid Instagram: 3 columnes x 10 files
         function formatDate(d) { return new Date(d).toLocaleDateString('ca-ES', { day: 'numeric', month: 'long', year: 'numeric' }); }
         function loadEvents() {
