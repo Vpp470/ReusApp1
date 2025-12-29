@@ -2,6 +2,9 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
+// URL del backend d'Emergent per testing
+const EMERGENT_BACKEND_URL = 'https://gimcana-repair.preview.emergentagent.com/api';
+
 // Determinar la URL base segons la plataforma i entorn
 const getBaseURL = () => {
   // Prioritzar EXPO_PUBLIC_BACKEND_URL si existeix
@@ -37,15 +40,24 @@ const getBaseURL = () => {
     return '/api';
   }
   
-  // Per apps mòbils, usar EXPO_PUBLIC_BACKEND_URL si existeix, sinó producció
+  // Per apps mòbils, verificar si estem en mode desenvolupament (Expo Go)
+  const isExpoGo = Constants.appOwnership === 'expo';
+  
+  if (isExpoGo) {
+    // En Expo Go (desenvolupament), usar el backend d'Emergent
+    console.log('API Base URL: ' + EMERGENT_BACKEND_URL + ' (Expo Go development)');
+    return EMERGENT_BACKEND_URL;
+  }
+  
+  // Per apps mòbils compilades, usar EXPO_PUBLIC_BACKEND_URL si existeix
   if (backendUrl) {
     const mobileUrl = `${backendUrl}/api`;
     console.log('API Base URL: ' + mobileUrl + ' (mobile with env var)');
     return mobileUrl;
   }
   
-  // Fallback a producció si no hi ha variable d'entorn
-  console.log('API Base URL: https://www.reusapp.com/api (mobile fallback)');
+  // Fallback a producció per apps compilades
+  console.log('API Base URL: https://www.reusapp.com/api (mobile production)');
   return 'https://www.reusapp.com/api';
 };
 
