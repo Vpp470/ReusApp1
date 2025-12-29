@@ -240,57 +240,6 @@ export default function GimcanaDetailPage() {
     Alert.alert('Info', 'Utilitza la càmera per escanejar el QR');
   };
 
-  // Funció legacy - ja no s'utilitza
-  const handleScanQR = async (code: string) => {
-    // Redirigir a handleBarCodeScanned
-    handleBarCodeScanned({ data: code } as BarcodeScanningResult);
-  };
-    
-    try {
-      const response = await api.post('/gimcana/scan', {
-        campaign_id: id,
-        qr_code: code,
-      }, {
-        headers: { Authorization: token },
-      });
-      
-      const result = response.data;
-      
-      // Actualitzar progrés
-      setProgress(prev => prev ? {
-        ...prev,
-        scanned_qrs: [...(prev.scanned_qrs || []), result.qr_id],
-        completed: result.completed,
-        completed_at: result.completed ? new Date().toISOString() : undefined,
-      } : null);
-      
-      setShowScanner(false);
-      setHasScanned(false);
-      
-      if (result.completed && result.is_new_completion) {
-        // Mostrar modal de completat
-        setShowCompletionModal(true);
-      } else {
-        const msg = result.is_duplicate 
-          ? 'Ja havies escanejat aquest QR!'
-          : `✅ QR escanejat correctament!\n\n${result.message || ''}\n\nProgrés: ${result.scanned_count}/${result.total}`;
-        
-        Alert.alert('Èxit', msg);
-      }
-      
-    } catch (error: any) {
-      setHasScanned(false);
-      const msg = error.response?.data?.detail || 'Error escanejant el QR';
-      if (Platform.OS === 'web') {
-        window.alert(msg);
-      } else {
-        Alert.alert('Error', msg);
-      }
-    } finally {
-      setScanning(false);
-    }
-  };
-
   const handleEnterRaffle = async () => {
     if (!token || !id || !campaign) return;
     
