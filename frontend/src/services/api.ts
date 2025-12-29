@@ -13,36 +13,32 @@ const getBaseURL = () => {
     if (typeof window !== 'undefined') {
       const hostname = window.location?.hostname || '';
       
-      // Si estem en producció, usar la URL de producció
-      if (hostname.includes('reusapp.com') || hostname.includes('railway.app') || hostname.includes('eltombdereus.com')) {
-        console.log('API Base URL: https://www.reusapp.com/api');
-        return 'https://www.reusapp.com/api';
-      }
-      
       // Si estem en localhost (desenvolupament), connectar directament al backend
       if (hostname === 'localhost' || hostname === '127.0.0.1') {
         console.log('API Base URL: http://localhost:8001/api (development)');
         return 'http://localhost:8001/api';
       }
       
-      // Si estem en Emergent preview, usar la URL del backend amb /api
+      // Si estem en Emergent preview, usar /api relatiu (el proxy s'encarrega de redirigir)
       if (hostname.includes('emergent') || hostname.includes('preview')) {
-        if (backendUrl) {
-          console.log('API Base URL: ' + backendUrl + '/api (Emergent)');
-          return backendUrl + '/api';
-        }
-        console.log('API Base URL: /api (Emergent fallback)');
+        console.log('API Base URL: /api (Emergent preview)');
         return '/api';
+      }
+      
+      // Si estem en producció (reusapp.com, railway.app, eltombdereus.com)
+      if (hostname.includes('reusapp.com') || hostname.includes('railway.app') || hostname.includes('eltombdereus.com')) {
+        console.log('API Base URL: https://www.reusapp.com/api (production)');
+        return 'https://www.reusapp.com/api';
       }
     }
     
-    // Fallback per web
-    console.log('API Base URL: /api');
+    // Fallback per web - usar URL relativa que funciona amb el proxy
+    console.log('API Base URL: /api (fallback)');
     return '/api';
   }
   
   // Per apps mòbils, usar la URL de producció
-  console.log('API Base URL: https://www.reusapp.com/api');
+  console.log('API Base URL: https://www.reusapp.com/api (mobile)');
   return 'https://www.reusapp.com/api';
 };
 
