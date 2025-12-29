@@ -413,29 +413,34 @@ export default function ScanTicketScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Secció de campanya activa - Compacta */}
-      {!loadingCampaign && activeCampaign && (
-        <View style={styles.campaignContainerCompact}>
-          <View style={styles.campaignBadge}>
-            <MaterialIcons name="star" size={14} color={Colors.white} />
-            <Text style={styles.campaignBadgeText}>CAMPANYA ACTIVA</Text>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
+        {/* Secció de campanya activa - Compacta */}
+        {!loadingCampaign && activeCampaign && (
+          <View style={styles.campaignContainerCompact}>
+            <View style={styles.campaignBadge}>
+              <MaterialIcons name="star" size={14} color={Colors.white} />
+              <Text style={styles.campaignBadgeText}>CAMPANYA ACTIVA</Text>
+            </View>
+            <Text style={styles.campaignTitleCompact}>{activeCampaign.title}</Text>
+            <View style={styles.campaignPrizeRow}>
+              <MaterialIcons name="emoji-events" size={16} color={Colors.secondary} />
+              <Text style={styles.campaignPrizeCompact}>{activeCampaign.prize_description}</Text>
+            </View>
           </View>
-          <Text style={styles.campaignTitleCompact}>{activeCampaign.title}</Text>
-          <View style={styles.campaignPrizeRow}>
-            <MaterialIcons name="emoji-events" size={16} color={Colors.secondary} />
-            <Text style={styles.campaignPrizeCompact}>{activeCampaign.prize_description}</Text>
-          </View>
+        )}
+
+        <View style={styles.participationsBar}>
+          <MaterialIcons name="confirmation-number" size={24} color={Colors.primary} />
+          <Text style={styles.participationsText}>
+            {participations} participació{participations !== 1 ? 'ns' : ''} acumulada{participations !== 1 ? 'es' : ''}
+          </Text>
         </View>
-      )}
 
-      <View style={styles.participationsBar}>
-        <MaterialIcons name="confirmation-number" size={24} color={Colors.primary} />
-        <Text style={styles.participationsText}>
-          {participations} participació{participations !== 1 ? 'ns' : ''} acumulada{participations !== 1 ? 'es' : ''}
-        </Text>
-      </View>
-
-      <View style={styles.content}>
+        <View style={styles.content}>
         <View style={styles.infoBox}>
           <MaterialIcons name="info" size={20} color={Colors.primary} />
           <Text style={styles.infoText}>
