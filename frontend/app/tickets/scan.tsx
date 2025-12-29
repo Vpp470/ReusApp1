@@ -525,6 +525,7 @@ export default function ScanTicketScreen() {
           <Text style={styles.instructionsTitle}>Com funciona:</Text>
           <Text style={styles.instructionItem}>📱 Escanejar codi QR (si en tens)</Text>
           <Text style={styles.instructionItem}>📸 O fes una foto clara del tiquet</Text>
+          <Text style={styles.instructionItem}>⌨️ O introdueix el codi manualment</Text>
           <Text style={styles.instructionItem}>🔍 El sistema llegirà automàticament les dades</Text>
           <Text style={styles.instructionItem}>✅ Es validarà que sigui d'un establiment associat</Text>
           <Text style={styles.instructionItem}>🎯 Generaràs participacions segons l'import</Text>
