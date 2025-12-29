@@ -505,6 +505,15 @@ export default function ScanTicketScreen() {
           </Pressable>
         </View>
 
+        <Pressable
+          style={styles.manualEntryButtonLarge}
+          onPress={() => setScanMode('manual')}
+          disabled={processing}
+        >
+          <MaterialIcons name="keyboard" size={24} color={Colors.white} />
+          <Text style={styles.manualEntryButtonTextLarge}>Introduir Codi Manual</Text>
+        </Pressable>
+
         {processing && (
           <View style={styles.processingContainer}>
             <ActivityIndicator size="large" color={Colors.primary} />
