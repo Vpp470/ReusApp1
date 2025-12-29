@@ -308,7 +308,11 @@ async def create_campaign(campaign: GimcanaCampaignCreate, authorization: str = 
 
 @gimcana_router.put("/campaigns/{campaign_id}")
 async def update_campaign(campaign_id: str, campaign: GimcanaCampaignCreate, authorization: str = Header(None)):
-    """Actualitzar una campanya (només admin)"""
+    """Actualitzar una campanya (només admin)
+    
+    IMPORTANT: Els QR codes NO es regeneren a menys que es canviï el total_qr_codes.
+    Això és per mantenir la consistència dels codis ja impresos/distribuïts.
+    """
     user = await get_user_from_token(authorization)
     if not user or user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail="Només els administradors poden editar campanyes")
@@ -317,33 +321,63 @@ async def update_campaign(campaign_id: str, campaign: GimcanaCampaignCreate, aut
     if not existing:
         raise HTTPException(status_code=404, detail="Campanya no trobada")
     
-    update_data = campaign.dict()
+    # Excloure qr_items de l'actualització per no processar-los innecessàriament
+    update_data = campaign.dict(exclude={'qr_items'})
     update_data['updated_at'] = datetime.utcnow()
     
-    # Si canvia el nombre de QR codes, regenerar-los
-    if campaign.total_qr_codes != existing.get('total_qr_codes'):
+    # IMPORTANT: Només regenerar QRs si canvia el total_qr_codes
+    # I mai si ja hi ha progrés d'usuaris (això indicaria que la campanya ja està en marxa)
+    old_total = existing.get('total_qr_codes', 0)
+    new_total = campaign.total_qr_codes
+    
+    regenerate_qrs = False
+    if new_total != old_total:
+        # Comprovar si hi ha progrés d'usuaris
+        progress_count = await db.gimcana_progress.count_documents({"campaign_id": campaign_id})
+        if progress_count > 0:
+            logger.warning(f"No es regeneren QRs per campanya {campaign_id} perquè ja hi ha {progress_count} participants")
+            # No regenerem, mantenim els QRs existents i actualitzem només les dades
+            update_data['total_qr_codes'] = old_total  # Mantenir el total antic
+        else:
+            regenerate_qrs = True
+    
+    if regenerate_qrs:
         # Eliminar QR antics
         await db.gimcana_qr_codes.delete_many({"campaign_id": campaign_id})
         
-        # Generar nous
-        for i in range(campaign.total_qr_codes):
+        # Generar nous QRs
+        qr_items = campaign.qr_items or []
+        for i in range(new_total):
+            if i < len(qr_items):
+                qr_item = qr_items[i]
+                establishment_name = qr_item.establishment_name
+                location_hint = qr_item.location_hint or ""
+                image_url = qr_item.image_url
+            else:
+                establishment_name = f"Punt {i + 1}"
+                location_hint = ""
+                image_url = None
+            
             qr_code = {
                 "campaign_id": campaign_id,
                 "code": generate_qr_code(),
                 "number": i + 1,
                 "establishment_id": None,
-                "establishment_name": f"Punt {i + 1}",
-                "location_hint": "",
+                "establishment_name": establishment_name,
+                "location_hint": location_hint,
+                "image_url": image_url,
                 "created_at": datetime.utcnow()
             }
             await db.gimcana_qr_codes.insert_one(qr_code)
+        
+        logger.info(f"Regenerats {new_total} QR codes per campanya {campaign_id}")
     
     await db.gimcana_campaigns.update_one(
         {"_id": ObjectId(campaign_id)},
         {"$set": update_data}
     )
     
-    return {"success": True, "message": "Campanya actualitzada"}
+    return {"success": True, "message": "Campanya actualitzada", "qrs_regenerated": regenerate_qrs}
 
 
 @gimcana_router.delete("/campaigns/{campaign_id}")
