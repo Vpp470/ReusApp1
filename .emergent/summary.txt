@@ -1,213 +1,253 @@
 <analysis>
-
 <original_problem_statement>
-The session's primary goal evolved from fixing initial critical bugs to implementing several major new features and addressing a continuous stream of bug reports from the user.
+The user's primary goal is to fix several critical bugs related to the Gimcana (Scavenger Hunt) and Scan Ticket features. The user is extremely frustrated with the current state of the application on their phone, despite multiple attempts by the agent to fix it.
 
-**Initial State & Core Problems:**
-*   The Assignar Establiments page was broken.
-*   The web push notification system was non-functional (0 devices subscribed).
-*   Various data integrity and UI display issues were present.
-
-**User Requests during this session:**
-1.  **Fix Push Notifications:** Solve why notifications were not being received, not appearing in the in-app list, and not navigating to the correct screen on click. This became a recurring theme.
-2.  **Fix Push Notification Filtering:** The filters for users or locals associats were not working; only sending to all was functional.
-3.  **Improve Map Functionality:** On the map screen, make the phone number clickable and add a How to get there button. Also fix UI color issues on the web version.
-4.  **Fix Promotion Deletion:** The delete button for a promotion was not working on the web.
-5.  **Enhance Notification Segmentation:** Add filters for City and Postal Code to the advanced segmentation modal.
-6.  **Correct Privacy Policy:** Update the contact email in the privacy policy and consent screens.
-7.  **Enhance Establishment Management:**
-    *   Fix the establishment logo being cropped.
-    *   Increase the number of gallery images.
-    *   Add the ability to upload short videos.
-8.  **Fix Image Uploads:** Address an error that occurred when trying to save multiple images.
-9.  **Implement Consell (Council) Section:** A major feature request to build a full section for the council with multiple pages for managing content:
-    *   Agenda (Calendar)
-    *   Urgent Matters (Assumptes sobrevinguts)
-    *   Future Campaigns
-    *   Account Statements
-    *   Advertising Campaigns
-    *   Council Minutes (Acta del consell)
-10. **Admin Backoffice for Consell:** Add a section in the main admin panel to create and manage the content for the new Consell pages.
+**User's Final Bug Report (Highest Priority):**
+1.  **Ticket Scanning Broken:** The Scan Ticket feature is not working as expected on the phone. The user reports that the camera-based OCR flow to read receipts, validate the establishment, and generate raffle participations is broken.
+2.  **Gimcana Image Not Showing:** The main image for the Gimcana campaign is still not appearing on the user's device after deployment.
+3.  **Gimcana QR Codes Regenerate on Edit:** When an admin edits an existing Gimcana campaign, the QR codes are being regenerated. This is incorrect; they should only be generated once upon creation unless explicitly requested.
+4.  **Gimcana UI Not Updating:** After successfully scanning a QR code in a Gimcana, the user's progress display (X of Y QRs) does not update in real-time.
+5.  **Scanning Hangs/Fails:** On the mobile app, both scanning a ticket QR and a Gimcana QR either gets stuck on a processing screen or the buttons to grant camera permission are unclickable.
 </original_problem_statement>
 
 **User's preferred language**: Catalan. The user exclusively communicates in Catalan. The next agent MUST respond in Catalan.
 
 **what currently exists?**
-The application is a full-stack Expo/FastAPI project. The session addressed numerous, complex, and interconnected bugs primarily related to the push notification system. Multiple fixes were implemented, including resolving  vs.  data type mismatches, correcting filtering logic, ensuring notifications are saved to the user's view, and enabling deep-linking.
-
-Significant feature enhancements were also completed, including adding video uploads for establishments, adding new filters for notifications, and fixing platform-specific UI bugs (e.g., web confirmation dialogs).
-
-The agent has just created the foundational files (both backend and frontend) for a large new feature: the Consell (Council) management section. However, these newly created pages are currently broken and displaying errors, which was the last issue the user reported.
+The application's frontend has been significantly refactored to address multiple issues.
+- **API URL Configuration:** The frontend API service () has been fixed to use the  environment variable, resolving 404 errors during local development.
+- **Camera-Only Scanning:** Both the Gimcana () and Ticket Scanning () screens were modified to remove manual text input. On the web preview, they now show a message instructing the user to use the mobile app. On mobile, they are intended to open the camera directly.
+- **Ticket Scanning ():** This file was heavily modified, breaking the original OCR functionality. The agent then restored the file from a previous git commit to bring back the intended logic (take photo, process with OCR). However, the user reports it is still not working correctly on the phone.
+- **Gimcana Image Persistence:** The agent correctly identified that uploaded images were being lost on production due to an ephemeral filesystem. The image for the main Gimcana campaign was converted to a Base64 string and saved directly into the MongoDB document to ensure persistence. The agent verified this works locally, but the user reports it's still not working on production.
+- **Promotions/Offers:** A major refactor was done to unify Offers and Promotions. The app now consistently uses Promotions and fetches data from the correct  endpoint, which was also fixed.
 
 **Last working item**:
-    - Last item agent was working: The user reported multiple errors on the newly created Consell pages (). The agent identified that the API calls were failing, and the frontend state was not initialized with empty arrays, causing render errors. The agent started fixing this in  but was interrupted before it could fix all the other new pages and add the requested admin section for managing this content.
+    - Last item agent was working: Addressing a list of critical bugs reported by the user in message 709. The agent had just finished analyzing the user's report and was about to start fixing the first issue: the broken ticket scanning and the missing gimcana photo. The last concrete action was acknowledging the user's list of problems.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? both. The agent needs to implement the backend endpoints fully and then test the frontend pages one by one as they are connected and fixed.
-    - User Testing Done: N
+    - Which testing method agent to use? both. The issues span both frontend (UI not updating, buttons unclickable) and backend (QR codes regenerating). The primary focus should be on replicating the user's mobile experience. Manual testing with Expo Go QR code is essential.
+    - User Testing Done: Y (User has tested on their phone and reported multiple critical failures).
 
 **All Pending/In progress Issue list**:
-  - Issue 1:  **(P0) Newly created Consell pages are broken.** The user provided screenshots showing the new pages for the council section are throwing errors. The agent identified a  initialization problem but has only fixed it in one of the many new files. All other new pages remain broken.
-  - Issue 2:  **(P1) Map on preview is not interactive.** User mentioned a la app que no es pot clicar res referring to the map. While the agent fixed the colors, the interactivity on the web preview might still be an issue that needs verification.
-
+  - Issue 1: **(P0) Ticket Scanning gets stuck on Processing....**
+  - Issue 2: **(P0) Permetre Càmera button is unclickable in Gimcana and Club el tomb -> Escaneja Tiquets.**
+  - Issue 3: **(P0) Gimcana Image Not Showing on Production.**
+  - Issue 4: **(P1) Editing a Gimcana regenerates QR codes.**
+  - Issue 5: **(P2) Gimcana QR scan UI does not update in real-time after a successful scan.**
+  
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: The agent correctly identified that API errors were causing crashes because state variables (e.g., for lists of items) were not initialized as empty arrays. It applied a fix to .
-     - Next debug checklist:
-        1. Apply the same fix (initializing state with ) to all other new Consell pages:
-           - 
-           - 
-           - 
-           - 
-           - 
-        2. Ensure the backend endpoints defined in  are fully implemented (currently they are just skeletons).
-        3. Connect each frontend page to its corresponding, functional backend endpoint.
-     - Why fix this issue and what will be achieved with the fix?: This will make the skeleton pages for the major Consell feature functional, unblocking further development on this epic.
+     - Attempted fixes: The agent identified that the  was missing from the  request payload, causing a 422 error. A fix was implemented in  to include the  from . However, the user reports the scan still hangs. The problem might be in the frontend UI not handling the response correctly or another backend issue.
+     - Next debug checklist: 
+        1. Review the  or equivalent function in .
+        2. Add extensive  statements to track the state (, etc.) and the API response (both success and error).
+        3. Verify the backend logs () for the  request when the user tests it to see what the backend is receiving and returning.
+        4. Check the  block to ensure  is always called.
+     - Why fix this issue and what will be achieved with the fix?: This is a core feature for user engagement (generating raffle entries). Fixing it is critical for the app's value proposition.
      - Status:  IN PROGRESS
-     - Is recurring issue? N
+     - Is recurring issue? Y
      - Should Test frontend/backend/both after fix?: both
+     - Blocked on other issue: None.
+  - Issue 2: 
+     - Attempted fixes: The agent suspected  was failing inside a Modal and replaced it with  in . The user reported this did not fix the issue.
+     - Next debug checklist: 
+        1. Review the styling of the / and its parent containers. A common issue is a parent view intercepting touch events. Check for  issues or incorrect view positioning.
+        2. In  and , wrap the button's  content in a  to confirm if the event is even firing.
+        3. Test removing the component from the  (for Gimcana) and placing it on a simple view to see if the button works in isolation. This will confirm if the Modal is the problem.
+     - Why fix this issue and what will be achieved with the fix?: The user cannot use any camera-based features without being able to grant permission. This is a complete blocker.
+     - Status:  IN PROGRESS
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix?: frontend
+     - Blocked on other issue: None.
+  - Issue 3: 
+     - Attempted fixes: The agent correctly diagnosed the ephemeral filesystem issue and migrated the image to a Base64 string in the MongoDB  collection. The agent has repeatedly verified locally that the API returns the Base64 string and the frontend renders it.
+     - Next debug checklist: 
+        1. **This is likely a deployment or caching issue.** First, confirm with the user that they have done a hard refresh or cleared the app's cache on their phone.
+        2. Double-check that the last successful frontend build (yarn run v1.22.22
+$ /app/frontend/node_modules/.bin/expo export
+env: load .env.local .env.production .env
+env: export EXPO_TUNNEL_SUBDOMAIN EXPO_PUBLIC_BACKEND_URL EXPO_PACKAGER_HOSTNAME EXPO_USE_FAST_RESOLVER METRO_CACHE_ROOT
+Fast resolver is enabled.
+Starting Metro Bundler
+iOS node_modules/expo-router/entry.js ▓▓▓░░░░░░░░░░░░░ 21.3% ( 71/343)
+Android node_modules/expo-router/entry.js ▓▓░░░░░░░░░░░░░░ 14.1% (18/48)
+iOS node_modules/expo-router/entry.js ▓▓▓░░░░░░░░░░░░░ 21.3% (160/460)
+Android node_modules/expo-router/entry.js ▓▓░░░░░░░░░░░░░░ 14.1% (119/382)
+iOS node_modules/expo-router/entry.js ▓▓▓░░░░░░░░░░░░░ 21.3% (194/477)
+Android node_modules/expo-router/entry.js ▓▓░░░░░░░░░░░░░░ 14.1% (119/382)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓░░░░░░░░░░░ 34.3% (395/674)
+Android node_modules/expo-router/entry.js ▓▓░░░░░░░░░░░░░░ 14.1% (175/487)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓░░░░░░░░░░░ 34.3% (395/674)
+Android node_modules/expo-router/entry.js ▓▓░░░░░░░░░░░░░░ 17.2% (223/538)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓░░░░░░░░░░░ 34.3% (395/674)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓░░░░░░░░░░░ 34.4% (396/675)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.0% (647/906)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓░░░░░░░░░░░ 34.4% (396/675)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 54.7% (674/911)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 43.5% (589/893)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.9% ( 844/1040)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 53.1% (664/911)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.5% ( 897/1062)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 66.8% ( 848/1039)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 79.5% (1029/1154)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 79.6% (1001/1137)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 85.1% (1195/1411)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 83.2% (1193/1400)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 85.1% (1455/1593)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 83.2% (1386/1524)
+iOS node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 89.3% (1725/1835)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 90.1% (1630/1815)
+iOS Bundling failed 51807ms node_modules/expo-router/entry.js (1873 modules)
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.) was correctly copied to  before the user's last Save to GitHub action.
+        3. As a last resort, inspect the network requests on the user's device (if possible) to see what URL the app is trying to fetch for the image. The 404 for  suggests an old, cached state is being rendered.
+     - Why fix this issue and what will be achieved with the fix?: Visual elements are key to user experience. A missing image makes the feature look broken and unprofessional.
+     - Status:  IN PROGRESS
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix?: frontend
+     - Blocked on other issue: Potentially blocked by the user needing to clear their cache or a successful deployment.
+  - Issue 4: 
+     - Attempted fixes: None. This is a newly reported bug by the user.
+     - Next debug checklist: 
+        1. Locate the  endpoint for updating campaigns in .
+        2. Review the logic. It likely re-runs the QR generation code unconditionally.
+        3. Add a check: if  already exist for the campaign, do not regenerate them unless a specific flag (e.g., ) is passed in the payload. The update logic should only modify campaign metadata fields.
+     - Why fix this issue and what will be achieved with the fix?: Prevents data loss and maintains consistency. If QR codes are printed and distributed, they cannot change every time an admin fixes a typo in the campaign name.
+     - Status:  NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix?: backend
      - Blocked on other issue: None.
 
 **In progress Task List**:
-  - Task 1:  **(P0) Complete the Consell (Council) Feature Implementation**
-     - Where to resume: The file skeletons have been created. The agent must now:
-        1.  **Backend ():** Fully implement the CRUD logic for all the endpoints (Agenda, Actes, Campanyes, etc.). This includes defining MongoDB schemas and creating the API logic for creating, reading, updating, and deleting content for each section. The file is currently mostly empty.
-        2.  **Frontend ():** After fixing the initial render errors (see Pending Issue 1), build out the UI for each page according to the user's requirements (calendars, forms for uploading PDFs/Excel, lists, etc.).
-     - What will be achieved with this?: This will deliver a major new functionality area for a specific user role (membre_consell).
-     - Status:  IN PROGRESS
+  - Task 1: **(P0) Fix User-Reported Critical Bugs**
+     - Where to resume: Address the pending issues list above, starting with P0 priorities. The user is extremely frustrated, so focus on delivering a working fix for at least one of the major blockers (unclickable button or scan hanging).
+     - What will be achieved with this?: Restore the user's confidence and make the core features of the app usable again.
+     - Status: IN PROGRESS
      - Should Test frontend/backend/both after fix?: both
-     - Blocked on something: Blocked on fixing the initial page-load errors.
+     - Blocked on something: User frustration. The agent must be precise and avoid introducing new regressions.
 
 **Upcoming and Future Tasks**
-    Upcoming Tasks:
-    - (P0) **Create Admin Backoffice for Consell Content:** The user explicitly requested a button/section in the main admin backoffice to manage the content for all the new Consell pages. This is a critical part of the Consell feature epic.
-    
-    Future Tasks:
-    - The previous summary mentioned several carry-over tasks which were not addressed and should be kept in mind:
-        - Activate Welcome Email Scheduler.
-        - Rework the Consent Flow.
-        - Make the Hola, admin greeting dynamic.
-        - Investigate the failing OpenAI/Emergent LLM API key for news generation.
-        - Investigate the bug: participants were not being saved when an event was created from the admin panel.
+- **(P1) Implement Real-time UI Update for Gimcana Scans**: After a user successfully scans a QR code in , the UI state should be updated immediately to reflect the new progress (e.g., 1 of 15 QRs scanned) and visually mark the scanned QR in the list. This was requested by the user in message 709.
+- **(P2) Fix non-admin login issue in preview**: This was mentioned in the initial summary but never addressed.
+- **(P3) Fix Promotion dates do not update on edit**: This is a known, long-standing bug from a previous session that has not been fixed. It needs investigation in .
 
 **Completed work in this session**
-- **Push Notification System Overhaul:**
-  - Fixed filtering by role (, ) by changing the logic to query for all non-admin roles and handling the user's specific  role.
-  - **CRITICAL:** Fixed multiple  vs.  mismatch bugs in backend routes, which caused 500 errors when fetching, reading, or deleting notifications.
-  - Implemented logic to save every sent notification to a  collection, allowing them to appear in the user's in-app notification list.
-  - Enabled deep-linking: clicking a push notification now navigates the user to the  screen.
-  - Implemented a robust re-synchronization mechanism on the profile page to fix inconsistencies between browser subscriptions and backend data.
-- **UI/UX Fixes:**
-  - Fixed invisible notification body text by correcting the CSS color from transparent white to dark gray.
-  - Fixed the Delete Promotion button on web by replacing the incompatible  with .
-  - Fixed unreadable text on the web map view by changing the background color from dark green to white.
-- **Feature Enhancements:**
-  - **Establishment Management:**
-    - Fixed cropped logos by changing  to .
-    - Added support for video uploads (frontend UI and backend save logic).
-    - Expanded image gallery from 3 to 6 images.
-    - Added image compression on upload to prevent errors with large files.
-  - **Notification Segmentation:** Added City and Postal Code to the advanced filtering modal (frontend and backend).
-  - **Data Privacy:** Corrected the data protection contact email across multiple files (, ).
-- **Consell Feature Scaffolding:**
-  - Created a new backend route file .
-  - Created skeleton frontend pages for all sub-sections of the Consell feature.
+- **Architectural Fix**: Migrated Gimcana campaign images from an ephemeral file path to a persistent Base64 string within the MongoDB document ( collection).
+- **Bug Fix**: Corrected the frontend API service () to use the  environment variable, fixing local development 404 errors.
+- **Bug Fix**: Fixed a bug where the Gimcana detail page would hang indefinitely for unauthenticated users.
+- **Bug Fix**: Fixed a backend routing issue by creating a dedicated  endpoint to avoid conflicts with .
+- **Regression Fix**: Restored the original OCR-based ticket scanning functionality in  after it was mistakenly replaced with a QR-only scanner.
+- **UI/UX Refactor**: Replaced all instances of Offers with Promotions throughout the app interface and data-fetching logic.
+- **UI/UX Refactor**: Improved the layout of the  screen to prevent action buttons from being pushed off-screen on smaller devices.
+- **Backend Debugging**: Solved multiple backend issues related to incorrect database names ( vs ) and wrong API request formats (query params vs JSON body).
 
 **Earlier issues found/mentioned but not fixed**
-- The agent was highly responsive to user requests. All mentioned issues were either addressed or are captured in the pending/in-progress lists.
-
-**Known issue recurrence from previous fork**
-- **Issue recurrence in previous fork**: Web Push notifications being broken (0 devices subscribed) was a major recurring issue from the previous fork, which was extensively investigated and likely fixed in this session (pending final production validation by the user). The root causes were a mix of sync issues and incorrect filtering logic.
-- **Recurrence count**: 2+
-- **Status**: RESOLVED (Locally). The fixes are deployed, but the user's last message indicates ongoing issues, which were then debugged and fixed again. The core logic should now be stable.
+   - Issue 1: **Promotion dates do not update on edit.**
+     - Debug checklist:
+        1. Add logging to the  endpoint in  to see the received payload.
+        2. Check the MongoDB update query to confirm it includes the date fields.
+        3. Verify the frontend form submission sends the dates in the correct format.
+     - Why to solve this issue and what will be achieved with this?: Core functionality for admins to manage promotions is broken.
+     - Should Test frontend/backend/both after fix: both
+     - Is recurring issue? Y
+   - Issue 2: **Cannot log in as non-admin in preview.**
+     - Debug checklist:
+        1. Attempt to log in as a non-admin user in the web preview.
+        2. Check the browser's developer console for errors during login or subsequent requests.
+        3. Verify how the auth token is stored and used in  and , as there might be a web-specific issue with .
+     - Why to solve this issue and what will be achieved with this?: Prevents proper testing of user-specific features and permissions.
+     - Should Test frontend/backend/both after fix: frontend
+     - Is recurring issue? Y
 
 **Code Architecture**
-
+yarn expo export
 
 **Key Technical Concepts**
-- **MongoDB  vs. :** This was a recurring and critical bug pattern. The agent had to fix multiple endpoints where an ID was saved as an  but then queried as a , causing 500 errors. The next agent must be vigilant about this.
-- **Platform-Specific UI ():** The agent correctly fixed a bug where  was used on the web. The solution was to use  to conditionally render a  dialog.
-- **State Initialization:** The last bug encountered was due to component state not being initialized with default values (e.g., ), causing the app to crash when API calls failed.
-- **Frontend/Backend Synchronization:** A major challenge was debugging state discrepancies between the browser (e.g., push subscription) and the database. The implemented re-sync logic is a good pattern to reuse.
-- **User vs. Production Environment:** A significant amount of time was spent clarifying that the agent's changes in the preview environment are not automatically live on , and that the user must deploy via a GitHub push.
+- **Ephemeral Filesystem:** This is the root cause of the missing image problem on production. Saving files to the local disk is not a viable strategy.
+- **Base64 Image Storage:** The solution implemented for the Gimcana image was to store it as a Base64 data URI directly in the MongoDB document. This is a persistent solution.
+- **Deployment Process:** **This is a CRITICAL point of failure.** Any frontend changes require a build step (yarn run v1.22.22
+$ /app/frontend/node_modules/.bin/expo export
+env: load .env.local .env.production .env
+env: export EXPO_TUNNEL_SUBDOMAIN EXPO_PUBLIC_BACKEND_URL EXPO_PACKAGER_HOSTNAME EXPO_USE_FAST_RESOLVER METRO_CACHE_ROOT
+Fast resolver is enabled.
+Starting Metro Bundler
+iOS Bundling failed 2191ms node_modules/expo-router/entry.js (1482 modules)
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command. in ) followed by copying the  directory to . This manual step was missed several times, causing the user to not see any of the applied fixes on production.
+- **API Routing Precedence:** In FastAPI, more specific routes (like ) must be defined *before* more generic routes with path parameters (like ) to be matched correctly.
+- **Web vs. Mobile Divergence:** The app has different behavior on web vs. mobile, especially for camera features.  is used to show fallback UIs. This logic might be a source of bugs if not handled carefully.
 
 **key DB schema**
-- :
-    - : **ObjectId**, links to the  collection. (This was the source of many bugs).
-    - : string
-    - : string
-    - : boolean
-- :
-    - : (NEW) array of strings (video URLs).
-    - , : Now handled with  and compression.
-- :
-    - : string (e.g., 'user', 'admin', 'local_associat', 'membre_consell'). The filtering logic for 'users' now correctly includes all non-admin roles.
+  - :  field now contains a Base64 data URI string, not a file path.
+  - : Contains the generated QR codes for a campaign.
+  - : Contains system-wide promotions.
+  - : Legacy collection, now superseded by .
+  - : Stores user entries for ticket-scanning raffles.
 
 **All files of reference**
-*   : Core logic for notifications. Heavily modified.
-*   : Contains fixes for fetching/deleting notifications.
-*   : The main admin screen for sending notifications.
-*   : The user-facing list of received notifications.
-*   : The page for merchants to edit their profile.
-*   : All files in this new directory are the highest priority for the next session.
-
-**Areas that need refactoring**:
-*   The  file is becoming very large (over 2700 lines). The new  is a good step, but more logic could be broken out into separate files/routers to improve maintainability.
-*   The notification sending logic is spread across  and  endpoints with some duplication. This could be consolidated.
-
-**key api endpoints**
-- : Sends notifications with advanced segmentation. (Heavily modified).
-- : Sends simple notifications. (Modified).
-- : Fetches notifications for the logged-in user. (Fixed  bug).
-- : Marks a notification as read. (Fixed  bug).
-- : Deletes a notification. (Fixed  bug).
-- : (NEW) A new suite of endpoints to be implemented.
+-   : **CRITICAL FILE.** Contains the ticket scanning logic. The user reports it hangs.
+-   : **CRITICAL FILE.** Contains the Gimcana scanning logic. The user reports the Allow Camera button is unclickable.
+-   : Contains the backend logic for Gimcanas. Needs to be checked for the QR code regeneration bug.
+-   : Contains the main API routes, including the ticket processing OCR logic.
 
 **Critical Info for New Agent**
-- **Your highest priority is to fix and complete the Consell feature.** The user is waiting for this. Start by fixing the render errors on all the newly created pages, then implement the backend logic in , and finally build the frontend UI.
-- **BEWARE OF  vs.  BUGS.** This was the most frequent and hard-to-diagnose issue. When writing or debugging backend queries that use an ID, always ensure the data type matches how it's stored in MongoDB.
-- **The user now understands the deployment process.** After making significant changes, remind the user that they need to Save to GitHub to see the changes on .
-- **The Consell feature will require an admin interface.** The user requested a way for admins to manage this content. This needs to be planned and added to the main admin backoffice.
+-   **The user is extremely frustrated.** Your first priority is to acknowledge their frustration, be methodical, and deliver a working fix for at least one of their reported issues. Do not introduce new regressions.
+-   **THE DEPLOYMENT PROCESS IS MANUAL AND FRAGILE.** To deploy frontend changes, you **MUST** run yarn run v1.22.22
+$ /app/frontend/node_modules/.bin/expo export
+env: load .env.local .env.production .env
+env: export EXPO_TUNNEL_SUBDOMAIN EXPO_PUBLIC_BACKEND_URL EXPO_PACKAGER_HOSTNAME EXPO_USE_FAST_RESOLVER METRO_CACHE_ROOT
+Fast resolver is enabled.
+Starting Metro Bundler
+iOS Bundling failed 1815ms node_modules/expo-router/entry.js (1188 modules)
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command. inside  and then copy the contents of  to . This has been the cause of most of the user's complaints that nothing has changed.
+-   **The missing image issue is likely a CACHE or DEPLOYMENT problem.** The agent has confirmed the Base64 fix works locally. Guide the user to clear their app cache or perform a hard refresh after you are certain a new build has been deployed.
+-   **Address the user's latest bug list from message 709 directly and in order of priority.** Do not get sidetracked.
 
 **documents created in this job**
 - None.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (Msg 439):** Reports multiple errors on the new Consell pages and requests an admin backoffice to manage its content. **Status: IN PROGRESS.**
-2.  **User (Msg 408):** Requests the creation of the entire Consell section with detailed requirements for 6 different pages. **Status: IN PROGRESS.**
-3.  **User (Msg 387):** Reports an error when saving photos and a UI color bug on the map preview. **Status: ADDRESSED.** (Image compression and map color fix were implemented).
-4.  **User (Msg 345):** Requests improvements to the establishment management page (logo, more images, videos). **Status: COMPLETED.**
-5.  **User (Msg 325):** Reports the wrong email in the privacy policy. **Status: COMPLETED.**
-6.  **User (Msg 284):** Requests city/postal code filters for notifications. **Status: COMPLETED.**
-7.  **User (Msg 267):** Reports the Delete Promotion button is not working. **Status: COMPLETED.**
-8.  **User (Msg 250):** Reports that after deploying, notifications cannot be deleted and the message body is not visible. **Status: COMPLETED.**
-9.  **User (Msg 234):** Expresses confusion about the preview app being different from the production app. **Status: ADDRESSED.** (Agent explained the need to deploy).
-10. **User (Msg 207):** Reports that notification filtering and the segmentation screen are still not working. **Status: ADDRESSED.** (Agent found and fixed deeper bugs in the  endpoint).
+1.  **User (Msg 709):** Provided a clear, final list of 4 issues: 1) Ticket scanning not working, 2) Gimcana photo still missing, 3) Gimcana QRs regenerate on edit, 4) Gimcana UI doesn't update post-scan. **Status: NOT STARTED.**
+2.  **User (Msg 696):** Clarified the full, original OCR-based functionality of the Scan Ticket screen. **Status: ADDRESSED (Agent confirmed backend logic is intact).**
+3.  **User (Msg 683):** Asked to see the functionalities of the restored ticket scan page. **Status: ADDRESSED.**
+4.  **User (Msg 668):** Reported that the ticket scanning feature (which was working before) is now broken. **Status: ADDRESSED (Agent restored the file from git).**
+5.  **User (Msg 655):** Reported the Gimcana photo is still not showing. **Status: IN PROGRESS.**
+6.  **User (Msg 642):** Reported the Gimcana scan gets stuck, and asked the agent to improve it all. **Status: IN PROGRESS.**
+7.  **User (Msg 621):** Clarified that on the phone, the Gimcana camera *does* open but gets stuck processing after a successful scan. **Status: IN PROGRESS.**
+8.  **User (Msg 600):** Reported the Allow Camera button fix didn't work and the photo is still missing. **Status: IN PROGRESS.**
+9.  **User (Msg 587):** Argued that camera permissions are not the issue, as it works on one screen but not others. **Status: ADDRESSED (Agent acknowledged).**
+10. **User (Msg 562):** Reported a cascade of bugs: scan hangs, Allow Camera button is unclickable, and photo is missing. **Status: IN PROGRESS.**
 
 **Project Health Check:**
 - Broken:
-  - The entire Consell feature section () is non-functional and throws errors on load.
+  - **Ticket Scanning:** The core OCR flow hangs or fails on mobile.
+  - **Gimcana Scanning:** The camera permission button is unclickable, and when it does work, the scan hangs.
+  - **Gimcana Image Display:** The main campaign image is not visible to the user on production, likely due to caching/deployment issues.
+  - **Gimcana Admin Edit:** Editing a campaign incorrectly regenerates QR codes.
 - Mocked:
   - None.
 
 **3rd Party Integrations**
-- **Railway:** Production hosting for the backend and web app.
-- **GitHub:** Source control, used by Railway for deployments.
-- **IONOS (SMTP):** Used for sending transactional emails. Requires User API Key.
-- **Expo Push Notifications:** Used for sending pushes to native mobile apps.
+- **Railway:** Production hosting.
+- **GitHub:** Source control and deployment trigger.
+- **IONOS (SMTP):** Email sending.
+- **Expo:** Framework and push notifications.
+- **OpenAI GPT-4o-mini:** Used for OCR and data extraction in the ticket scanning process. Requires a user-provided API key.
+- **reportlab:** Backend library for PDF generation.
+- **expo-camera:** Frontend library for camera access.
+- **expo-image-picker:** Frontend library for gallery access and taking photos.
 
 **Testing status**
-  - Testing agent used after significant changes: NO. The agent relied on manual  and  scripts.
-  - Troubleshoot agent used after agent stuck in loop: NO.
+  - Testing agent used after significant changes: NO
+  - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: []
-  - Known regressions: None identified.
+  - Known regressions:
+    - The ticket scanning functionality was completely broken by a refactor and then restored. Its current state on production is reported as non-functional by the user.
 
 **Credentials to test flow:**
 - Admin:  / 
 - Test User:  / 
 
 **What agent forgot to execute**
-- The agent did not forget a specific task but was interrupted mid-task. After creating the file structure for the Consell feature, it did not fully implement the backend logic or fix all the resulting frontend errors before handing off.
-- The user's request to put a button in the admin backoffice to create the content of the council screen has not been started.
-
+- The agent repeatedly failed to ensure the frontend build was completed and copied before telling the user to deploy, leading to massive user frustration.
+- The agent did not fix the long-standing bugs from the initial handover (non-admin login fails, promotion dates do not update).
+- The agent introduced a major regression by breaking the ticket scanning OCR flow, which it then had to spend time reverting.
+- The agent got stuck in loops trying to fix the same issues (image not showing, camera not working) without addressing the root cause of deployment/caching.
 </analysis>
