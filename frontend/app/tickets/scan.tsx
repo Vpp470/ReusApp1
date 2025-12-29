@@ -316,8 +316,8 @@ export default function ScanTicketScreen() {
     );
   }
 
-  // A web o sense permisos de càmera, mostrar opcions alternatives
-  if (isWeb || !permission?.granted) {
+  // Només mostrar pantalla de permisos si NO és web i no té permisos
+  if (!isWeb && !permission?.granted) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
