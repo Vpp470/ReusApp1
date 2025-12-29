@@ -175,6 +175,20 @@ export default function GimcanaDetailPage() {
     loadCampaignDetails();
   }, [loadCampaignDetails]);
 
+  // Recarregar el progrés quan el token canviï (després del login)
+  useEffect(() => {
+    if (token && campaign) {
+      console.log('📊 Token detected, reloading progress...');
+      const headers = { Authorization: token };
+      api.get(`/gimcana/campaigns/${id}/progress`, { headers })
+        .then(res => {
+          console.log('📊 Progress reloaded:', res.data);
+          setProgress(res.data);
+        })
+        .catch(err => console.log('Error reloading progress:', err));
+    }
+  }, [token, id, campaign]);
+
   // Funció per obrir l'escàner
   const openScanner = async () => {
     setHasScanned(false);
