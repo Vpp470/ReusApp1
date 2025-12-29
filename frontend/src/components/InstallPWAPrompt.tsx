@@ -31,14 +31,25 @@ export default function InstallPWAPrompt() {
       try {
         // Verificar si ja s'ha mostrat o l'usuari l'ha descartat
         const dismissed = await AsyncStorage.getItem('pwa_prompt_dismissed');
-        const installed = await AsyncStorage.getItem('pwa_installed');
+        const dismissedDate = dismissed ? new Date(dismissed) : null;
+        const now = new Date();
         
-        if (dismissed || installed) return;
+        // Si s'ha descartat fa menys de 3 dies, no mostrar
+        if (dismissedDate && (now.getTime() - dismissedDate.getTime()) < 3 * 24 * 60 * 60 * 1000) {
+          return;
+        }
+        
+        const installed = await AsyncStorage.getItem('pwa_installed');
+        if (installed) return;
 
         // Detectar si és iOS
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
         const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator as any).standalone;
+        
+        // Detectar si és escriptori (no mòbil)
+        const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+        const isDesktop = !isMobileDevice && window.innerWidth >= 768;
         
         setIsIOS(isIOSDevice);
 
@@ -50,8 +61,8 @@ export default function InstallPWAPrompt() {
 
         // Esperar una mica abans de mostrar
         setTimeout(() => {
-          if (isIOSDevice) {
-            // Per iOS, mostrar instruccions manuals
+          // Mostrar per iOS, Android sense PWA, o escriptori
+          if (isIOSDevice || isDesktop || !deferredPrompt) {
             setShowPrompt(true);
             Animated.timing(fadeAnim, {
               toValue: 1,
@@ -59,7 +70,7 @@ export default function InstallPWAPrompt() {
               useNativeDriver: true,
             }).start();
           }
-        }, 3000);
+        }, 2000);
       } catch (error) {
         console.error('Error checking PWA prompt:', error);
       }
