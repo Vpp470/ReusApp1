@@ -413,42 +413,18 @@ export default function ScanTicketScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Secció de campanya activa */}
-      {loadingCampaign ? (
-        <View style={styles.campaignLoadingContainer}>
-          <ActivityIndicator size="small" color={Colors.primary} />
-        </View>
-      ) : activeCampaign ? (
-        <View style={styles.campaignContainer}>
-          {activeCampaign.image && (
-            <Image 
-              source={{ uri: activeCampaign.image }} 
-              style={styles.campaignImage}
-              resizeMode="cover"
-            />
-          )}
-          <View style={styles.campaignContent}>
-            <View style={styles.campaignBadge}>
-              <MaterialIcons name="star" size={14} color={Colors.white} />
-              <Text style={styles.campaignBadgeText}>CAMPANYA ACTIVA</Text>
-            </View>
-            <Text style={styles.campaignTitle}>{activeCampaign.title}</Text>
-            {activeCampaign.description && (
-              <Text style={styles.campaignDescription}>{activeCampaign.description}</Text>
-            )}
-            <View style={styles.campaignPrizeRow}>
-              <MaterialIcons name="emoji-events" size={18} color={Colors.secondary} />
-              <Text style={styles.campaignPrize}>{activeCampaign.prize_description}</Text>
-            </View>
-            <Text style={styles.campaignDates}>
-              Fins el {new Date(activeCampaign.end_date).toLocaleDateString('ca-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </Text>
+      {/* Secció de campanya activa - Compacta */}
+      {!loadingCampaign && activeCampaign && (
+        <View style={styles.campaignContainerCompact}>
+          <View style={styles.campaignBadge}>
+            <MaterialIcons name="star" size={14} color={Colors.white} />
+            <Text style={styles.campaignBadgeText}>CAMPANYA ACTIVA</Text>
           </View>
-        </View>
-      ) : (
-        <View style={styles.noCampaignContainer}>
-          <MaterialIcons name="info-outline" size={20} color={Colors.textSecondary} />
-          <Text style={styles.noCampaignText}>No hi ha cap campanya de tiquets activa</Text>
+          <Text style={styles.campaignTitleCompact}>{activeCampaign.title}</Text>
+          <View style={styles.campaignPrizeRow}>
+            <MaterialIcons name="emoji-events" size={16} color={Colors.secondary} />
+            <Text style={styles.campaignPrizeCompact}>{activeCampaign.prize_description}</Text>
+          </View>
         </View>
       )}
 
