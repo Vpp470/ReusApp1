@@ -149,10 +149,11 @@ export default function InstallPWAPrompt() {
             resizeMode="contain"
           />
 
-          <Text style={styles.title}>Instal·la l'App</Text>
+          <Text style={styles.title}>📱 Instal·la l'App</Text>
           
           <Text style={styles.description}>
-            Afegeix El Tomb de Reus a la teva pantalla d'inici per accedir-hi més ràpidament!
+            Per una millor experiència, instal·la l'app d'El Tomb de Reus al teu dispositiu mòbil. 
+            Podràs escanejar tiquets, participar en gimcanes i rebre notificacions!
           </Text>
 
           {isIOS ? (
