@@ -515,6 +515,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: Spacing.xl,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
