@@ -1766,8 +1766,7 @@ async def process_ticket(request: TicketProcessRequest, authorization: str = Hea
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     try:
-        # from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
-        from openai import OpenAI
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         import os
         from participation_tracker import track_participation
         
