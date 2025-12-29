@@ -37,8 +37,15 @@ const getBaseURL = () => {
     return '/api';
   }
   
-  // Per apps mòbils, usar la URL de producció
-  console.log('API Base URL: https://www.reusapp.com/api (mobile)');
+  // Per apps mòbils, usar EXPO_PUBLIC_BACKEND_URL si existeix, sinó producció
+  if (backendUrl) {
+    const mobileUrl = `${backendUrl}/api`;
+    console.log('API Base URL: ' + mobileUrl + ' (mobile with env var)');
+    return mobileUrl;
+  }
+  
+  // Fallback a producció si no hi ha variable d'entorn
+  console.log('API Base URL: https://www.reusapp.com/api (mobile fallback)');
   return 'https://www.reusapp.com/api';
 };
 
