@@ -112,10 +112,22 @@ export default function GimcanaDetailPage() {
     }
   };
 
-  const copyQRCode = (code: string) => {
+  const copyQRCode = async (code: string) => {
     if (Platform.OS === 'web') {
-      navigator.clipboard.writeText(code);
-      window.alert(`Codi copiat: ${code}`);
+      try {
+        // Intentar usar l'API del clipboard modern
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(code);
+          window.alert(`Codi copiat: ${code}`);
+        } else {
+          // Fallback: mostrar el codi en un alert per copiar manualment
+          window.alert(`Codi QR (copia manualment):\n\n${code}`);
+        }
+      } catch (error) {
+        // Si falla per permisos, mostrar el codi en un alert
+        console.log('Clipboard error:', error);
+        window.alert(`Codi QR (copia manualment):\n\n${code}`);
+      }
     } else {
       Alert.alert('Codi QR', code);
     }
