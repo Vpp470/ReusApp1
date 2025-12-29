@@ -228,16 +228,30 @@ async def get_user_progress(campaign_id: str, authorization: str = Header(None))
             "entered_raffle": False
         }
     
-    # Convertir ObjectIds dels QRs escanejats a strings
+    # Obtenir els QR IDs a partir dels codis escanejats
+    scanned_codes = progress.get('scanned_codes', {})
     scanned_qrs = []
-    for qr_id in progress.get('scanned_qrs', []):
-        if isinstance(qr_id, ObjectId):
-            scanned_qrs.append(str(qr_id))
-        else:
-            scanned_qrs.append(qr_id)
+    
+    # Buscar els IDs dels QRs escanejats
+    for qr_code in scanned_codes.keys():
+        qr = await db.gimcana_qr_codes.find_one({
+            "campaign_id": campaign_id,
+            "code": qr_code
+        })
+        if qr:
+            scanned_qrs.append(str(qr['_id']))
+    
+    # Fallback: si hi ha scanned_qrs antic, usar-lo
+    if not scanned_qrs and progress.get('scanned_qrs'):
+        for qr_id in progress.get('scanned_qrs', []):
+            if isinstance(qr_id, ObjectId):
+                scanned_qrs.append(str(qr_id))
+            else:
+                scanned_qrs.append(qr_id)
     
     return {
         "scanned_qrs": scanned_qrs,
+        "scanned_count": progress.get('scanned_count', len(scanned_qrs)),
         "completed": progress.get('completed', False),
         "completed_at": progress.get('completed_at'),
         "entered_raffle": progress.get('entered_raffle', False),
