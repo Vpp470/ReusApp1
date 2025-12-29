@@ -505,6 +505,7 @@ export default function ScanTicketScreen() {
           <Text style={styles.historyButtonText}>Veure Historial</Text>
         </Pressable>
       </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
