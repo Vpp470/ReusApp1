@@ -3544,9 +3544,16 @@ async def serve_service_worker():
 @app.get("/manifest.json")
 async def serve_manifest():
     """Servir el manifest PWA"""
+    # Primer intentar des de dist (producció)
+    dist_manifest = Path(__file__).parent / "dist" / "manifest.json"
+    if dist_manifest.exists():
+        return FileResponse(dist_manifest, media_type="application/json")
+    
+    # Fallback a frontend/public (desenvolupament)
     manifest_path = frontend_public_path / "manifest.json"
     if manifest_path.exists():
         return FileResponse(manifest_path, media_type="application/json")
+    
     raise HTTPException(status_code=404, detail="Manifest not found")
 
 # Mount Expo web app (after all API routes)
