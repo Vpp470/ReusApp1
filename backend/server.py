@@ -3568,6 +3568,11 @@ if dist_path.exists():
     if (dist_path / "_expo").exists():
         app.mount("/_expo", StaticFiles(directory=str(dist_path / "_expo")), name="expo-assets")
     
+    # Servir icons per PWA
+    if (dist_path / "icons").exists():
+        app.mount("/icons", StaticFiles(directory=str(dist_path / "icons")), name="pwa-icons")
+        logger.info("PWA icons mounted at /icons")
+    
     # Ruta principal - servir index.html
     @app.get("/")
     async def serve_frontend():
