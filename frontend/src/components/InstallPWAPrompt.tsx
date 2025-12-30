@@ -46,9 +46,11 @@ export default function InstallPWAPrompt() {
         const installed = await AsyncStorage.getItem('pwa_installed');
         if (installed) return;
 
-        // Detectar si és iOS
+        // Detectar tipus de dispositiu
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
+        const isAndroidDevice = /android/.test(userAgent);
+        const isSamsung = /samsung|sm-/i.test(userAgent);
         const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator as any).standalone;
         
         // Detectar si és escriptori (no mòbil)
@@ -56,6 +58,9 @@ export default function InstallPWAPrompt() {
         const isDesktop = !isMobileDevice && window.innerWidth >= 768;
         
         setIsIOS(isIOSDevice);
+        setIsAndroid(isAndroidDevice);
+        
+        console.log('[PWA] Device detection:', { isIOSDevice, isAndroidDevice, isSamsung, isDesktop });
 
         // Si ja està instal·lat com a PWA, no mostrar
         if (isInStandaloneMode || window.matchMedia('(display-mode: standalone)').matches) {
@@ -66,7 +71,7 @@ export default function InstallPWAPrompt() {
         // Esperar una mica abans de mostrar
         setTimeout(() => {
           // Mostrar per iOS, Android sense PWA, o escriptori
-          if (isIOSDevice || isDesktop || !deferredPrompt) {
+          if (isIOSDevice || isAndroidDevice || isDesktop) {
             setShowPrompt(true);
             Animated.timing(fadeAnim, {
               toValue: 1,
