@@ -33,25 +33,47 @@ export default function InstallPWAPrompt() {
 
     const checkIfShouldShow = async () => {
       try {
-        // Verificar si ja s'ha mostrat o l'usuari l'ha descartat
+        // PRIMER: Verificar si ja està instal·lat com a PWA (mode standalone)
+        const isStandalone = 
+          // iOS Safari
+          (('standalone' in window.navigator) && (window.navigator as any).standalone === true) ||
+          // Android Chrome i altres navegadors
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.matchMedia('(display-mode: fullscreen)').matches ||
+          window.matchMedia('(display-mode: minimal-ui)').matches ||
+          // Verificar si s'ha obert des d'una icona de pantalla d'inici
+          (document.referrer === '' && window.history.length === 1);
+        
+        console.log('[PWA] Standalone check:', isStandalone);
+        
+        if (isStandalone) {
+          console.log('[PWA] App running in standalone mode - not showing install prompt');
+          await AsyncStorage.setItem('pwa_installed', 'true');
+          return;
+        }
+        
+        // Verificar si ja s'ha marcat com instal·lada
+        const installed = await AsyncStorage.getItem('pwa_installed');
+        if (installed === 'true') {
+          console.log('[PWA] App marked as installed - not showing prompt');
+          return;
+        }
+        
+        // Verificar si l'usuari l'ha descartat recentment
         const dismissed = await AsyncStorage.getItem('pwa_prompt_dismissed');
         const dismissedDate = dismissed ? new Date(dismissed) : null;
         const now = new Date();
         
-        // Si s'ha descartat fa menys de 3 dies, no mostrar
-        if (dismissedDate && (now.getTime() - dismissedDate.getTime()) < 3 * 24 * 60 * 60 * 1000) {
+        // Si s'ha descartat fa menys de 7 dies, no mostrar
+        if (dismissedDate && (now.getTime() - dismissedDate.getTime()) < 7 * 24 * 60 * 60 * 1000) {
+          console.log('[PWA] Prompt dismissed recently - not showing');
           return;
         }
-        
-        const installed = await AsyncStorage.getItem('pwa_installed');
-        if (installed) return;
 
         // Detectar tipus de dispositiu
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
         const isAndroidDevice = /android/.test(userAgent);
-        const isSamsung = /samsung|sm-/i.test(userAgent);
-        const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator as any).standalone;
         
         // Detectar si és escriptori (no mòbil)
         const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
@@ -60,17 +82,11 @@ export default function InstallPWAPrompt() {
         setIsIOS(isIOSDevice);
         setIsAndroid(isAndroidDevice);
         
-        console.log('[PWA] Device detection:', { isIOSDevice, isAndroidDevice, isSamsung, isDesktop });
-
-        // Si ja està instal·lat com a PWA, no mostrar
-        if (isInStandaloneMode || window.matchMedia('(display-mode: standalone)').matches) {
-          await AsyncStorage.setItem('pwa_installed', 'true');
-          return;
-        }
+        console.log('[PWA] Device detection:', { isIOSDevice, isAndroidDevice, isDesktop, isStandalone });
 
         // Esperar una mica abans de mostrar
         setTimeout(() => {
-          // Mostrar per iOS, Android sense PWA, o escriptori
+          // Mostrar per iOS, Android, o escriptori
           if (isIOSDevice || isAndroidDevice || isDesktop) {
             setShowPrompt(true);
             Animated.timing(fadeAnim, {
@@ -81,7 +97,7 @@ export default function InstallPWAPrompt() {
           }
         }, 2000);
       } catch (error) {
-        console.error('Error checking PWA prompt:', error);
+        console.error('[PWA] Error checking install prompt:', error);
       }
     };
 
