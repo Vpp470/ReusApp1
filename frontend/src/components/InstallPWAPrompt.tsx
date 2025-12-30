@@ -346,6 +346,16 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     fontWeight: '600',
   },
+  androidInstall: {
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+  },
+  installHint: {
+    color: Colors.textSecondary,
+    fontSize: FontSizes.sm,
+    marginTop: Spacing.sm,
+    textAlign: 'center',
+  },
   laterButton: {
     paddingVertical: Spacing.sm,
   },
