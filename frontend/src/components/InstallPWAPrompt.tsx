@@ -106,13 +106,37 @@ export default function InstallPWAPrompt() {
   const handleInstall = async () => {
     if (deferredPrompt) {
       // Android/Chrome - usar el prompt natiu
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      
-      if (outcome === 'accepted') {
-        await AsyncStorage.setItem('pwa_installed', 'true');
+      try {
+        console.log('[PWA] Mostrant prompt d\'instal·lació...');
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('[PWA] Resultat:', outcome);
+        
+        if (outcome === 'accepted') {
+          await AsyncStorage.setItem('pwa_installed', 'true');
+          console.log('[PWA] App instal·lada!');
+        }
+        setDeferredPrompt(null);
+      } catch (error) {
+        console.error('[PWA] Error instal·lant:', error);
+        // Si falla, mostrar instruccions manuals
+        if (Platform.OS === 'web') {
+          window.alert('Per instal·lar l\'app:\n\n1. Obre el menú del navegador (⋮)\n2. Selecciona "Instal·lar app" o "Afegir a pantalla d\'inici"');
+        }
       }
-      setDeferredPrompt(null);
+    } else {
+      // Si no hi ha deferredPrompt, mostrar instruccions
+      console.log('[PWA] No hi ha prompt disponible, mostrant instruccions');
+      if (Platform.OS === 'web') {
+        const userAgent = window.navigator.userAgent.toLowerCase();
+        const isAndroid = /android/.test(userAgent);
+        
+        if (isAndroid) {
+          window.alert('Per instal·lar l\'app:\n\n1. Obre el menú del navegador (⋮ o ⋯)\n2. Selecciona "Instal·lar app" o "Afegir a pantalla d\'inici"');
+        } else {
+          window.alert('Per instal·lar l\'app:\n\n1. Toca la icona de compartir\n2. Selecciona "Afegir a la pantalla d\'inici"');
+        }
+      }
     }
     handleDismiss();
   };
