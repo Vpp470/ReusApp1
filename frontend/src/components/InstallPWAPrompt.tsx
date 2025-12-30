@@ -208,7 +208,19 @@ export default function InstallPWAPrompt() {
                 <Text style={styles.stepText}>Toca "Afegir"</Text>
               </View>
             </View>
+          ) : deferredPrompt ? (
+            // Android amb prompt natiu disponible - mostrar botó directe
+            <View style={styles.androidInstall}>
+              <TouchableOpacity style={styles.installButton} onPress={handleInstall}>
+                <MaterialIcons name="download" size={24} color={Colors.white} />
+                <Text style={styles.installButtonText}>Instal·lar App</Text>
+              </TouchableOpacity>
+              <Text style={styles.installHint}>
+                L'app s'instal·larà i s'obrirà a pantalla completa
+              </Text>
+            </View>
           ) : isAndroid ? (
+            // Android sense prompt - mostrar instruccions manuals
             <View style={styles.iosInstructions}>
               <Text style={styles.instructionTitle}>Com instal·lar a Android:</Text>
               <View style={styles.step}>
@@ -225,13 +237,6 @@ export default function InstallPWAPrompt() {
                 <Text style={styles.stepNumber}>3</Text>
                 <Text style={styles.stepText}>Confirma tocant "Afegir" o "Instal·lar"</Text>
               </View>
-              
-              {deferredPrompt && (
-                <TouchableOpacity style={styles.installButton} onPress={handleInstall}>
-                  <MaterialIcons name="add-to-home-screen" size={24} color={Colors.white} />
-                  <Text style={styles.installButtonText}>Instal·lar App Ara</Text>
-                </TouchableOpacity>
-              )}
             </View>
           ) : (
             <TouchableOpacity style={styles.installButton} onPress={handleInstall}>
