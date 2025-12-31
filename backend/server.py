@@ -113,6 +113,79 @@ async def health_check_root():
 async def health_check():
     return {"status": "healthy", "service": "El Tomb de Reus API"}
 
+# ============================================================
+# PWA STATIC FILES - MUST BE DEFINED EARLY (before any routers)
+# ============================================================
+_pwa_dist_path = Path(__file__).parent / "dist"
+_pwa_public_path = Path(__file__).parent.parent / "frontend" / "public"
+
+@app.get("/manifest.json", tags=["PWA"])
+async def serve_manifest_early():
+    """Servir el manifest PWA - ruta prioritària"""
+    logger.info(f"[PWA-EARLY] manifest.json request")
+    if (_pwa_dist_path / "manifest.json").exists():
+        return FileResponse(_pwa_dist_path / "manifest.json", media_type="application/json")
+    if (_pwa_public_path / "manifest.json").exists():
+        return FileResponse(_pwa_public_path / "manifest.json", media_type="application/json")
+    raise HTTPException(status_code=404, detail="Manifest not found")
+
+@app.get("/sw.js", tags=["PWA"])
+async def serve_sw_early():
+    """Servir el Service Worker - ruta prioritària"""
+    logger.info(f"[PWA-EARLY] sw.js request")
+    if (_pwa_dist_path / "sw.js").exists():
+        return FileResponse(_pwa_dist_path / "sw.js", media_type="application/javascript")
+    if (_pwa_public_path / "sw.js").exists():
+        return FileResponse(_pwa_public_path / "sw.js", media_type="application/javascript")
+    raise HTTPException(status_code=404, detail="Service Worker not found")
+
+@app.get("/service-worker.js", tags=["PWA"])
+async def serve_sw_alt_early():
+    """Servir el Service Worker (ruta alternativa)"""
+    logger.info(f"[PWA-EARLY] service-worker.js request")
+    if (_pwa_dist_path / "sw.js").exists():
+        return FileResponse(_pwa_dist_path / "sw.js", media_type="application/javascript")
+    if (_pwa_public_path / "sw.js").exists():
+        return FileResponse(_pwa_public_path / "sw.js", media_type="application/javascript")
+    raise HTTPException(status_code=404, detail="Service Worker not found")
+
+@app.get("/icons/{icon_name}", tags=["PWA"])
+async def serve_icon_early(icon_name: str):
+    """Servir icones PWA - ruta prioritària"""
+    logger.info(f"[PWA-EARLY] icon request: {icon_name}")
+    if (_pwa_dist_path / "icons" / icon_name).exists():
+        return FileResponse(_pwa_dist_path / "icons" / icon_name, media_type="image/png")
+    if (_pwa_public_path / "icons" / icon_name).exists():
+        return FileResponse(_pwa_public_path / "icons" / icon_name, media_type="image/png")
+    raise HTTPException(status_code=404, detail=f"Icon {icon_name} not found")
+
+# Favicon routes
+@app.get("/favicon.ico", tags=["PWA"])
+async def serve_favicon():
+    """Servir favicon"""
+    if (_pwa_dist_path / "favicon.ico").exists():
+        return FileResponse(_pwa_dist_path / "favicon.ico", media_type="image/x-icon")
+    if (_pwa_dist_path / "favicon.png").exists():
+        return FileResponse(_pwa_dist_path / "favicon.png", media_type="image/png")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+@app.get("/favicon.png", tags=["PWA"])
+async def serve_favicon_png():
+    """Servir favicon PNG"""
+    if (_pwa_dist_path / "favicon.png").exists():
+        return FileResponse(_pwa_dist_path / "favicon.png", media_type="image/png")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+@app.get("/apple-touch-icon.png", tags=["PWA"])
+async def serve_apple_touch_icon():
+    """Servir Apple Touch Icon"""
+    if (_pwa_dist_path / "apple-touch-icon.png").exists():
+        return FileResponse(_pwa_dist_path / "apple-touch-icon.png", media_type="image/png")
+    raise HTTPException(status_code=404, detail="Apple Touch Icon not found")
+
+logger.info(f"[PWA] Routes registered. dist_path={_pwa_dist_path}, exists={_pwa_dist_path.exists()}")
+# ============================================================
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
