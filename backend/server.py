@@ -163,11 +163,23 @@ async def serve_sw_early():
 async def serve_sw_alt_early():
     """Servir el Service Worker (ruta alternativa)"""
     logger.info(f"[PWA-EARLY] service-worker.js request")
+    # Primer buscar service-worker.js
+    if (_pwa_dist_path / "service-worker.js").exists():
+        return FileResponse(str(_pwa_dist_path / "service-worker.js"), media_type="application/javascript")
+    # Fallback a sw.js
     if (_pwa_dist_path / "sw.js").exists():
-        return FileResponse(_pwa_dist_path / "sw.js", media_type="application/javascript")
+        return FileResponse(str(_pwa_dist_path / "sw.js"), media_type="application/javascript")
     if (_pwa_public_path / "sw.js").exists():
-        return FileResponse(_pwa_public_path / "sw.js", media_type="application/javascript")
+        return FileResponse(str(_pwa_public_path / "sw.js"), media_type="application/javascript")
     raise HTTPException(status_code=404, detail="Service Worker not found")
+
+# Ruta per favicon-32.png
+@app.get("/favicon-32.png", tags=["PWA"])
+async def serve_favicon_32():
+    """Servir favicon 32x32"""
+    if (_pwa_dist_path / "favicon-32.png").exists():
+        return FileResponse(str(_pwa_dist_path / "favicon-32.png"), media_type="image/png")
+    raise HTTPException(status_code=404, detail="Favicon 32 not found")
 
 @app.get("/icons/{icon_name}", tags=["PWA"])
 async def serve_icon_early(icon_name: str):
