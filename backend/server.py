@@ -119,14 +119,34 @@ async def health_check():
 _pwa_dist_path = Path(__file__).parent / "dist"
 _pwa_public_path = Path(__file__).parent.parent / "frontend" / "public"
 
+# Log at startup to verify paths
+logger.info(f"[PWA-INIT] dist_path: {_pwa_dist_path}")
+logger.info(f"[PWA-INIT] dist_path exists: {_pwa_dist_path.exists()}")
+if _pwa_dist_path.exists():
+    logger.info(f"[PWA-INIT] dist contents: {list(_pwa_dist_path.iterdir())[:10]}")
+    if (_pwa_dist_path / "manifest.json").exists():
+        logger.info(f"[PWA-INIT] manifest.json EXISTS!")
+    else:
+        logger.warning(f"[PWA-INIT] manifest.json NOT FOUND!")
+    if (_pwa_dist_path / "icons").exists():
+        logger.info(f"[PWA-INIT] icons dir EXISTS!")
+    else:
+        logger.warning(f"[PWA-INIT] icons dir NOT FOUND!")
+
 @app.get("/manifest.json", tags=["PWA"])
 async def serve_manifest_early():
     """Servir el manifest PWA - ruta prioritària"""
-    logger.info(f"[PWA-EARLY] manifest.json request")
-    if (_pwa_dist_path / "manifest.json").exists():
-        return FileResponse(_pwa_dist_path / "manifest.json", media_type="application/json")
-    if (_pwa_public_path / "manifest.json").exists():
-        return FileResponse(_pwa_public_path / "manifest.json", media_type="application/json")
+    logger.info(f"[PWA-EARLY] manifest.json request, dist exists: {_pwa_dist_path.exists()}")
+    manifest_file = _pwa_dist_path / "manifest.json"
+    logger.info(f"[PWA-EARLY] manifest file: {manifest_file}, exists: {manifest_file.exists()}")
+    if manifest_file.exists():
+        logger.info(f"[PWA-EARLY] Serving manifest from {manifest_file}")
+        return FileResponse(str(manifest_file), media_type="application/json")
+    public_manifest = _pwa_public_path / "manifest.json"
+    if public_manifest.exists():
+        logger.info(f"[PWA-EARLY] Serving manifest from public: {public_manifest}")
+        return FileResponse(str(public_manifest), media_type="application/json")
+    logger.error(f"[PWA-EARLY] Manifest NOT FOUND in any location!")
     raise HTTPException(status_code=404, detail="Manifest not found")
 
 @app.get("/sw.js", tags=["PWA"])
