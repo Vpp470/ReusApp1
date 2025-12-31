@@ -3522,42 +3522,65 @@ async def serve_noticies_page():
         return FileResponse(file_path, media_type="text/html")
     raise HTTPException(status_code=404, detail="Page not found")
 
-# Service Worker route - servir des de dist (producció) o frontend/public (desenvolupament)
-dist_path_for_sw = Path(__file__).parent / "dist"
+# PWA Static Files - Definir paths
+dist_path = Path(__file__).parent / "dist"
 frontend_public_path = Path(__file__).parent.parent / "frontend" / "public"
+
+# Log dels paths per debug
+logger.info(f"[PWA] dist_path: {dist_path}, exists: {dist_path.exists()}")
+logger.info(f"[PWA] frontend_public_path: {frontend_public_path}, exists: {frontend_public_path.exists()}")
+
+# Ruta explícita per service-worker.js (alguns navegadors ho demanen així)
+@app.get("/service-worker.js")
+async def serve_service_worker_alt():
+    """Servir el Service Worker (ruta alternativa)"""
+    sw_path = dist_path / "sw.js"
+    logger.info(f"[PWA] service-worker.js request, path: {sw_path}, exists: {sw_path.exists()}")
+    if sw_path.exists():
+        return FileResponse(sw_path, media_type="application/javascript")
+    sw_path = frontend_public_path / "sw.js"
+    if sw_path.exists():
+        return FileResponse(sw_path, media_type="application/javascript")
+    raise HTTPException(status_code=404, detail="Service Worker not found")
 
 @app.get("/sw.js")
 async def serve_service_worker():
     """Servir el Service Worker per Web Push"""
-    # Primer intentar des de dist (producció)
-    sw_path = dist_path_for_sw / "sw.js"
+    sw_path = dist_path / "sw.js"
+    logger.info(f"[PWA] sw.js request, path: {sw_path}, exists: {sw_path.exists()}")
     if sw_path.exists():
         return FileResponse(sw_path, media_type="application/javascript")
-    
-    # Fallback a frontend/public (desenvolupament)
     sw_path = frontend_public_path / "sw.js"
     if sw_path.exists():
         return FileResponse(sw_path, media_type="application/javascript")
-    
     raise HTTPException(status_code=404, detail="Service Worker not found")
 
 @app.get("/manifest.json")
 async def serve_manifest():
     """Servir el manifest PWA"""
-    # Primer intentar des de dist (producció)
-    dist_manifest = Path(__file__).parent / "dist" / "manifest.json"
-    if dist_manifest.exists():
-        return FileResponse(dist_manifest, media_type="application/json")
-    
-    # Fallback a frontend/public (desenvolupament)
+    manifest_path = dist_path / "manifest.json"
+    logger.info(f"[PWA] manifest.json request, path: {manifest_path}, exists: {manifest_path.exists()}")
+    if manifest_path.exists():
+        return FileResponse(manifest_path, media_type="application/json")
     manifest_path = frontend_public_path / "manifest.json"
     if manifest_path.exists():
         return FileResponse(manifest_path, media_type="application/json")
-    
     raise HTTPException(status_code=404, detail="Manifest not found")
 
+# Ruta explícita per cada icona PWA (per assegurar que funcionen)
+@app.get("/icons/{icon_name}")
+async def serve_pwa_icon(icon_name: str):
+    """Servir icones PWA"""
+    icon_path = dist_path / "icons" / icon_name
+    logger.info(f"[PWA] icon request: {icon_name}, path: {icon_path}, exists: {icon_path.exists()}")
+    if icon_path.exists():
+        return FileResponse(icon_path, media_type="image/png")
+    icon_path = frontend_public_path / "icons" / icon_name
+    if icon_path.exists():
+        return FileResponse(icon_path, media_type="image/png")
+    raise HTTPException(status_code=404, detail=f"Icon {icon_name} not found")
+
 # Mount Expo web app (after all API routes)
-dist_path = Path(__file__).parent / "dist"
 if dist_path.exists():
     logger.info(f"Mounting Expo web app from {dist_path}")
     
@@ -3567,11 +3590,6 @@ if dist_path.exists():
     
     if (dist_path / "_expo").exists():
         app.mount("/_expo", StaticFiles(directory=str(dist_path / "_expo")), name="expo-assets")
-    
-    # Servir icons per PWA
-    if (dist_path / "icons").exists():
-        app.mount("/icons", StaticFiles(directory=str(dist_path / "icons")), name="pwa-icons")
-        logger.info("PWA icons mounted at /icons")
     
     # Ruta principal - servir index.html
     @app.get("/")
