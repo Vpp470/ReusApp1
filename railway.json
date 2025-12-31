@@ -5,7 +5,7 @@
     "buildCommand": "cd backend && pip install -r requirements.txt"
   },
   "deploy": {
-    "startCommand": "mkdir -p backend/static/tomb-pagines && cp -r landing/tomb-pagines/*.html backend/static/tomb-pagines/ 2>/dev/null; cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT",
+    "startCommand": "echo '=== PWA Files Check ===' && ls -la backend/dist/manifest.json backend/dist/sw.js backend/dist/icons/ 2>/dev/null || echo 'WARNING: PWA files not found!' && mkdir -p backend/static/tomb-pagines && cp -r landing/tomb-pagines/*.html backend/static/tomb-pagines/ 2>/dev/null; cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
