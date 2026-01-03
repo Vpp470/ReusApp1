@@ -1907,7 +1907,7 @@ SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
 SMTP_USER = os.environ.get('SMTP_USER', '')
 SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
 SMTP_FROM_EMAIL = os.environ.get('SMTP_FROM_EMAIL', 'noreply@reusapp.com')
-SMTP_FROM_NAME = os.environ.get('SMTP_FROM_NAME', 'Reus Comerç i Futur')
+SMTP_FROM_NAME = os.environ.get('SMTP_FROM_NAME', 'El Tomb de Reus')
 
 def generate_temp_password(length=12):
     """Genera una contrasenya temporal segura"""

@@ -18,7 +18,7 @@ db = client[os.getenv('DB_NAME', 'tomb_reus_db')]
 admin_user = {
     "email": "admin@reusapp.com",
     "password": pwd_context.hash("admin123"),
-    "name": "Admin ReusApp",
+    "name": "Admin El Tomb",
     "role": "admin",
     "phone": "666000000",
     "created_at": datetime.utcnow(),

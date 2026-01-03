@@ -121,7 +121,7 @@ def send_welcome_email(to_email: str, name: str, temp_password: str) -> bool:
             </div>
             <div class="footer">
                 <p>Aquest email s'ha enviat automàticament. Si no has sol·licitat aquest compte, pots ignorar aquest missatge.</p>
-                <p>© 2025 El Tomb de Reus - Reus Comerç i Futur</p>
+                <p>© 2025 El Tomb de Reus</p>
             </div>
         </div>
     </body>
@@ -193,7 +193,7 @@ def send_password_reset_email(to_email: str, name: str, reset_token: str) -> boo
                 <strong>L'equip d'El Tomb de Reus</strong></p>
             </div>
             <div class="footer">
-                <p>© 2025 El Tomb de Reus - Reus Comerç i Futur</p>
+                <p>© 2025 El Tomb de Reus</p>
             </div>
         </div>
     </body>
