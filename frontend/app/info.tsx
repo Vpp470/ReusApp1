@@ -83,7 +83,7 @@ export default function InfoScreen() {
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <Image 
-            source={{ uri: '/assets/logo-rcf.png' }}
+            source={{ uri: '/assets/logo-tomb.png' }}
             style={styles.logoImage}
             resizeMode="contain"
           />

@@ -193,7 +193,7 @@ export default function InstallPWAPrompt() {
           </TouchableOpacity>
 
           <Image
-            source={require('../../assets/images/logo-rcf.png')}
+            source={require('../../assets/images/logo-tomb.png')}
             style={styles.logo}
             resizeMode="contain"
           />

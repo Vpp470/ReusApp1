@@ -71,7 +71,7 @@ export default function LoginScreen() {
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <Image
-              source={require('../../assets/images/logo-rcf-horizontal.png')}
+              source={require('../../assets/images/logo-tomb-horizontal.png')}
               style={styles.logoHorizontal}
               resizeMode="contain"
             />

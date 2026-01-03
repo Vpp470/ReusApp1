@@ -96,7 +96,7 @@ export default function ClubScreen() {
         {/* Banner del Club amb Logo */}
         <View style={styles.banner}>
           <Image 
-            source={require('../assets/images/logo-rcf.png')} 
+            source={require('../assets/images/logo-tomb.png')} 
             style={styles.bannerLogo}
             resizeMode="contain"
           />

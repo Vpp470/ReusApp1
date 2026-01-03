@@ -32,7 +32,7 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Image 
-        source={require('../assets/images/logo-rcf-horizontal.png')} 
+        source={require('../assets/images/logo-tomb-horizontal.png')} 
         style={styles.logo}
         resizeMode="contain"
       />
