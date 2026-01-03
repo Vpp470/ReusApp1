@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "ReusApp",
-    "slug": "reusapp",
+    "name": "El Tomb de Reus",
+    "slug": "eltombdereus",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/logo-rcf.png",
-    "scheme": "reusapp",
+    "icon": "./assets/images/logo-tomb.png",
+    "scheme": "eltombdereus",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/logo-rcf.png",
+      "image": "./assets/images/logo-tomb.png",
       "resizeMode": "contain",
-      "backgroundColor": "#e87308"
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": true,
