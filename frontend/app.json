@@ -19,11 +19,11 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo-rcf.png",
-        "backgroundColor": "#e87308"
+        "foregroundImage": "./assets/images/logo-tomb.png",
+        "backgroundColor": "#FFFFFF"
       },
       "edgeToEdgeEnabled": true,
-      "package": "cat.reus.reusapp",
+      "package": "cat.reus.eltombdereus",
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -33,9 +33,9 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo-rcf.png",
+      "favicon": "./assets/images/logo-tomb.png",
       "name": "El Tomb de Reus",
-      "shortName": "ReusApp",
+      "shortName": "El Tomb",
       "lang": "ca",
       "scope": "/",
       "startUrl": "/",
