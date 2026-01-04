@@ -265,6 +265,19 @@ const styles = StyleSheet.create({
   eyeIcon: {
     padding: Spacing.sm,
   },
+  rememberMeContainer: {
+    marginBottom: Spacing.sm,
+    marginTop: Spacing.xs,
+  },
+  rememberMeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rememberMeText: {
+    color: Colors.white,
+    fontSize: FontSizes.sm,
+    marginLeft: Spacing.xs,
+  },
   loginButton: {
     backgroundColor: Colors.accent, // Dorat
     borderRadius: BorderRadius.lg,
