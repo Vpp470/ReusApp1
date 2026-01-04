@@ -148,6 +148,22 @@ export default function LoginScreen() {
             </Pressable>
           </View>
 
+          {/* Remember Me Toggle */}
+          <View style={styles.rememberMeContainer}>
+            <TouchableOpacity 
+              style={styles.rememberMeRow}
+              onPress={() => setRememberMe(!rememberMe)}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons 
+                name={rememberMe ? 'check-box' : 'check-box-outline-blank'} 
+                size={24} 
+                color={rememberMe ? Colors.primary : Colors.gray} 
+              />
+              <Text style={styles.rememberMeText}>Recorda'm</Text>
+            </TouchableOpacity>
+          </View>
+
           <Pressable
             style={[styles.loginButton, loading && styles.loginButtonDisabled]}
             onPress={handleLogin}
@@ -178,6 +194,9 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        
+        {/* PWA Install Prompt */}
+        <InstallPWAPrompt />
       </ScrollView>
     </KeyboardAvoidingView>
   );
