@@ -64,6 +64,16 @@ export default function LoginScreen() {
       console.log('🔐 Intentant login amb:', email);
       const response = await authService.login(email, password);
       console.log('✅ Login exitós, resposta rebuda');
+      
+      // Guardar email si "Recorda'm" està activat
+      if (rememberMe) {
+        await AsyncStorage.setItem('saved_email', email);
+        await AsyncStorage.setItem('remember_me', 'true');
+      } else {
+        await AsyncStorage.removeItem('saved_email');
+        await AsyncStorage.setItem('remember_me', 'false');
+      }
+      
       await login(response.user, response.token);
       console.log('✅ Dades guardades, redirigint...');
       router.replace('/(tabs)/home');
