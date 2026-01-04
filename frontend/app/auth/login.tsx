@@ -287,6 +287,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
+  rememberMeContainer: {
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  rememberMeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  rememberMeText: {
+    marginLeft: Spacing.sm,
+    fontSize: FontSizes.md,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
+  },
   forgotPasswordButton: {
     alignSelf: 'center',
     marginTop: Spacing.md,
