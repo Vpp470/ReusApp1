@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,13 +13,16 @@ import {
   ActivityIndicator,
   Image,
   Dimensions,
+  Switch,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../../src/services/api';
 import { useAuthStore } from '../../src/store/authStore';
 import { Colors, Spacing, BorderRadius, FontSizes } from '../../src/constants/colors';
+import InstallPWAPrompt from '../../src/components/InstallPWAPrompt';
 import i18n from '../../src/i18n';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -31,6 +34,24 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+
+  // Carregar credencials guardades
+  useEffect(() => {
+    const loadSavedCredentials = async () => {
+      try {
+        const savedEmail = await AsyncStorage.getItem('saved_email');
+        const savedRemember = await AsyncStorage.getItem('remember_me');
+        if (savedEmail && savedRemember === 'true') {
+          setEmail(savedEmail);
+          setRememberMe(true);
+        }
+      } catch (error) {
+        console.log('Error loading saved credentials:', error);
+      }
+    };
+    loadSavedCredentials();
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
